@@ -1,0 +1,30 @@
+{
+  "name": "chrono-chime-desktop",
+  "productName": "ChronoChime",
+  "version": "1.0.0",
+  "description": "ChronoChime - Hourly Notification Desktop Application  with background sounds and notifications.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "author": {
+    "email": "svijaykoushik@hotmail.com",
+    "name": "Vijaykoushik, S.",
+    "url": "https://svijaykoushik.github.io"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.1.0",
+    "@electron-forge/maker-deb": "^7.1.0",
+    "@electron-forge/maker-rpm": "^7.1.0",
+    "@electron-forge/maker-squirrel": "^7.1.0",
+    "@electron-forge/maker-zip": "^7.1.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.1.0",
+    "electron": "^27.1.2"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
+  }
+}

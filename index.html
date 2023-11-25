@@ -1,0 +1,263 @@
+<!--index.html-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com">
+    <title>ChronoChime - Hourly Notification</title>
+    <link rel="stylesheet" type="text/css" href="./style.css"/>
+  </head>
+  <body>
+    <div class="background-wrapper"></div>
+        <div id="appDrawer" class="drawer">
+            <div class="drawer-header">
+                <!-- Your app logo and name -->
+                <a href="/"><img src="chrono-chime-icon-32.png" alt="ChronoChime Logo" class="app-logo" /></a>
+                <h2><a href="/">ChronoChime</a></h2>
+            </div>
+            <ul class="drawer-menu">
+                <!-- Links to different sections -->
+                <li><a href="/settings">🛠️ Settings</a></li>
+                <li><a href="/attributions">👍 Attributions</a></li>
+                <li><a href="/about">ℹ️ About</a></li>
+            </ul>
+            <!-- Social Icons Container -->
+            <div class="social-icons">
+                <a href="https://github.com/svijaykoushik/chorno-chime" target="_blank">
+                    <img src="github-mark.png" alt="GitHub" width="16" height="16" />
+                </a>
+                <a href="https://dev.to/svijaykoushik" target="_blank">
+                    <img src="dev-black.png" alt="Dev.to" width="16" height="16" />
+                </a>
+                <a href="https://twitter.com/VijaykoushikS" target="_blank">
+                    <img src="twitter-logo-black.png" alt="Twitter" width="16" height="16" />
+                </a>
+            </div>
+        </div>
+        <!-- Transparent button to toggle the app drawer -->
+        <div id="toggleDrawerButton" class="toggle-button"></div>          
+        <div class="container" id="main">
+            <h1>ChronoChime - Hourly Notification PWA</h1>
+            <p id="countdownTimer"></p>
+        </div>
+        <div class="container" id="settings">
+            <h1>Settings</h1>
+            <div class="tab">
+                <button
+                    class="tablinks"
+                    id="generalTabLink"
+                    onclick="openTab(event, 'general')"
+                >
+                    ⚙️ General
+                </button>
+                <button
+                    class="tablinks"
+                    id="soundTabLink"
+                    onclick="openTab(event, 'sound')"
+                >
+                    🔊 Notification Sound
+                </button>
+                <button
+                    class="tablinks"
+                    id="contentTabLink"
+                    onclick="openTab(event, 'content')"
+                >
+                    ✉️ Notification Content 
+                </button>
+                <button
+                    class="tablinks"
+                    id="resetTabLink"
+                    onclick="openTab(event, 'reset')"
+                >
+                    🔄 Reset
+                </button>
+            </div>
+            <form id="settingsForm">
+                <section id="general" class="tabcontent">
+                    <h2>General ⚙️</h2>
+                    <p>
+                        <label for="interval">⏰ Interval:</label>
+                        <select id="interval" name="interval">
+                            <option value="1">1 hour</option>
+                            <option value="2">2 hours</option>
+                            <option value="3">3 hours</option>
+                        </select>
+                    </p>
+                </section>
+                <section id="sound" class="tabcontent">
+                    <h2>🔊 Notification Sound</h2>
+                    <p>
+                        <label for="notificationSound">🔉 Select Sound:</label>
+                        <div class="custom-select">
+                            <select id="notificationSound" name="notificationSound">
+                                <option value="sound1">🔔 Sound 1</option>
+                                <option value="sound2">🎵 Sound 2</option>
+                                <option value="sound3">🎶 Sound 3</option>
+                                <option value="mute">🔇 Mute</option>
+                            </select>
+                            <button id="playSoundButton">Preview Sound</button>
+                            <audio id="sound1Audio">
+                                <source src="notification.mp3" type="audio/mpeg">
+                            </audio>
+                            <audio id="sound2Audio">
+                                <source src="notification2.wav" type="audio/wav">
+                            </audio>
+                            <audio id="sound3Audio">
+                                <source src="notification3.wav" type="audio/wav">
+                            </audio>
+                        </div>                        
+                    </p>
+                </section>
+                <section id="content" class="tabcontent">
+                    <h2>Notification Content ✉️</h2>
+                    <p>
+                        <label for="notificationTitle"
+                            >📛 Custom Title:</label
+                        >
+                        <input
+                            type="text"
+                            id="notificationTitle"
+                            name="notificationTitle"
+                        />
+                    </p>
+                    <p>
+                        <label for="notificationContent"
+                            >📝 Custom Message:</label
+                        >
+                        <textarea
+                            id="notificationContent"
+                            name="notificationContent"
+                            rows="1"
+                            cols="30"
+                        ></textarea>
+                    </p>
+                    <p>
+                        <button id="previewNotification" type="button" class="cta-button">
+                            🔔 Preview Notification
+                        </button>
+                    </p>
+                </section>
+                <section id="reset" class="tabcontent">
+                    <p>
+                        <button type="button" class="cta-button" id="resetSettings">
+                            🔄 Reset to Default
+                        </button>
+                    </p>
+                </section>
+            </form>
+        </div>       
+        <div class="container" id="attributions">
+            <h1>Attributions</h1>
+            <p>
+                Sound 1 by <a
+                href="https://pixabay.com/users/universfield-28281460/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=123107"
+            >
+                UNIVERSFIELD</a
+            >
+            from
+            <a
+                href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=123107"
+                >Pixabay</a
+            >
+            </p>
+            <p>
+                Sound 2 by <a
+                href="https://freesound.org/people/Thoribass/"
+            >
+            Thoribass</a
+            >
+            from
+            <a
+                href="https://freesound.org/people/Thoribass/sounds/254819/"
+                >freesound
+            </a>
+            </p>
+            <p>
+                Sound 3 by <a
+                href="https://freesound.org/people/InspectorJ/"
+            >
+            InspectorJ</a
+            >
+            from
+            <a
+                href="https://freesound.org/people/InspectorJ/sounds/413749/"
+                >freesound
+            </a>
+            </p>
+        </div>
+        <div class="container" id="about">
+            <h1>About</h1>
+            <p>
+                Are you looking for a sophisticated and user-friendly way to 
+                boost your productivity and stay organized throughout the day? 
+                Look no further than ChronoChime, an elegant Progressive Web App 
+                (PWA) designed to revolutionize how you manage your time.
+            </p>
+            <h2>Effortless Hourly Notifications</h2>
+            <p>
+                ChronoChime empowers you with hourly notifications, ensuring you 
+                never miss a beat in your busy schedule. These gentle reminders 
+                act as your personal time-management assistant, gently nudging 
+                you towards your goals and commitments.
+            </p>
+            <h2>Intuitive Design</h2>
+            <p>
+                Our PWA boasts an intuitive interface that's easy to navigate. 
+                Whether you're a seasoned pro or new to time management tools, 
+                ChronoChime offers a seamless experience for all users.
+            </p>
+            <h2>Tailored to Your Needs</h2>
+            <p>
+                We understand that time management is a personal journey. That's 
+                why ChronoChime allows you to customize your notifications, 
+                ensuring they align with your unique workflow and priorities.
+            </p>
+            <h2>Seamless Integration</h2>
+            <p>
+                Worried about compatibility? Don't be. ChronoChime seamlessly 
+                integrates into your daily routine, no matter the device or 
+                platform you use. It's your time management companion wherever 
+                you go.
+            </p>
+            <h2>Stay Productive, Stay Ahead</h2>
+            <p>
+                With ChronoChime by your side, you'll stay on top of your tasks, 
+                appointments, and goals. Say goodbye to missed deadlines and 
+                hello to enhanced productivity.
+            </p>
+            <h2>Try ChronoChime Today</h2>
+            <p>
+                Ready to experience the future of time management? Try 
+                ChronoChime today and discover how effortless, elegant, and 
+                effective time management can be. Simply allow notifications, 
+                and let ChronoChime transform the way you manage your time. 
+                Your productivity journey starts here.
+            </p>
+        </div>
+        <div id="offlineToast" class="toast">
+            ChronoChime is now available offline.
+        </div>
+        <div id="toastNotification" class="toast">
+            ChronoChime is ready for offline use. All content is now cached and
+            available offline.
+        </div>
+    <!-- You can also require other files to run in this process -->    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // const container = document.querySelector('.container');
+            const backgroundWrapper = document.querySelector(
+                '.background-wrapper'
+            );
+
+            // Set a timeout to allow the DOM to render, then fade in the elements
+            setTimeout(function () {
+                // container.classList.add('active');
+                backgroundWrapper.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+    <script src="./script.js"></script>
+  </body>
+</html>

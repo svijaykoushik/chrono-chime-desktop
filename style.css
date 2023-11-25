@@ -1,0 +1,368 @@
+/* Add the font with font-display: swap */
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    src: url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,400;0,700;1,100;1,200;1,400;1,700&display=swap');
+    font-display: swap;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Apply Font style */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Apply flexbox to the body to center its children */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    /* Set minimum height to fill the viewport */
+    margin: 0;
+    position: relative;
+    /* Set the body as the positioning context */
+    background-color: #f589b2;
+}
+
+/* Create a wrapper for the background */
+.background-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Set the background image with the blur effect */
+    background-image: url('_eaefda17-e770-4fdd-9e81-78fe64f78502.jpeg');
+    /* Replace with your image URL */
+    background-size: cover;
+    filter: blur(5px);
+    /* z-index: -1; */
+    /* Set a negative z-index to place it behind the .container */
+}
+
+/* Style the container for the content */
+.container {
+    text-align: center;
+    position: relative;
+    /* Add the background overlay */
+    background-color: rgba(255, 255, 255, 0.8);
+    /* Adjust the alpha value to control the transparency */
+    padding: 20px;
+    /* Add padding to create space between the text and the overlay */
+    /* Set the .container as the positioning context for its children */
+    z-index: 1;
+    /* Ensure it appears above the background */
+    max-width: 100%;
+}
+
+/* Add styles for the text content */
+/* Add styles for the text content */
+h1,
+h2 {
+    color: black;
+    font-weight: 100;
+}
+
+p {
+    color: black;
+    font-weight: 200;
+}
+
+/* Add styles for the button */
+.cta-button {
+    background-color: hsl(337, 84%, 75%);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease-in-out,
+        filter 0.3s ease-in-out, transform 0.3s ease-in-out;
+    /* Apply a smooth background color transition */
+}
+
+/* Add hover effect for the button */
+.cta-button:hover {
+    background-color: hsl(337, 84%, 35%);
+}
+
+/* Add a greyscale effect when the button is disabled */
+.cta-button[disabled] {
+    filter: grayscale(100%);
+    cursor: not-allowed;
+}
+
+.cta-button:active {
+    transform: scale(0.95);
+    /* Slight scale down when the button is pressed */
+}
+
+/* Add transitions */
+.container,
+.background-wrapper {
+    opacity: 0;
+    /* Set initial opacity to 0 */
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 1, 1),
+        width 0.3s ease-in-out, height 0.3s ease-in-out;
+    /* Apply a smooth opacity transition,
+               Add transition properties for size change */
+}
+
+a,
+small a {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Add hover effect for buttons and links */
+button:hover,
+a:hover,
+small a:hover {
+    transform: translateY(-2px);
+    /* Move element up slightly on hover */
+}
+
+#countdownTimer {
+    animation: pulse 2s ease-in-out infinite;
+    /* Apply the animation */
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+        /* Slightly scale up during the animation */
+    }
+}
+
+/* Add styles for the toast notification */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    opacity: 0;
+    pointer-events: none;
+    /* Prevent clicks on the toast */
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+/* Show the toast notification */
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Style for the tabs */
+.tab {
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: space-around;
+}
+
+/* Style for the tab buttons */
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: border-bottom 0.3s ease-in-out, 0.3s ease-in-out;
+}
+
+/* Change color on hover */
+.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Style for the tab content */
+.tabcontent {
+    display: none;
+}
+
+/* Style for the active tab content */
+.tabcontent-active {
+    display: block;
+}
+
+/* Add a bottom border to the active tab */
+.tab button.active {
+    border-bottom: 2px solid #f589b2;
+}
+
+.custom-select {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-select select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: transparent;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.custom-select button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.custom-select button:hover {
+    background-color: #0056b3;
+}
+
+/* Style for the app drawer container */
+.drawer {
+    width: 250px;
+    background-color: rgba(255, 255, 255, 1);
+    position: fixed;
+    top: 0;
+    left: -250px;
+    /* Initially hidden off-screen */
+    height: 100%;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+    transition: left 0.3s ease-in-out;
+    z-index: 2;
+}
+
+/* Style for the drawer header */
+.drawer-header {
+    background-color: #f589b2;
+    color: white;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.drawer-header a {
+    color: white;
+    text-decoration: none;
+}
+
+.drawer-header a:hover {
+    color: white;
+}
+
+/* Style for the app logo */
+.app-logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+/* Style for the drawer menu (list of links) */
+.drawer-menu {
+    list-style: none;
+    padding: 0;
+}
+
+.drawer-menu li {
+    padding: 15px;
+    border-bottom: 1px solid #ccc;
+}
+
+/* Style for links in the drawer menu */
+.drawer-menu a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 100;
+    display: block;
+}
+
+/* Hover effect for links */
+.drawer-menu a:hover {
+    color: #f589b2;
+}
+
+/* Style for open drawer */
+.drawer-open {
+    left: 0;
+}
+
+/* Style for the button that toggles the app drawer */
+.toggle-button {
+    position: fixed;
+    top: 20px;
+    /* Adjust the top position as needed */
+    left: 20px;
+    /* Adjust the left position as needed */
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    cursor: pointer;
+    text-align: center;
+    z-index: 2;
+    /* Ensure it's above other content */
+    transition: left 0.3s ease-in-out;
+}
+
+/* Style for the button icon (you can use an icon font or an image) */
+.toggle-button::before {
+    content: '☰';
+    /* Unicode hamburger icon (you can change this) */
+    font-size: 24px;
+    color: #fff;
+    /* Adjust the color as needed */
+    line-height: 40px;
+    text-align: center;
+}
+
+/* Show a shadow on hover to indicate interactivity */
+.toggle-button:hover {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+#askPermissionButton {
+    transition: opacity 0.2s ease-in-out;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.social-icons a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.social-icons a:visited {
+    text-decoration: none;
+    color: #fff;
+}
+
+@media (min-width: 768px) {
+    .container {
+        width: 720px
+    }
+}
