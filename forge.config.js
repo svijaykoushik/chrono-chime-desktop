@@ -3,6 +3,12 @@ const { join } = require("path");
 module.exports = {
   packagerConfig: {
     asar: true,
+    icon: 'chrono-chime-icon.ico',
+    name: 'chrono-chime-desktop',
+    win32metadata:{
+      CompanyName: 'Vijaykoushik, S.',
+      ProductName: 'ChronoChime'
+    }
   },
   rebuildConfig: {},
   makers: [
@@ -10,7 +16,7 @@ module.exports = {
       name: "@electron-forge/maker-squirrel",
       config: {
         authors: "Vijaykoushik, S.",
-        name: "ChronoChime",
+        name: "chrono-chime-desktop",
         description:
           "Hourly Notification Desktop Application  with background sounds and notifications",
         iconUrl:
@@ -33,6 +39,7 @@ module.exports = {
           genericName: "Hourly Notification",
           description:
             "Hourly Notification Desktop Application  with background sounds and notifications",
+          name: "chrono-chime-desktop"
         },
       },
     },
