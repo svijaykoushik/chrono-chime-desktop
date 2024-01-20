@@ -1,3 +1,10 @@
+/* Declare variable values */
+:root{
+    --app-font-family: 'Poppins';
+    --accent-color-rgb-string: 245, 137, 178;
+    --accent-color-hex: #f589b2;
+}
+
 /* Add the font with font-display: swap */
 @font-face {
     font-family: 'Poppins';
@@ -20,7 +27,7 @@ h4,
 h5,
 h6,
 p {
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--app-font-family), sans-serif;
 }
 
 /* Apply flexbox to the body to center its children */
@@ -33,7 +40,7 @@ body {
     margin: 0;
     position: relative;
     /* Set the body as the positioning context */
-    background-color: #f589b2;
+    background-color: var(--accent-color-hex);
 }
 
 /* Create a wrapper for the background */
@@ -209,7 +216,7 @@ small a:hover {
 
 /* Add a bottom border to the active tab */
 .tab button.active {
-    border-bottom: 2px solid #f589b2;
+    border-bottom: 2px solid var(--accent-color-hex);
 }
 
 .custom-select {
@@ -256,7 +263,7 @@ small a:hover {
 
 /* Style for the drawer header */
 .drawer-header {
-    background-color: #f589b2;
+    background-color: var(--accent-color-hex);
     color: white;
     padding: 20px;
     display: flex;
@@ -300,7 +307,7 @@ small a:hover {
 
 /* Hover effect for links */
 .drawer-menu a:hover {
-    color: #f589b2;
+    color: var(--accent-color-hex);
 }
 
 /* Style for open drawer */
@@ -359,6 +366,129 @@ small a:hover {
 .social-icons a:visited {
     text-decoration: none;
     color: #fff;
+}
+
+.toggle-switch {
+    z-index: 0;
+    position: relative;
+    display: inline-block;
+    color: rgba(0, 0, 0, 0.87);
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.toggle-switch>input {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    z-index: -1;
+    position: absolute;
+    right: 6px;
+    top: -8px;
+    display: block;
+    margin: 0;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.38);
+    outline: none;
+    opacity: 0;
+    transform: scale(1);
+    pointer-events: none;
+    transition: opacity 0.3s 0.1s, transform 0.2s 0.1s;
+}
+
+.toggle-switch>span {
+    display: inline-block;
+    width: 100%;
+    cursor: pointer;
+}
+
+.toggle-switch>span::before {
+    content: "";
+    float: right;
+    display: inline-block;
+    margin: 5px 0 5px 10px;
+    border-radius: 7px;
+    width: 36px;
+    height: 14px;
+    background-color: rgba(0, 0, 0, 0.38);
+    vertical-align: top;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+.toggle-switch>span::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    right: 16px;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.toggle-switch>input:checked {
+    right: -10px;
+    background-color: rgb(var(--accent-color-rgb-string, 33, 150, 243));
+}
+
+.toggle-switch>input:checked+span::before {
+    background-color: rgba(var(--accent-color-rgb-string, 33, 150, 243), 0.6);
+}
+
+.toggle-switch>input:checked+span::after {
+    background-color: rgb(var(--accent-color-rgb-string, 33, 150, 243));
+    transform: translateX(16px);
+}
+
+/* Hover, Focus */
+.toggle-switch:hover>input {
+    opacity: 0.04;
+}
+
+.toggle-switch>input:focus {
+    opacity: 0.12;
+}
+
+.toggle-switch:hover>input:focus {
+    opacity: 0.16;
+}
+
+/* Active */
+.toggle-switch>input:active {
+    opacity: 1;
+    transform: scale(0);
+    transition: transform 0s, opacity 0s;
+}
+
+.toggle-switch>input:active+span::before {
+    background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
+}
+
+.toggle-switch>input:checked:active+span::before {
+    background-color: rgba(0, 0, 0, 0.38);
+}
+
+/* Disabled */
+.toggle-switch>input:disabled {
+    opacity: 0;
+}
+
+.toggle-switch>input:disabled+span {
+    color: rgb(0, 0, 0);
+    opacity: 0.38;
+    cursor: default;
+}
+
+.toggle-switch>input:disabled+span::before {
+    background-color: rgba(0, 0, 0, 0.38);
+}
+
+.toggle-switch>input:checked:disabled+span::before {
+    background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
 }
 
 @media (min-width: 768px) {

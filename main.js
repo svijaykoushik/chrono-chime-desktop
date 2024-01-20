@@ -27,6 +27,8 @@ const createWindow = () => {
     title: "ChronoChime - Hourly Notification",
   });
 
+  mainWindow.webContents.openDevTools()
+
   // and load the index.html of the app.
   mainWindow.loadFile("index.html");
 
@@ -80,13 +82,14 @@ app.whenReady().then(() => {
   trayIcon = new Tray(icon);
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: "Open",
+      label: "Show window",
       click: () => {
         mainWindow?.show();
       },
+      icon: "show-window.png"
     },
     {
-      label: "Quit",
+      label: "Quit ChronoChime",
       role: "close",
       click: () => {
         isQuitting = true;
@@ -94,6 +97,7 @@ app.whenReady().then(() => {
         trayIcon.destroy();
         app.quit();
       },
+      icon: "close-app.png"
     },
   ]);
   trayIcon.setContextMenu(contextMenu);

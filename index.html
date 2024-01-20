@@ -41,6 +41,9 @@
         <div class="container" id="main">
             <h1>ChronoChime - Hourly Notification PWA</h1>
             <p id="countdownTimer"></p>
+            <button id="askPermissionButton" class="cta-button">
+                🥺 Allow Notifications
+            </button>
         </div>
         <div class="container" id="settings">
             <h1>Settings</h1>
@@ -77,6 +80,12 @@
             <form id="settingsForm">
                 <section id="general" class="tabcontent">
                     <h2>General ⚙️</h2>
+                    <p>
+                        <label for="allowNotificationCheckbox" class="toggle-switch">
+                            <input id="allowNotificationCheckbox" type="checkbox" name="allowNotificationCheckbox"/>
+                            <span>🔔 Allow notification</span>
+                        </label>
+                    </p>
                     <p>
                         <label for="interval">⏰ Interval:</label>
                         <select id="interval" name="interval">
@@ -185,6 +194,16 @@
                 href="https://freesound.org/people/InspectorJ/sounds/413749/"
                 >freesound
             </a>
+            </p>
+            <p>
+                <a href="https://www.freepik.com/icon/remove_1828843">
+                    Icon by Pixel perfect
+                </a>
+            </p>
+            <p>
+                <a href="https://www.freepik.com/icon/focus_1829263">
+                    Icon by Pixel perfect
+                </a>
             </p>
         </div>
         <div class="container" id="about">

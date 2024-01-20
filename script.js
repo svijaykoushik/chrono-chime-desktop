@@ -12,12 +12,18 @@ const playButton = document.getElementById("playSoundButton");
 const sound1Audio = document.getElementById("sound1Audio");
 const sound2Audio = document.getElementById("sound2Audio");
 const sound3Audio = document.getElementById("sound3Audio");
+const askPermissionButton = document.getElementById("askPermissionButton");
+const countdownTimer = document.getElementById("countdownTimer");
+const allowNotificationCheckbox = document.getElementById(
+  "allowNotificationCheckbox"
+);
 
 // Get references to the app drawer and toggle button
 const appDrawer = document.getElementById("appDrawer");
 const toggleButton = document.getElementById("toggleDrawerButton");
 
 const defaultSettings = {
+  isOff: false,
   interval: "1", // Default interval, e.g., '1' for 1 hour
   notificationSound: "sound1", // Default sound, e.g., 'sound1',
   notificationTitle: "Hourly notification",
@@ -87,6 +93,25 @@ function showNotification() {
 
 // Schedule hourly notifications
 function scheduleNotifications() {
+  if (settings.isOff === true) {
+    askPermissionButton.style.opacity = 1;
+    askPermissionButton.style.visibility = "visible";
+
+    countdownTimer.style.opacity = 0;
+    countdownTimer.style.visibility = "hidden";
+
+    // Clear the previous intervals if they exist
+    clearInterval(notificationInterval);
+    clearInterval(countdownInterval);
+    return;
+  }
+
+  askPermissionButton.style.opacity = 0;
+  askPermissionButton.style.visibility = "hidden";
+
+  countdownTimer.style.opacity = 1;
+  countdownTimer.style.visibility = "visible";
+
   let intervalHours = 1;
   switch (settings.interval) {
     case "1":
@@ -140,6 +165,7 @@ function scheduleNotifications() {
 
 // Function to update the countdown timer
 function updateCountdownTimer(intervalHours) {
+
   countdownTimeRemaining -= 1000; // Subtract 1 second (1000 milliseconds) from the remaining time
 
   if (countdownTimeRemaining <= 0) {
@@ -162,7 +188,7 @@ function updateCountdownTimer(intervalHours) {
     if (hours > 0) {
       text = `Next notification in ${hours}h ${minutes}m ${seconds}s`;
     }
-    document.getElementById("countdownTimer").textContent = text;
+    countdownTimer.textContent = text;
   }
 }
 
@@ -308,6 +334,17 @@ function getSettingsFromLocalStorage() {
   // Parse the JSON string to get the settings object
   const settings = JSON.parse(settingsJSON);
 
+  // Add new settings options if missing in
+  // stored settings
+  const settingsOptions = Object.keys(settings);
+  const defaultSettingsOptions = Object.keys(defaultSettings);
+
+  defaultSettingsOptions.forEach((option) => {
+    if (settingsOptions.indexOf(option) === -1) {
+      settings[option] = defaultSettings[option];
+    }
+  });
+
   return settings;
 }
 
@@ -320,6 +357,11 @@ function initializeSettingsForm(settingsArg) {
   // Set the selected option based on the loaded setting
   if (settingsArg.interval) {
     intervalSelect.value = settingsArg.interval;
+  }
+
+  // Set the state of the allow notification setting
+  if (settingsArg.interval) {
+    allowNotificationCheckbox.checked = settingsArg.interval;
   }
 
   // Set the  title text
@@ -446,6 +488,18 @@ function toggleButtonPosition() {
     toggleButton.style.left = "15px"; // Adjust as needed
   }
 }
+
+// Allow notification permission
+askPermissionButton.addEventListener("click", () => {
+  settings.isOff = false;
+  scheduleNotifications();
+});
+
+allowNotificationCheckbox.addEventListener("change", (e) => {
+  e.preventDefault();
+  settings.isOff = !e.currentTarget.checked;
+  saveSettingsToLocalStorage(settings);
+});
 
 function onDrawerLinkClick(e) {
   e.preventDefault();

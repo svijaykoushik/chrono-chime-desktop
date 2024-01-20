@@ -22,6 +22,7 @@ module.exports = {
         iconUrl:
           "https://raw.githubusercontent.com/svijaykoushik/chrono-chime-desktop/main/chrono-chime-icon.ico",
         setupIcon: join(__dirname, "chrono-chime_package.ico"),
+        setupExe: "chrono-chime-desktop-setup"
       },
     },
     {
