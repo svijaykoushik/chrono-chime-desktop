@@ -26,9 +26,12 @@
       height: 600,
       icon: './chrono-chime-icon-512.png',
       title: 'ChronoChime - Hourly Notification',
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js')
+      }
     });
 
-    // mainWindow.webContents.openDevTools()
+    // mainWindow.webContents.openDevTools();
 
     // and load the index.html of the app.
     mainWindow.loadFile('index.html')

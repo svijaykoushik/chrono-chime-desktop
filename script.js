@@ -534,5 +534,15 @@ navigation.addEventListener('navigate', (navigationEvent) => {
   loadContent(path);
 });
 
+window.versions.onAppVersionRecived((e, data) => {
+  document.getElementById('app-version').innerText = 'v' + data;
+  document.getElementById('node-version').innerText =
+      'Node.js v' + window.versions.node();
+  document.getElementById('chrome-version').innerText =
+      'Chrome v' + window.versions.chrome();
+  document.getElementById('electron-version').innerText =
+      'Electron v' + window.versions.electron();
+});
+
 // Initialize the online status when the page loads
 handleOnlineStatus();

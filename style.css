@@ -491,6 +491,12 @@ small a:hover {
     background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
 }
 
+div.about-logo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 @media (min-width: 768px) {
     .container {
         width: 720px
