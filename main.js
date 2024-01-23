@@ -86,7 +86,7 @@
           mainWindow.show();
         },
         icon: 'show-window.png',
-        visible: true
+        visible: false
       },
       {
         id: 'minimize-main-window',
@@ -96,7 +96,7 @@
           isHidden = true;
         },
         icon: 'minimize-app.png',
-        visible: false
+        visible: true
       },
       {
         id: 'app-settings',
