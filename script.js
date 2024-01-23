@@ -495,6 +495,7 @@ function toggleButtonPosition() {
 // Allow notification permission
 askPermissionButton.addEventListener('click', () => {
   settings.isOff = false;
+  saveSettingsToLocalStorage(settings);
   scheduleNotifications();
 });
 
@@ -502,6 +503,7 @@ allowNotificationCheckbox.addEventListener('change', (e) => {
   e.preventDefault();
   settings.isOff = !e.currentTarget.checked;
   saveSettingsToLocalStorage(settings);
+  scheduleNotifications();
 });
 
 // Listen for tab events
