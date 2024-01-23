@@ -544,5 +544,9 @@ window.versions.onAppVersionRecived((e, data) => {
       'Electron v' + window.versions.electron();
 });
 
+window.ipcNav.onLocationReceived((e,data)=>{
+  loadContent(data);
+});
+
 // Initialize the online status when the page loads
 handleOnlineStatus();

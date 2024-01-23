@@ -8,3 +8,9 @@ contextBridge.exposeInMainWorld('versions', {
         ipcRenderer.on('app-version', listener);
     }
 });
+
+contextBridge.exposeInMainWorld('ipcNav', {
+    onLocationReceived: (listener) => {
+        ipcRenderer.on('invoke-navigation', listener);
+    }
+});

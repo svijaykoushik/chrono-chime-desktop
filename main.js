@@ -99,6 +99,15 @@
         visible: false
       },
       {
+        id: 'app-settings',
+        label: 'Settings',
+        click: () => {
+          mainWindow.show();
+          mainWindow.webContents.send('invoke-navigation','/settings');
+        },
+        icon: 'app-settings.png'
+      },
+      {
         id: 'quit-application',
         label: 'Quit ChronoChime',
         role: 'close',
