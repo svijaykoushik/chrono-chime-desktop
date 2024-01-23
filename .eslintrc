@@ -1,0 +1,30 @@
+{
+    "env": {
+        "browser": true
+    },
+    "rules": {
+        "semi": ["error", "always"],
+        "no-var": "error",
+        "no-unused-vars": [
+            "error",
+            {
+                "vars": "all",
+                "args": "after-used",
+                "ignoreRestSiblings": true
+            }
+        ],
+        "guard-for-in": "error",
+        "prefer-const": [
+            "warn",
+            {
+                "destructuring": "all"
+            }
+        ],
+        "quotes": ["error", "single", { "avoidEscape": true }],
+        "arrow-parens": ["error", "always"]
+    },
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module"
+    }
+}
