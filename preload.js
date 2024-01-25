@@ -22,3 +22,11 @@ contextBridge.exposeInMainWorld('toggleNotification', {
     sendResponse: (notificationStatus) =>
         ipcRenderer.send('notification-status', notificationStatus),
 });
+
+contextBridge.exposeInMainWorld('autoLauncher', {
+    onStatusChanged: (listener) => {
+        ipcRenderer.on('auto-launch-status', listener);
+    },
+    sendResponse: (status) =>
+        ipcRenderer.send('auto-launch-status', status),
+});

@@ -1,5 +1,7 @@
 // main.js
 
+const AutoLaunch = require('auto-launch');
+
 (() => {// Handle default squirrel events (Windows installation)
   if (require('electron-squirrel-startup')) return;
 
@@ -15,6 +17,13 @@
   } = require('electron');
   const path = require('node:path');
 
+  // Setup auto launch
+  const autoLauncher = new AutoLaunch({
+    name: 'chorno-chime-desktop'
+  });
+  autoLauncher.isEnabled((isEnabled) => {
+    mainWindow.webContents.send('auto-launch-status', isEnabled);
+  });
 
   /** @type {BrowserWindow} */
   let mainWindow = null;
@@ -187,6 +196,24 @@
         contextMenu.getMenuItemById('disable-notification').visible = false;
         contextMenu.getMenuItemById('enable-notification').visible = true;
         trayIcon.setContextMenu(contextMenu);
+      }
+    });
+
+    ipcMain.on('auto-launch-status', (_event, data) => {
+      if (data === true) {
+        (async () => {
+          if ((await autoLauncher.isEnabled()) === false) {
+            await autoLauncher.enable();
+            mainWindow.webContents.send('auto-launch-status', true);
+          }
+        })();
+      } else {
+        (async () => {
+          if ((await autoLauncher.isEnabled()) === true) {
+            await autoLauncher.disable();
+            mainWindow.webContents.send('auto-launch-status', false);
+          }
+        })();
       }
     });
   });

@@ -17,6 +17,9 @@ const countdownTimer = document.getElementById('countdownTimer');
 const allowNotificationCheckbox = document.getElementById(
   'allowNotificationCheckbox'
 );
+const autoLaunchCheckbox = document.getElementById(
+  'autoLaunchCheckbox'
+);
 const generalTabLink = document.getElementById('generalTabLink');
 const soundTabLink = document.getElementById('soundTabLink');
 const contentTabLink = document.getElementById('contentTabLink');
@@ -27,6 +30,7 @@ const appDrawer = document.getElementById('appDrawer');
 const toggleButton = document.getElementById('toggleDrawerButton');
 
 const defaultSettings = {
+  autoLaunch: false,
   isOff: false,
   interval: '1', // Default interval, e.g., '1' for 1 hour
   notificationSound: 'sound1', // Default sound, e.g., 'sound1',
@@ -103,6 +107,7 @@ function scheduleNotifications() {
   countdownTimer.style.visibility = 'visible';
 
   allowNotificationCheckbox.checked = true;
+  autoLaunchCheckbox.checked = settings.autoLaunch;
 
   let intervalHours = 1;
   switch (settings.interval) {
@@ -332,6 +337,9 @@ function saveSettingsToLocalStorage(settings) {
   // Send the notification status to main process
   window.toggleNotification.sendResponse(!settings.isOff);
 
+  // Send the auto launch status to main process
+  window.autoLauncher.sendResponse(settings.autoLaunch);
+
   // Show a toast message
   showAppToast('✅ Settings saved.');
 }
@@ -362,6 +370,11 @@ function initializeSettingsForm(settingsArg) {
   // Set the notification status based on the loaded setting
   if (settingsArg.isOff !== undefined && settingsArg.isOff !== null) {
     allowNotificationCheckbox.checked = !settingsArg.isOff;
+  }
+
+  // Set the autolaunch status based on the loaded setting
+  if (settingsArg.autoLaunch !== undefined && settingsArg.autoLaunch !== null) {
+    autoLaunchCheckbox.checked = settingsArg.autoLaunch;
   }
 
   // Set the selected option based on the loaded setting
@@ -519,6 +532,13 @@ allowNotificationCheckbox.addEventListener('change', (e) => {
   scheduleNotifications();
 });
 
+autoLaunchCheckbox.addEventListener('change', (e) => {
+  e.preventDefault();
+  settings.autoLaunch = e.currentTarget.checked;
+  saveSettingsToLocalStorage(settings);
+  scheduleNotifications();
+});
+
 // Listen for tab events
 generalTabLink.addEventListener('click', (e) => {
   e.preventDefault();
@@ -565,6 +585,13 @@ window.ipcNav.onLocationReceived((e, data) => {
 
 window.toggleNotification.onStatusChanged((e, data) => {
   settings.isOff = !data;
+  saveSettingsToLocalStorage(settings);
+  scheduleNotifications();
+});
+
+// Subscribe to autolaunch settings changes
+window.autoLauncher.onStatusChanged((e, data) => {
+  settings.autoLaunch = data;
   saveSettingsToLocalStorage(settings);
   scheduleNotifications();
 });
