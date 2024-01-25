@@ -88,6 +88,8 @@ function scheduleNotifications() {
     countdownTimer.style.opacity = 0;
     countdownTimer.style.visibility = 'hidden';
 
+    allowNotificationCheckbox.checked = false;
+
     // Clear the previous intervals if they exist
     clearInterval(notificationInterval);
     clearInterval(countdownInterval);
@@ -99,6 +101,8 @@ function scheduleNotifications() {
 
   countdownTimer.style.opacity = 1;
   countdownTimer.style.visibility = 'visible';
+
+  allowNotificationCheckbox.checked = true;
 
   let intervalHours = 1;
   switch (settings.interval) {
@@ -325,6 +329,9 @@ function saveSettingsToLocalStorage(settings) {
   // Save the JSON string to localStorage under the key 'settings'
   localStorage.setItem('settings', settingsJSON);
 
+  // Send the notification status to main process
+  window.toggleNotification.sendResponse(!settings.isOff);
+
   // Show a toast message
   showAppToast('✅ Settings saved.');
 }
@@ -351,6 +358,12 @@ function getSettingsFromLocalStorage() {
 }
 
 function initializeSettingsForm(settingsArg) {
+
+  // Set the notification status based on the loaded setting
+  if (settingsArg.isOff !== undefined && settingsArg.isOff !== null) {
+    allowNotificationCheckbox.checked = !settingsArg.isOff;
+  }
+
   // Set the selected option based on the loaded setting
   if (settingsArg.notificationSound) {
     soundSelect.value = settingsArg.notificationSound;
@@ -539,16 +552,25 @@ navigation.addEventListener('navigate', (navigationEvent) => {
 window.versions.onAppVersionRecived((e, data) => {
   document.getElementById('app-version').innerText = 'v' + data;
   document.getElementById('node-version').innerText =
-      'Node.js v' + window.versions.node();
+    'Node.js v' + window.versions.node();
   document.getElementById('chrome-version').innerText =
-      'Chrome v' + window.versions.chrome();
+    'Chrome v' + window.versions.chrome();
   document.getElementById('electron-version').innerText =
-      'Electron v' + window.versions.electron();
+    'Electron v' + window.versions.electron();
 });
 
-window.ipcNav.onLocationReceived((e,data)=>{
+window.ipcNav.onLocationReceived((e, data) => {
   loadContent(data);
+});
+
+window.toggleNotification.onStatusChanged((e, data) => {
+  settings.isOff = !data;
+  saveSettingsToLocalStorage(settings);
+  scheduleNotifications();
 });
 
 // Initialize the online status when the page loads
 handleOnlineStatus();
+
+// Send the notification status to main process
+window.toggleNotification.sendResponse(!settings.isOff);

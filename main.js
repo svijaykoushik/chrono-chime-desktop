@@ -11,6 +11,7 @@
     Tray,
     Notification,
     nativeImage,
+    ipcMain,
   } = require('electron');
   const path = require('node:path');
 
@@ -31,8 +32,6 @@
       }
     });
 
-    // mainWindow.webContents.openDevTools();
-
     // and load the index.html of the app.
     mainWindow.loadFile('index.html')
       .then(() => {
@@ -50,7 +49,7 @@
     });
 
     // Open the DevTools.
-    // mainWindow.webContents.openDevTools()
+    // mainWindow.webContents.openDevTools();
   };
 
   /** @type {Tray} */
@@ -99,11 +98,29 @@
         visible: true
       },
       {
+        id: 'disable-notification',
+        label: 'Disable Notification',
+        click: () => {
+          mainWindow.webContents.send('toggle-notification', false);
+        },
+        icon: 'notification-disabled.png',
+        visible: true
+      },
+      {
+        id: 'enable-notification',
+        label: 'Enable notification',
+        click: () => {
+          mainWindow.webContents.send('toggle-notification', true);
+        },
+        icon: 'notification-enabled.png',
+        visible: false
+      },
+      {
         id: 'app-settings',
         label: 'Settings',
         click: () => {
           mainWindow.show();
-          mainWindow.webContents.send('invoke-navigation','/settings');
+          mainWindow.webContents.send('invoke-navigation', '/settings');
         },
         icon: 'app-settings.png'
       },
@@ -143,6 +160,18 @@
         icon: './chrono-chime-icon-512.png',
       });
       minimizedToTrayNotification.show();
+    });
+
+    ipcMain.on('notification-status', (_event, data) => {
+      if (data === true) {
+        contextMenu.getMenuItemById('disable-notification').visible = true;
+        contextMenu.getMenuItemById('enable-notification').visible = false;
+        trayIcon.setContextMenu(contextMenu);
+      } else {
+        contextMenu.getMenuItemById('disable-notification').visible = false;
+        contextMenu.getMenuItemById('enable-notification').visible = true;
+        trayIcon.setContextMenu(contextMenu);
+      }
     });
   });
 
