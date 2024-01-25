@@ -44,10 +44,20 @@ module.exports = {
                 },
             },
         },
-        {
-            name: '@electron-forge/maker-rpm',
-            config: {},
-        },
+        // {
+        //     name: '@electron-forge/maker-rpm',
+        //     config: {
+        //         options: {
+        //             description:
+        //                 'Hourly Notification Desktop Application  with background sounds and notifications',
+        //             genericName: 'Hourly Notification',
+        //             homepage: 'https://chrono-chime.web.app',
+        //             icon: join(__dirname, 'chrono-chime-icon-512.png'),
+        //             name: 'chrono-chime-desktop',
+        //             productName: 'ChoronoChime',
+        //         },
+        //     },
+        // },
     ],
     plugins: [
         {
