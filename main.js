@@ -203,15 +203,25 @@ const AutoLaunch = require('auto-launch');
       if (data === true) {
         (async () => {
           if ((await autoLauncher.isEnabled()) === false) {
-            await autoLauncher.enable();
-            mainWindow.webContents.send('auto-launch-status', true);
+            await autoLauncher
+              .enable()
+              .catch(() =>
+              // failed to enable auto launcher
+              // send message to reset the ui
+                mainWindow.webContents.send('auto-launch-status', false)
+              );
           }
         })();
       } else {
         (async () => {
           if ((await autoLauncher.isEnabled()) === true) {
-            await autoLauncher.disable();
-            mainWindow.webContents.send('auto-launch-status', false);
+            await autoLauncher
+              .disable()
+              .catch(() =>
+                // failed to disable auto launcher
+                // send message to reset the ui
+                mainWindow.webContents.send('auto-launch-status', true)
+              );
           }
         })();
       }
