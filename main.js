@@ -55,6 +55,22 @@
   /** @type {Tray} */
   let trayIcon = null;
 
+  // Make the app a single instance app
+  const singleInstanceLock = app.requestSingleInstanceLock();
+
+  if (!singleInstanceLock) {
+    return app.quit();
+  }
+
+  app.on('second-instance', () => {
+    if (mainWindow && mainWindow.isMinimized()) {
+      mainWindow.restore();
+    } else if (mainWindow && !mainWindow.isVisible()) {
+      mainWindow.show();
+    }
+    mainWindow.focus();
+  });
+
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
