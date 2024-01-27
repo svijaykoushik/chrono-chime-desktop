@@ -1,7 +1,7 @@
 {
   "name": "chrono-chime-desktop",
   "productName": "ChronoChime",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.0.0",
   "description": "ChronoChime - Hourly Notification Desktop Application  with background sounds and notifications.",
   "main": "main.js",
   "scripts": {
