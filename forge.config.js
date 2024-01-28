@@ -74,7 +74,7 @@ module.exports = {
                 owner: 'svijaykoushik',
                 name: 'chrono-chime-desktop'
               },
-              prerelease: true
+              draft: true
             }
           }
     ]
