@@ -15,7 +15,7 @@ const AutoLaunch = require('auto-launch');
     nativeImage,
     ipcMain,
   } = require('electron');
-  const path = require('node:path');
+  const {join} = require('path');
 
   // Setup auto launch
   const autoLauncher = new AutoLaunch({
@@ -34,10 +34,10 @@ const AutoLaunch = require('auto-launch');
     mainWindow = new BrowserWindow({
       width: 800,
       height: 600,
-      icon: './chrono-chime-icon-512.png',
+      icon: join(__dirname,'chrono-chime-icon-512.png'),
       title: 'ChronoChime - Hourly Notification',
       webPreferences: {
-        preload: path.join(__dirname, 'preload.js')
+        preload: join(__dirname, 'preload.js')
       }
     });
 
@@ -97,7 +97,7 @@ const AutoLaunch = require('auto-launch');
 
     // The tray icon
     const icon = nativeImage.createFromPath(
-      path.join(__dirname, 'chrono-chime-icon-32.png')
+      join(__dirname, 'chrono-chime-icon-32.png')
     );
 
     // Create a tray icon with context menu
@@ -109,7 +109,7 @@ const AutoLaunch = require('auto-launch');
         click: () => {
           mainWindow.show();
         },
-        icon: 'show-window.png',
+        icon: join(__dirname,'show-window.png'),
         visible: false
       },
       {
@@ -119,7 +119,7 @@ const AutoLaunch = require('auto-launch');
           mainWindow.hide();
           isHidden = true;
         },
-        icon: 'minimize-app.png',
+        icon: join(__dirname,'minimize-app.png'),
         visible: true
       },
       {
@@ -128,7 +128,7 @@ const AutoLaunch = require('auto-launch');
         click: () => {
           mainWindow.webContents.send('toggle-notification', false);
         },
-        icon: 'notification-disabled.png',
+        icon: join(__dirname,'notification-disabled.png'),
         visible: true
       },
       {
@@ -137,7 +137,7 @@ const AutoLaunch = require('auto-launch');
         click: () => {
           mainWindow.webContents.send('toggle-notification', true);
         },
-        icon: 'notification-enabled.png',
+        icon: join(__dirname,'notification-enabled.png'),
         visible: false
       },
       {
@@ -147,7 +147,7 @@ const AutoLaunch = require('auto-launch');
           mainWindow.show();
           mainWindow.webContents.send('invoke-navigation', '/settings');
         },
-        icon: 'app-settings.png'
+        icon: join(__dirname,'app-settings.png')
       },
       {
         id: 'quit-application',
@@ -159,7 +159,7 @@ const AutoLaunch = require('auto-launch');
           trayIcon.destroy();
           app.quit();
         },
-        icon: 'close-app.png'
+        icon: join(__dirname,'close-app.png')
       },
     ]);
     trayIcon.setContextMenu(contextMenu);
@@ -182,7 +182,7 @@ const AutoLaunch = require('auto-launch');
         body:
           'ChornoChime is now running discreetly in the background.' +
           ' Rest assured, it will continue to notify you promptly',
-        icon: './chrono-chime-icon-512.png',
+        icon: join(__dirname,'.chrono-chime-icon-512.png'),
       });
       minimizedToTrayNotification.show();
     });
