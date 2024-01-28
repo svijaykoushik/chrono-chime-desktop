@@ -22,12 +22,13 @@ module.exports = {
                 iconUrl:
                     'https://raw.githubusercontent.com/svijaykoushik/chrono-chime-desktop/main/chrono-chime-icon.ico',
                 setupIcon: join(__dirname, 'chrono-chime_package.ico'),
-                setupExe: 'chrono-chime-desktop-setup',
+                setupExe: 'chrono_chime_desktop_setup.exe',
+                title: 'Chrono Chime'
             },
         },
         {
             name: '@electron-forge/maker-zip',
-            platforms: ['darwin'],
+            platforms: ['darwin','win32'],
         },
         {
             name: '@electron-forge/maker-deb',
@@ -35,7 +36,7 @@ module.exports = {
                 options: {
                     icon: join(__dirname, 'chrono-chime-icon-512.png'),
                     maintainer: 'Vijaykoushik, S.',
-                    productName: 'ChoronoChime',
+                    productName: 'Chrono Chime',
                     homepage: 'https://chrono-chime.web.app',
                     genericName: 'Hourly Notification',
                     description:
@@ -44,20 +45,20 @@ module.exports = {
                 },
             },
         },
-        // {
-        //     name: '@electron-forge/maker-rpm',
-        //     config: {
-        //         options: {
-        //             description:
-        //                 'Hourly Notification Desktop Application  with background sounds and notifications',
-        //             genericName: 'Hourly Notification',
-        //             homepage: 'https://chrono-chime.web.app',
-        //             icon: join(__dirname, 'chrono-chime-icon-512.png'),
-        //             name: 'chrono-chime-desktop',
-        //             productName: 'ChoronoChime',
-        //         },
-        //     },
-        // },
+        {
+            name: '@electron-forge/maker-rpm',
+            config: {
+                options: {
+                    description:
+                        'Hourly Notification Desktop Application  with background sounds and notifications',
+                    genericName: 'Hourly Notification',
+                    homepage: 'https://chrono-chime.web.app',
+                    icon: join(__dirname, 'chrono-chime-icon-512.png'),
+                    name: 'chrono-chime-desktop',
+                    productName: 'Chrono Chime',
+                },
+            },
+        },
     ],
     plugins: [
         {
