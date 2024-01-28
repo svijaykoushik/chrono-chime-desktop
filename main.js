@@ -1,9 +1,12 @@
 // main.js
 
-const AutoLaunch = require('auto-launch');
-
 (() => {// Handle default squirrel events (Windows installation)
   if (require('electron-squirrel-startup')) return;
+
+  // run the auto updater
+  const {updateElectronApp} = require('update-electron-app');
+  
+  updateElectronApp();
 
   // Modules to control application life and create native browser window
   const {
@@ -16,6 +19,7 @@ const AutoLaunch = require('auto-launch');
     ipcMain,
   } = require('electron');
   const {join} = require('path');
+  const AutoLaunch = require('auto-launch');
 
   // Setup auto launch
   const autoLauncher = new AutoLaunch({

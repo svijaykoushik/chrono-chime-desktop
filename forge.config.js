@@ -66,4 +66,16 @@ module.exports = {
             config: {},
         },
     ],
+    publishers:[
+        {
+            name: '@electron-forge/publisher-github',
+            config: {
+              repository: {
+                owner: 'svijaykoushik',
+                name: 'chrono-chime-desktop'
+              },
+              prerelease: true
+            }
+          }
+    ]
 };
