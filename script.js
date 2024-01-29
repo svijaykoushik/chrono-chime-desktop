@@ -74,6 +74,9 @@ function showNotification() {
   }
   if (sound !== '') {
     const notificationSound = new Audio(sound); // Replace with your notification sound file
+    
+    // Set volume to 75 %
+    notificationSound.volume = 0.7;
     notificationSound.play();
   }
 
