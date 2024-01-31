@@ -20,6 +20,7 @@
   } = require('electron');
   const {join} = require('path');
   const AutoLaunch = require('auto-launch');
+  const log  = require('electron-log/main');
 
   // Setup auto launch
   const autoLauncher = new AutoLaunch({
@@ -48,6 +49,7 @@
     // and load the index.html of the app.
     mainWindow.loadFile('index.html')
       .then(() => {
+        log.info('Loaded Main window');
         mainWindow.webContents.send('app-version', app.getVersion());
       });
 
@@ -55,10 +57,12 @@
     // Close the app to system tray
     mainWindow.on('close', (event) => {
       if (isQuitting == false) {
+        log.info('Minimizing the app to tray');
         event.preventDefault();
         mainWindow.hide();
         return false;
       }
+      log.info('Intiating quit procedure');
     });
 
     // Open the DevTools.
@@ -76,6 +80,7 @@
   }
 
   app.on('second-instance', () => {
+    log.info('Handling launch of second instance');
     if (mainWindow && mainWindow.isMinimized()) {
       mainWindow.restore();
     } else if (mainWindow && !mainWindow.isVisible()) {
@@ -88,6 +93,7 @@
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   app.whenReady().then(() => {
+    log.info('App launched');
     createWindow();
 
     app.on('activate', () => {
@@ -158,6 +164,7 @@
         label: 'Quit ChronoChime',
         role: 'close',
         click: () => {
+          log.info('Quitting app');
           isQuitting = true;
           mainWindow.destroy();
           trayIcon.destroy();
@@ -172,12 +179,14 @@
 
     // Toggle context menu item visibility based on main window visibility
     mainWindow.on('show', () => {
+      log.info('Handling show event of main window');
       contextMenu.getMenuItemById('open-main-window').visible = false;
       contextMenu.getMenuItemById('minimize-main-window').visible = true;
       trayIcon.setContextMenu(contextMenu);
     });
 
     mainWindow.on('hide', () => {
+      log.info('Handling hide event of main window');
       contextMenu.getMenuItemById('open-main-window').visible = true;
       contextMenu.getMenuItemById('minimize-main-window').visible = false;
       trayIcon.setContextMenu(contextMenu);

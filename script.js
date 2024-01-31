@@ -74,7 +74,7 @@ function showNotification() {
   }
   if (sound !== '') {
     const notificationSound = new Audio(sound); // Replace with your notification sound file
-    
+
     // Set volume to 75 %
     notificationSound.volume = 0.7;
     notificationSound.play();
@@ -145,18 +145,36 @@ function scheduleNotifications() {
     1000
   ); // Update every second
 
+  __electronLog.info(
+    'Setting time until the next hour on initialization %s seconds',
+    timeUntilNextHour / 1000
+  );
   setTimeout(() => {
     console.log(
       'Reached Time until next hour %s seconds',
       timeUntilNextHour / 1000
     );
-
+    __electronLog.info(
+      'Reached Time until next hour %s seconds',
+      timeUntilNextHour / 1000
+    );
+    __electronLog.info(
+      'Showing notification after reaching %s seconds',
+      timeUntilNextHour / 1000
+    );
     showNotification();
+    __electronLog.info('Resetting countdown timer after reaching Time until next hour');
     resetCountdownTime(intervalHours * 60 * 60 * 1000);
     updateCountdownTimer(intervalHours);
-    notificationInterval = setInterval(() => {
-      console.log('Starting notification interval ');
+    notificationInterval = setInterval(() => {      
+    __electronLog.info(
+      'Showing notification after reaching %s seconds',
+      intervalHours * 60 * 60
+    );
       showNotification();
+      console.log('Starting notification interval ');
+      __electronLog.info('Starting notification interval ');
+      __electronLog.info('Resetting countdown timer after reaching the configured interval');
       resetCountdownTime(intervalHours * 60 * 60 * 1000); // Reset the countdown to 1 hour
       updateCountdownTimer();
     }, intervalHours * 60 * 60 * 1000); // Repeat every hour
