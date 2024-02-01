@@ -22,6 +22,15 @@
   const AutoLaunch = require('auto-launch');
   const log  = require('electron-log/main');
 
+  // initialize logger
+  log.initialize();
+
+  // enable error logging
+  log.errorHandler.startCatching();
+
+  // enable event handling
+  log.eventLogger.startLogging();
+
   // Setup auto launch
   const autoLauncher = new AutoLaunch({
     name: 'chorno-chime-desktop'
