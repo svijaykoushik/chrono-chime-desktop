@@ -4,8 +4,8 @@
   if (require('electron-squirrel-startup')) return;
 
   // run the auto updater
-  const {updateElectronApp} = require('update-electron-app');
-  
+  const { updateElectronApp } = require('update-electron-app');
+
   updateElectronApp();
 
   // Modules to control application life and create native browser window
@@ -18,9 +18,9 @@
     nativeImage,
     ipcMain,
   } = require('electron');
-  const {join} = require('path');
+  const { join } = require('path');
   const AutoLaunch = require('auto-launch');
-  const log  = require('electron-log/main');
+  const log = require('electron-log/main');
 
   // initialize logger
   log.initialize();
@@ -48,7 +48,7 @@
     mainWindow = new BrowserWindow({
       width: 800,
       height: 600,
-      icon: join(__dirname,'chrono-chime-icon-512.png'),
+      icon: join(__dirname, 'chrono-chime-icon-512.png'),
       title: 'ChronoChime - Hourly Notification',
       webPreferences: {
         preload: join(__dirname, 'preload.js')
@@ -128,7 +128,7 @@
         click: () => {
           mainWindow.show();
         },
-        icon: join(__dirname,'show-window.png'),
+        icon: join(__dirname, 'show-window.png'),
         visible: false
       },
       {
@@ -138,7 +138,7 @@
           mainWindow.hide();
           isHidden = true;
         },
-        icon: join(__dirname,'minimize-app.png'),
+        icon: join(__dirname, 'minimize-app.png'),
         visible: true
       },
       {
@@ -147,7 +147,7 @@
         click: () => {
           mainWindow.webContents.send('toggle-notification', false);
         },
-        icon: join(__dirname,'notification-disabled.png'),
+        icon: join(__dirname, 'notification-disabled.png'),
         visible: true
       },
       {
@@ -156,7 +156,7 @@
         click: () => {
           mainWindow.webContents.send('toggle-notification', true);
         },
-        icon: join(__dirname,'notification-enabled.png'),
+        icon: join(__dirname, 'notification-enabled.png'),
         visible: false
       },
       {
@@ -166,12 +166,11 @@
           mainWindow.show();
           mainWindow.webContents.send('invoke-navigation', '/settings');
         },
-        icon: join(__dirname,'app-settings.png')
+        icon: join(__dirname, 'app-settings.png')
       },
       {
         id: 'quit-application',
         label: 'Quit ChronoChime',
-        role: 'close',
         click: () => {
           log.info('Quitting app');
           isQuitting = true;
@@ -179,7 +178,7 @@
           trayIcon.destroy();
           app.quit();
         },
-        icon: join(__dirname,'close-app.png')
+        icon: join(__dirname, 'close-app.png')
       },
     ]);
     trayIcon.setContextMenu(contextMenu);
@@ -204,7 +203,7 @@
         body:
           'ChornoChime is now running discreetly in the background.' +
           ' Rest assured, it will continue to notify you promptly',
-        icon: join(__dirname,'.chrono-chime-icon-512.png'),
+        icon: join(__dirname, '.chrono-chime-icon-512.png'),
       });
       minimizedToTrayNotification.show();
     });
@@ -228,8 +227,8 @@
             await autoLauncher
               .enable()
               .catch(() =>
-              // failed to enable auto launcher
-              // send message to reset the ui
+                // failed to enable auto launcher
+                // send message to reset the ui
                 mainWindow.webContents.send('auto-launch-status', false)
               );
           }
