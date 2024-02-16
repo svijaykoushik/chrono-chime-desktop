@@ -166,11 +166,11 @@ function scheduleNotifications() {
     __electronLog.info('Resetting countdown timer after reaching Time until next hour');
     resetCountdownTime(intervalHours * 60 * 60 * 1000);
     updateCountdownTimer(intervalHours);
-    notificationInterval = setInterval(() => {      
-    __electronLog.info(
-      'Showing notification after reaching %s seconds',
-      intervalHours * 60 * 60
-    );
+    notificationInterval = setInterval(() => {
+      __electronLog.info(
+        'Showing notification after reaching %s seconds',
+        intervalHours * 60 * 60
+      );
       showNotification();
       console.log('Starting notification interval ');
       __electronLog.info('Starting notification interval ');
@@ -372,16 +372,18 @@ function getSettingsFromLocalStorage() {
   // Parse the JSON string to get the settings object
   const settings = JSON.parse(settingsJSON);
 
-  // Add new settings options if missing in
-  // stored settings
-  const settingsOptions = Object.keys(settings);
-  const defaultSettingsOptions = Object.keys(defaultSettings);
+  if (settings) {
+    // Add new settings options if missing in
+    // stored settings
+    const settingsOptions = Object.keys(settings);
+    const defaultSettingsOptions = Object.keys(defaultSettings);
 
-  defaultSettingsOptions.forEach((option) => {
-    if (settingsOptions.indexOf(option) === -1) {
-      settings[option] = defaultSettings[option];
-    }
-  });
+    defaultSettingsOptions.forEach((option) => {
+      if (settingsOptions.indexOf(option) === -1) {
+        settings[option] = defaultSettings[option];
+      }
+    });
+  }
 
   return settings;
 }
