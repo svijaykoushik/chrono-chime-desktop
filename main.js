@@ -76,6 +76,10 @@
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools();
+    if (process.argv.includes('--enable-dev-tools')) {
+      log.info('Detected flag to enable dev tools. Enablind dev tools');
+      mainWindow.webContents.openDevTools();
+    }
   };
 
   /** @type {Tray} */
