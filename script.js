@@ -1,6 +1,7 @@
 let notificationInterval; // Store the interval ID for the notification timer
 let countdownInterval; // Store the interval ID for the countdown timer
 let countdownTimeRemaining = 0; // Global variable to store the countdown time in milliseconds
+let nextHourTimeout; // Store the timeout ID of the next hout timeout
 
 const soundSelect = document.getElementById('notificationSound');
 const intervalSelect = document.getElementById('interval');
@@ -86,28 +87,101 @@ function showNotification() {
   }
 }
 
+function showAskPermissionButton(){
+  askPermissionButton.style.opacity = 1;
+  askPermissionButton.style.visibility = 'visible';
+}
+
+function hideAskPermissionButton(){
+  askPermissionButton.style.opacity = 0;
+  askPermissionButton.style.visibility = 'hidden';
+}
+
+function showCountdownTimer(){
+  countdownTimer.style.opacity = 1;
+  countdownTimer.style.visibility = 'visible';
+}
+
+function hideCountdownTimer(){
+  countdownTimer.style.opacity = 0;
+  countdownTimer.style.visibility = 'hidden';
+}
+
+function clearIntervals(){
+  __electronLog.info('Clearing intervals');
+  clearTimeout(nextHourTimeout);
+  clearInterval(notificationInterval);
+  clearInterval(countdownInterval);
+}
+
+function startCountdown(intervalHours,timeUntilNextHour) {
+  resetCountdownTime(timeUntilNextHour);
+  updateCountdownTimer(intervalHours);
+  countdownInterval = setInterval(() => updateCountdownTimer(intervalHours), 1000);
+}
+
+function scheduleNextNotification(intervalHours, timeUntilNextHour){
+  __electronLog.info(
+    'Scheduling next notification after ',
+    Math.round(timeUntilNextHour / (1000 * 60)),
+    ' minutes'
+  );
+  nextHourTimeout = setTimeout(() => {
+    __electronLog.info(
+      'Reached next hour with ID',
+      nextHourTimeout,
+      'and dispatched notification'
+    );
+    showNotification();
+    __electronLog.info('Resetting countdown timer');
+    resetCountdownTime(intervalHours * 60 * 60 * 1000);
+    updateCountdownTimer(intervalHours);
+
+    __electronLog.info(
+      'Scheduling next notification after ',
+      intervalHours,
+      ' hour(s)'
+    );
+    notificationInterval = setInterval(() => {
+      __electronLog.info(
+        'Dispatching notification after',
+        intervalHours,
+        ' hour(s) with Id ',
+        notificationInterval
+      );
+      showNotification();
+      __electronLog.info(
+        'Resetting countdown timer after ',
+        intervalHours,
+        ' hour(s)'
+      );
+      resetCountdownTime(intervalHours * 60 * 60 * 1000); // Reset the countdown to 1 hour
+      updateCountdownTimer();
+    }, intervalHours * 60 * 60 * 1000); // Repeat every hour
+  }, timeUntilNextHour);
+}
+
+function setNextNotificationInterval(intervalHours) {
+  const now = new Date();
+  const nextHour = new Date(now);
+  nextHour.setHours(nextHour.getHours() + intervalHours, 0, 0, 0);
+  return nextHour - now;
+}
+
 // Schedule hourly notifications
 function scheduleNotifications() {
   if (settings.isOff === true) {
-    askPermissionButton.style.opacity = 1;
-    askPermissionButton.style.visibility = 'visible';
-
-    countdownTimer.style.opacity = 0;
-    countdownTimer.style.visibility = 'hidden';
-
+    showAskPermissionButton();
+    hideCountdownTimer();
     allowNotificationCheckbox.checked = false;
 
     // Clear the previous intervals if they exist
-    clearInterval(notificationInterval);
-    clearInterval(countdownInterval);
+    clearIntervals();
     return;
   }
 
-  askPermissionButton.style.opacity = 0;
-  askPermissionButton.style.visibility = 'hidden';
-
-  countdownTimer.style.opacity = 1;
-  countdownTimer.style.visibility = 'visible';
+  hideAskPermissionButton();
+  showCountdownTimer();
 
   allowNotificationCheckbox.checked = true;
   autoLaunchCheckbox.checked = settings.autoLaunch;
@@ -127,58 +201,16 @@ function scheduleNotifications() {
       intervalHours = 1;
       break;
   }
-  const now = new Date();
-  const nextHour = new Date(now);
-  nextHour.setHours(nextHour.getHours() + intervalHours, 0, 0, 0); // Set to the next hour, 0th minute, and 0th second
-
-  const timeUntilNextHour = nextHour - now;
 
   // Clear the previous intervals if they exist
-  clearInterval(notificationInterval);
-  clearInterval(countdownInterval);
+  clearIntervals();
+
+  const timeUntilNextHour = setNextNotificationInterval(intervalHours);
 
   // Start the countdown timer
-  resetCountdownTime(timeUntilNextHour);
-  updateCountdownTimer(intervalHours);
-  countdownInterval = setInterval(
-    () => updateCountdownTimer(intervalHours),
-    1000
-  ); // Update every second
+  startCountdown(intervalHours,timeUntilNextHour);
 
-  __electronLog.info(
-    'Setting time until the next hour on initialization %s seconds',
-    timeUntilNextHour / 1000
-  );
-  setTimeout(() => {
-    console.log(
-      'Reached Time until next hour %s seconds',
-      timeUntilNextHour / 1000
-    );
-    __electronLog.info(
-      'Reached Time until next hour %s seconds',
-      timeUntilNextHour / 1000
-    );
-    __electronLog.info(
-      'Showing notification after reaching %s seconds',
-      timeUntilNextHour / 1000
-    );
-    showNotification();
-    __electronLog.info('Resetting countdown timer after reaching Time until next hour');
-    resetCountdownTime(intervalHours * 60 * 60 * 1000);
-    updateCountdownTimer(intervalHours);
-    notificationInterval = setInterval(() => {
-      __electronLog.info(
-        'Showing notification after reaching %s seconds',
-        intervalHours * 60 * 60
-      );
-      showNotification();
-      console.log('Starting notification interval ');
-      __electronLog.info('Starting notification interval ');
-      __electronLog.info('Resetting countdown timer after reaching the configured interval');
-      resetCountdownTime(intervalHours * 60 * 60 * 1000); // Reset the countdown to 1 hour
-      updateCountdownTimer();
-    }, intervalHours * 60 * 60 * 1000); // Repeat every hour
-  }, timeUntilNextHour);
+  scheduleNextNotification(intervalHours, timeUntilNextHour);
 }
 
 // Function to update the countdown timer
