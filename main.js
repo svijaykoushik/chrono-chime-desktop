@@ -34,7 +34,7 @@
 
   // Setup auto launch
   const autoLauncher = new AutoLaunch({
-    name: 'chorno-chime-desktop'
+    name: 'chrono-chime-desktop'
   });
   autoLauncher.isEnabled((isEnabled) => {
     mainWindow.webContents.send('auto-launch-status', isEnabled);
@@ -72,7 +72,7 @@
         mainWindow.hide();
         return false;
       }
-      log.info('Intiating quit procedure');
+      log.info('Initiating quit procedure');
     });
 
     // Open urls in browser
@@ -84,7 +84,7 @@
     // Open the DevTools.
     // mainWindow.webContents.openDevTools();
     if (process.argv.includes('--enable-dev-tools')) {
-      log.info('Detected flag to enable dev tools. Enablind dev tools');
+      log.info('Detected flag to enable dev tools. Enabling dev tools');
       mainWindow.webContents.openDevTools();
     }
   };
@@ -193,7 +193,7 @@
       },
     ]);
     trayIcon.setContextMenu(contextMenu);
-    trayIcon.setTitle('ChornoChime');
+    trayIcon.setTitle('ChronoChime');
     trayIcon.setToolTip('ChronoChime - Hourly Notification');
 
     // Toggle context menu item visibility based on main window visibility
@@ -210,9 +210,9 @@
       contextMenu.getMenuItemById('minimize-main-window').visible = false;
       trayIcon.setContextMenu(contextMenu);
       const minimizedToTrayNotification = new Notification({
-        title: 'ChornoChime is Running in the Background',
+        title: 'ChronoChime is Running in the Background',
         body:
-          'ChornoChime is now running discreetly in the background.' +
+          'ChronoChime is now running discreetly in the background.' +
           ' Rest assured, it will continue to notify you promptly',
         icon: join(__dirname, '.chrono-chime-icon-512.png'),
       });
