@@ -17,6 +17,7 @@
     Notification,
     nativeImage,
     ipcMain,
+    shell,
   } = require('electron');
   const { join } = require('path');
   const AutoLaunch = require('auto-launch');
@@ -72,6 +73,12 @@
         return false;
       }
       log.info('Intiating quit procedure');
+    });
+
+    // Open urls in browser
+    mainWindow.webContents.setWindowOpenHandler((details)=>{
+      shell.openExternal(details.url);
+      return {action: 'deny'}; // Prevent app from opening url
     });
 
     // Open the DevTools.
