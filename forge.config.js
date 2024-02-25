@@ -2,12 +2,14 @@ const { join } = require('path');
 
 module.exports = {
     packagerConfig: {
+        appCopyright: 'Copyright © 2023 Vijaykoushik, S. All rights reserved.',
         asar: true,
         icon: 'chrono-chime-icon.ico',
         name: 'chrono-chime-desktop',
         win32metadata: {
             CompanyName: 'Vijaykoushik, S.',
             ProductName: 'ChronoChime',
+            FileDescription: 'ChronoChime: Customizable time companion with soothing chimes, seamless background operation'
         },
     },
     rebuildConfig: {},
@@ -18,12 +20,12 @@ module.exports = {
                 authors: 'Vijaykoushik, S.',
                 name: 'chrono-chime-desktop',
                 description:
-                    'Hourly Notification Desktop Application  with background sounds and notifications',
+                    'ChronoChime: Customizable time companion with soothing chimes, seamless background operation',
                 iconUrl:
                     'https://raw.githubusercontent.com/svijaykoushik/chrono-chime-desktop/main/chrono-chime-icon.ico',
                 setupIcon: join(__dirname, 'chrono-chime_package.ico'),
-                setupExe: 'chrono_chime_desktop_setup.exe',
-                title: 'Chrono Chime'
+                title: 'ChronoChime',
+
             },
         },
         {
@@ -34,14 +36,16 @@ module.exports = {
             name: '@electron-forge/maker-deb',
             config: {
                 options: {
+                    categories: ['Utility','Office','Game'],
                     icon: join(__dirname, 'chrono-chime-icon-512.png'),
                     maintainer: 'Vijaykoushik, S.',
-                    productName: 'Chrono Chime',
+                    productName: 'ChronoChime',
                     homepage: 'https://chrono-chime.web.app',
-                    genericName: 'Hourly Notification',
+                    genericName: 'ChronoChime - Time Management Assistant',
                     description:
-                        'Hourly Notification Desktop Application  with background sounds and notifications',
+                        'ChronoChime: Customizable time companion with soothing chimes, seamless background operation',
                     name: 'chrono-chime-desktop',
+                    productDescription:'ChronoChime is a flexible desktop application designed to streamline time management and boost productivity. With customizable intervals and chimes, seamless background operation, automatic startup options, and one-click chime control, ChronoChime empowers users to tailor their experience and stay on track effortlessly.'
                 },
             },
         },
@@ -49,13 +53,15 @@ module.exports = {
             name: '@electron-forge/maker-rpm',
             config: {
                 options: {
+                    categories: ['Utility','Office','Game'],
                     description:
-                        'Hourly Notification Desktop Application  with background sounds and notifications',
-                    genericName: 'Hourly Notification',
+                        'ChronoChime: Customizable time companion with soothing chimes, seamless background operation',
+                    genericName: 'ChronoChime - Time Management Assistant',
                     homepage: 'https://chrono-chime.web.app',
                     icon: join(__dirname, 'chrono-chime-icon-512.png'),
                     name: 'chrono-chime-desktop',
-                    productName: 'Chrono Chime',
+                    productDescription:'ChronoChime is a flexible desktop application designed to streamline time management and boost productivity. With customizable intervals and chimes, seamless background operation, automatic startup options, and one-click chime control, ChronoChime empowers users to tailor their experience and stay on track effortlessly.',
+                    productName: 'ChronoChime'
                 },
             },
         },
