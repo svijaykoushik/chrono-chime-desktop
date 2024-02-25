@@ -5,7 +5,7 @@ module.exports = {
         appCopyright: 'Copyright © 2023 Vijaykoushik, S. All rights reserved.',
         asar: true,
         icon: 'chrono-chime-icon.ico',
-        name: 'chrono-chime-desktop',
+        name: 'ChronoChime',
         win32metadata: {
             CompanyName: 'Vijaykoushik, S.',
             ProductName: 'ChronoChime',
