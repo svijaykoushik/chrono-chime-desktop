@@ -2,38 +2,27 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-  build_on_linux:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@master
-      with:
-        node-version: 18
-    - name: install dependencies
-      run: npm install
-    - name: build
-      run: npm run make
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        node-version: [20.x]
 
-  build_on_mac:
-    runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@master
-      with:
-        node-version: 18
-    - name: install dependencies
-      run: npm install
-    - name: build
-      run: npm run make
-
-  build_on_win:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@master
-      with:
-        node-version: 18
-    - name: install dependencies
-      run: npm install
-    - name: build
-      run: npm run make
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@master
+      - name: 💚 Use Node.js ${{ matrix.node-version }}
+        uses: actions/checkout@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: 🧱 Install Dependencies
+        run: npm ci
+      - name: 📦 Bundle Application
+        run: npm run package
+      - name: 🧪 Run Tests
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: npm run wdio
+      - name: 🏭 Make distributables
+        run: npm run make
