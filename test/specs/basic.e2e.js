@@ -28,7 +28,7 @@ describe('Basic tests', () => {
       await toggleDrawerButton.click();
       browser.waitUntil(
         () => {
-          return $('#appDrawer').isDisplayed();
+          return $('#appDrawer').isDisplayedInViewport();
         },
         {
           timeout: 5000,
@@ -36,7 +36,34 @@ describe('Basic tests', () => {
         }
       );
 
-      await expect($('#appDrawer')).toBeDisplayed();
+      await expect($('#appDrawer')).toBeDisplayedInViewport();
+    });
+    it('should close app drawer', async () => {
+        // Locate and expand the collapsed sidebar
+        const toggleDrawerButton = await $('#toggleDrawerButton');
+        await toggleDrawerButton.click();
+        const appDrawer = await $('#appDrawer');
+        await appDrawer.waitForStable({
+            timeout: 5000,
+            interval: 300,
+            timeoutMsg: 'appDrawer did not expand within 5 seconds',
+        });
+        await expect(
+            (
+                await appDrawer.getCSSProperty('left')
+            ).value
+        ).not.toEqual('0px');
+
+        await toggleDrawerButton.click();
+
+        await appDrawer.waitForStable({
+            timeout: 5000,
+            interval: 300,
+            timeoutMsg: 'appDrawer did not close within 5 seconds',
+        });
+        await expect((await appDrawer.getCSSProperty('left')).value).toEqual(
+            '0px'
+        );
     });
 
     it('should navigate to settings', async () => {
