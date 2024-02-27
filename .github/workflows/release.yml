@@ -5,51 +5,32 @@ on:
       - 'v*'
 
 jobs:
-
-  publish_on_linux:
-    runs-on: ubuntu-latest
+  publish:
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: write
-    steps:
-    - uses: actions/checkout@v4       
-    - uses: actions/setup-node@master
-      with:
-        node-version: 18
-    - name: install dependencies
-      run: npm install
-    - name: publish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: npm run publish
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        node-version: [20.x]
 
-  publish_on_mac:
-    runs-on: macos-latest
-    permissions:
-      contents: write
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@master
-      with:
-        node-version: 18
-    - name: install dependencies
-      run: npm install
-    - name: publish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: npm run publish
-
-  publish_on_win:
-    runs-on: windows-latest
-    permissions:
-      contents: write
-    steps:
-    - uses: actions/checkout@v4       
-    - uses: actions/setup-node@master
-      with:
-        node-version: 18
-    - name: install dependencies
-      run: npm install
-    - name: publish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: npm run publish
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@master
+      - name: 💚 Use Node.js ${{ matrix.node-version }}
+        uses: actions/checkout@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: 🧱 Install Dependencies
+        run: npm ci
+      - name: 📦 Bundle Application
+        run: npm run package
+      - name: 🧪 Run Tests
+        if: ${{ matrix.os != 'macOS-latest'}}
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: npm run wdio
+      - name: 📦 Publish to GitHub releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run publish
