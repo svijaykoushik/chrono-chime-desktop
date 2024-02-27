@@ -18,14 +18,13 @@ module.exports = {
             name: '@electron-forge/maker-squirrel',
             config: {
                 authors: 'Vijaykoushik, S.',
-                name: 'chrono-chime-desktop',
+                name: 'ChronoChime',
                 description:
                     'ChronoChime: Customizable time companion with soothing chimes, seamless background operation',
                 iconUrl:
                     'https://raw.githubusercontent.com/svijaykoushik/chrono-chime-desktop/main/chrono-chime-icon.ico',
                 setupIcon: join(__dirname, 'chrono-chime_package.ico'),
                 title: 'ChronoChime',
-
             },
         },
         {
@@ -36,6 +35,7 @@ module.exports = {
             name: '@electron-forge/maker-deb',
             config: {
                 options: {
+                    bin: 'ChronoChime',
                     categories: ['Utility','Office','Game'],
                     icon: join(__dirname, 'chrono-chime-icon-512.png'),
                     maintainer: 'Vijaykoushik, S.',
@@ -44,8 +44,8 @@ module.exports = {
                     genericName: 'ChronoChime - Time Management Assistant',
                     description:
                         'ChronoChime: Customizable time companion with soothing chimes, seamless background operation',
-                    name: 'chrono-chime-desktop',
-                    productDescription:'ChronoChime is a flexible desktop application designed to streamline time management and boost productivity. With customizable intervals and chimes, seamless background operation, automatic startup options, and one-click chime control, ChronoChime empowers users to tailor their experience and stay on track effortlessly.'
+                    name: 'ChronoChime',
+                    productDescription:'ChronoChime is a flexible desktop application designed to streamline time management and boost productivity. With customizable intervals and chimes, seamless background operation, automatic startup options, and one-click chime control, ChronoChime empowers users to tailor their experience and stay on track effortlessly.',
                 },
             },
         },
@@ -53,13 +53,14 @@ module.exports = {
             name: '@electron-forge/maker-rpm',
             config: {
                 options: {
+                    bin: 'ChronoChime',
                     categories: ['Utility','Office','Game'],
                     description:
                         'ChronoChime: Customizable time companion with soothing chimes, seamless background operation',
                     genericName: 'ChronoChime - Time Management Assistant',
                     homepage: 'https://chrono-chime.web.app',
                     icon: join(__dirname, 'chrono-chime-icon-512.png'),
-                    name: 'chrono-chime-desktop',
+                    name: 'ChronoChime',
                     productDescription:'ChronoChime is a flexible desktop application designed to streamline time management and boost productivity. With customizable intervals and chimes, seamless background operation, automatic startup options, and one-click chime control, ChronoChime empowers users to tailor their experience and stay on track effortlessly.',
                     productName: 'ChronoChime'
                 },
