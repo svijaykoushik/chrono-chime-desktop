@@ -1,48 +1,51 @@
 const { browser, expect, $, $$ } = require('@wdio/globals');
 describe('Basic tests', () => {
-  describe('Spawn tests', () => {
-    it('should check app title', async () => {
-      const expectedTitle = 'ChronoChime - Hourly Notification';
-      const receivedTitle = await browser.getTitle();
-      expect(receivedTitle).toEqual(expectedTitle);
+    describe('Spawn tests', () => {
+        it('should check app title', async () => {
+            const expectedTitle = 'ChronoChime - Hourly Notification';
+            const receivedTitle = await browser.getTitle();
+            expect(receivedTitle).toEqual(expectedTitle);
+        });
+        it('should find main screen', async () => {
+            const mainScreen = await $('#main');
+            expect(mainScreen).toBeDisplayed();
+        });
+        it('should check main screen heading', async () => {
+            const heading = await $('#main h1');
+            const expectedTitle = 'ChronoChime - Hourly Notification PWA';
+            expect(expectedTitle).toEqual(await heading.getText());
+        });
+        it('should find countdown timer', async () => {
+            const countdownTimer = await $('#main #countdownTimer');
+            expect(countdownTimer).toBeDisplayed();
+        });
     });
-    it('should find main screen', async () => {
-      const mainScreen = await $('#main');
-      expect(mainScreen).toBeDisplayed();
-    });
-    it('should check main screen heading', async () => {
-      const heading = await $('#main h1');
-      const expectedTitle = 'ChronoChime - Hourly Notification PWA';
-      expect(expectedTitle).toEqual(await heading.getText());
-    });
-    it('should find countdown timer', async () => {
-      const countdownTimer = await $('#main #countdownTimer');
-      expect(countdownTimer).toBeDisplayed();
-    });
-  });
 
-  describe('Navigation testing', () => {
-    it('should open app drawer', async () => {
-      // Locate and expand the collapsed sidebar
-      const toggleDrawerButton = await $('#toggleDrawerButton');
-      await toggleDrawerButton.click();
-      browser.waitUntil(
-        () => {
-          return $('#appDrawer').isDisplayedInViewport();
-        },
-        {
-          timeout: 5000,
-          timeoutMsg: 'appDrawer did not expand within 5 seconds',
-        }
-      );
+    describe('App drawer toggle smoke tests',()=>{
+      let toggleDrawerButton;
+      let appDrawer;
+      before(async ()=>{
+        toggleDrawerButton = await $('#toggleDrawerButton');
+        appDrawer = await $('#appDrawer');
+      });
+      it('should open app drawer', async () => {
+        // Locate and expand the collapsed sidebar
+        await toggleDrawerButton.click();
+        browser.waitUntil(
+            () => {
+                return $('#appDrawer').isDisplayedInViewport();
+            },
+            {
+                timeout: 5000,
+                timeoutMsg: 'appDrawer did not expand within 5 seconds',
+            }
+        );
 
-      await expect($('#appDrawer')).toBeDisplayedInViewport();
+        await expect(appDrawer).toBeDisplayedInViewport();
     });
     it('should close app drawer', async () => {
         // Locate and expand the collapsed sidebar
-        const toggleDrawerButton = await $('#toggleDrawerButton');
         await toggleDrawerButton.click();
-        const appDrawer = await $('#appDrawer');
         await appDrawer.waitForStable({
             timeout: 5000,
             interval: 300,
@@ -61,99 +64,240 @@ describe('Basic tests', () => {
             interval: 300,
             timeoutMsg: 'appDrawer did not close within 5 seconds',
         });
-        await expect((await appDrawer.getCSSProperty('left')).value).toEqual(
-            '0px'
+        await expect(
+            (
+                await appDrawer.getCSSProperty('left')
+            ).value
+        ).toEqual('0px');
+    });
+    });
+    describe('Navigation testing', () => {
+      let toggleDrawerButton;
+      let appDrawer;
+      let appDrawerItems;
+      before(async()=>{
+        toggleDrawerButton = await $('#toggleDrawerButton');
+        appDrawer = await $('#appDrawer');
+        appDrawerItems = await $$('#appDrawer .drawer-menu li');
+      });
+
+      beforeEach(async ()=>{
+
+            // Locate and expand the collapsed sidebar
+            toggleDrawerButton = await $('#toggleDrawerButton');
+            await toggleDrawerButton.click();
+            browser.waitUntil(
+                () => {
+                    return appDrawer.isDisplayed();
+                },
+                {
+                    timeout: 5000,
+                    timeoutMsg: 'appDrawer did not expand within 5 seconds',
+                }
+            );
+      });
+
+        it('should navigate to settings', async () => {
+            const settings = await appDrawerItems[0].$('a');
+            await settings.click();
+            browser.waitUntil(
+                () => {
+                    return $('#settings').isDisplayed();
+                },
+                {
+                    timeout: 5000,
+                    timeoutMsg: 'settings did appear within 5 seconds',
+                }
+            );
+            expect(browser).toHaveUrl('/settings');
+            expect($('#settings')).toBeDisplayed();
+            expect($('#settings h1')).toHaveText('Settings');
+        });
+
+        it('should navigate to attributions', async () => {
+            const attributions = await appDrawerItems[1].$('a');
+            await attributions.click();
+            browser.waitUntil(
+                () => {
+                    return $('#attributions').isDisplayed();
+                },
+                {
+                    timeout: 5000,
+                    timeoutMsg: 'attributions did appear within 5 seconds',
+                }
+            );
+            expect(browser).toHaveUrl('/attributions');
+            expect($('#attributions')).toBeDisplayed();
+            expect($('#attributions h1')).toHaveText('Attributions');
+        });
+
+        it('should navigate to about', async () => {
+            const attributions = await appDrawerItems[2].$('a');
+            await attributions.click();
+            browser.waitUntil(
+                () => {
+                    return $('#about').isDisplayed();
+                },
+                {
+                    timeout: 5000,
+                    timeoutMsg: 'about did appear within 5 seconds',
+                }
+            );
+            expect(browser).toHaveUrl('/about');
+            expect($('#about')).toBeDisplayed();
+            expect($('#about h1')).toHaveText('About');
+        });
+    });
+
+    describe('Setting page tests', () => {
+      beforeEach(async () => {
+        // Locate and expand the collapsed sidebar
+        const toggleDrawerButton = await $('#toggleDrawerButton');
+        await toggleDrawerButton.click();
+        const appDrawer = await $('#appDrawer');
+        await appDrawer.waitForStable({
+          timeout: 5000,
+          timeoutMsg: 'appDrawer did not expand within 5 seconds',
+        });
+        const appDrawerItems = await $$('#appDrawer .drawer-menu li');
+        const settingsLink = await appDrawerItems[0].$('a');
+        await settingsLink.click();
+        const settings = await $('#settings');
+        browser.waitUntil(
+          () => {
+            return settings.isDisplayed();
+          },
+          {
+            timeout: 5000,
+            timeoutMsg: 'settings did appear within 5 seconds',
+          }
         );
+      });
+      describe('Settings page navigation tests', () => {
+        afterEach(async () => {
+          const toggleDrawerButton = await $('#toggleDrawerButton');
+          // Close the app drawer
+          await toggleDrawerButton.click();
+          const appDrawer = await $('#appDrawer');
+          await appDrawer.waitForStable({
+            timeout: 5000,
+            timeoutMsg: 'appDrawer did not close within 5 seconds',
+          });
+        });
+        it('should land on general section', async () => {
+          const section = await $('#general');
+          expect(section).toBeDisplayed();
+          const sectionHeading = await section.$('h2');
+          expect(sectionHeading).toHaveText('General ⚙️');
+        });
+  
+        it('should navigate to Notification sound section', async () => {
+          const sectionNavItem = await $('#soundTabLink');
+          await sectionNavItem.click();
+  
+          const section = await $('#sound');
+          section.waitForExist({
+            timeout: 5000,
+            timeoutMsg:
+              'Notification Sound section did not appear within 5 seconds',
+          });
+          expect(section).toBeDisplayed();
+          const sectionHeading = await section.$('h2');
+          expect(sectionHeading).toHaveText('🔊 Notification Sound');
+        });
+  
+        it('should navigate to Notification content section', async () => {
+          const sectionNavItem = await $('#contentTabLink');
+          await sectionNavItem.click();
+  
+          const section = await $('#content');
+          section.waitForExist({
+            timeout: 5000,
+            timeoutMsg:
+              'Notification content section did not appear within 5 seconds',
+          });
+          expect(section).toBeDisplayed();
+          const sectionHeading = await section.$('h2');
+          expect(sectionHeading).toHaveText('🔊 Notification Content ✉️');
+        });
+  
+        it('should navigate to Reset section', async () => {
+          const sectionNavItem = await $('#resetTabLink');
+          await sectionNavItem.click();
+  
+          const section = await $('#reset');
+          section.waitForExist({
+            timeout: 5000,
+            timeoutMsg: 'Reset section did not appear within 5 seconds',
+          });
+          expect(section).toBeDisplayed();
+        });
+  
+        it('should navigate back to general section', async () => {
+          const toggleDrawerButton = await $('#toggleDrawerButton');
+          // Close the app drawer
+          await toggleDrawerButton.click();
+          const appDrawer = await $('#appDrawer');
+          await appDrawer.waitForStable({
+            timeout: 5000,
+            timeoutMsg: 'appDrawer did not close within 5 seconds',
+          });
+          const sectionNavItem = await $('#generalTabLink');
+          await sectionNavItem.click();
+  
+          const section = await $('#general');
+          section.waitForExist({
+            timeout: 5000,
+            timeoutMsg:
+              'General section did not appear within 5 seconds',
+          });
+          expect(section).toBeDisplayed();
+          const sectionHeading = await section.$('h2');
+          expect(sectionHeading).toHaveText('General ⚙️');
+          await toggleDrawerButton.click();
+          await appDrawer.waitForStable({
+            timeout: 5000,
+            timeoutMsg: 'appDrawer did not expand within 5 seconds',
+          });
+        });
+      });
+  
+      // describe('General page smoke tests', () => {
+      //     it('should land on general section', async () => {
+      //         // Locate and expand the collapsed sidebar
+      //         const toggleDrawerButton = await $('#toggleDrawerButton');
+      //         await toggleDrawerButton.click();
+      //         const appDrawer = await $('#appDrawer');
+      //         await appDrawer.waitForStable({
+      //             timeout: 5000,
+      //             timeoutMsg: 'appDrawer did not expand within 5 seconds',
+      //         });
+      //         const appDrawerItems = await $$('#appDrawer .drawer-menu li');
+      //         const settingsLink = await appDrawerItems[0].$('a');
+      //         await settingsLink.click();
+      //         const settings = await $('#settings');
+      //         browser.waitUntil(
+      //             () => {
+      //                 return settings.isDisplayed();
+      //             },
+      //             {
+      //                 timeout: 5000,
+      //                 timeoutMsg: 'settings did appear within 5 seconds',
+      //             }
+      //         );
+  
+      //         // Close the app drawer
+      //         await toggleDrawerButton.click();
+  
+      //         await appDrawer.waitForStable({
+      //             timeout: 5000,
+      //             timeoutMsg: 'appDrawer did not close within 5 seconds',
+      //         });
+      //         const section = await $('#general');
+      //         expect(section).toBeDisplayed();
+      //         const sectionHeading = await section.$('h2');
+      //         expect(sectionHeading).toHaveText('General ⚙️');
+      //     });
+      // });
     });
-
-    it('should navigate to settings', async () => {
-      // Locate and expand the collapsed sidebar
-      const toggleDrawerButton = await $('#toggleDrawerButton');
-      await toggleDrawerButton.click();
-      browser.waitUntil(
-        () => {
-          return $('#appDrawer').isDisplayed();
-        },
-        {
-          timeout: 5000,
-          timeoutMsg: 'appDrawer did not expand within 5 seconds',
-        }
-      );
-      const appDrawerItems = await $$('#appDrawer .drawer-menu li');
-      const settings = await appDrawerItems[0].$('a');
-      await settings.click();
-      browser.waitUntil(
-        () => {
-          return $('#settings').isDisplayed();
-        },
-        {
-          timeout: 5000,
-          timeoutMsg: 'settings did appear within 5 seconds',
-        }
-      );
-      expect(browser).toHaveUrl('/settings');
-      expect($('#settings')).toBeDisplayed();
-      expect($('#settings h1')).toHaveText('Settings');
-    });
-
-    it('should navigate to attributions', async () => {
-      // Locate and expand the collapsed sidebar
-      const toggleDrawerButton = await $('#toggleDrawerButton');
-      await toggleDrawerButton.click();
-      browser.waitUntil(
-        () => {
-          return $('#appDrawer').isDisplayed();
-        },
-        {
-          timeout: 5000,
-          timeoutMsg: 'appDrawer did not expand within 5 seconds',
-        }
-      );
-      const appDrawerItems = await $$('#appDrawer .drawer-menu li');
-      const attributions = await appDrawerItems[1].$('a');
-      await attributions.click();
-      browser.waitUntil(
-        () => {
-          return $('#attributions').isDisplayed();
-        },
-        {
-          timeout: 5000,
-          timeoutMsg: 'attributions did appear within 5 seconds',
-        }
-      );
-      expect(browser).toHaveUrl('/attributions');
-      expect($('#attributions')).toBeDisplayed();
-      expect($('#attributions h1')).toHaveText('Attributions');
-    });
-
-    it('should navigate to about', async () => {
-      // Locate and expand the collapsed sidebar
-      const toggleDrawerButton = await $('#toggleDrawerButton');
-      await toggleDrawerButton.click();
-      browser.waitUntil(
-        () => {
-          return $('#appDrawer').isDisplayed();
-        },
-        {
-          timeout: 5000,
-          timeoutMsg: 'appDrawer did not expand within 5 seconds',
-        }
-      );
-      const appDrawerItems = await $$('#appDrawer .drawer-menu li');
-      const attributions = await appDrawerItems[1].$('a');
-      await attributions.click();
-      browser.waitUntil(
-        () => {
-          return $('#about').isDisplayed();
-        },
-        {
-          timeout: 5000,
-          timeoutMsg: 'about did appear within 5 seconds',
-        }
-      );
-      expect(browser).toHaveUrl('/about');
-      expect($('#about')).toBeDisplayed();
-      expect($('#about h1')).toHaveText('About');
-    });
-  });
 });
