@@ -30,6 +30,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.1.0",
     "@electron-forge/publisher-github": "^7.2.0",
     "@eslint/js": "^8.56.0",
+    "@faker-js/faker": "^8.4.1",
     "@wdio/cli": "^8.32.3",
     "@wdio/local-runner": "^8.32.3",
     "@wdio/mocha-framework": "^8.32.3",
