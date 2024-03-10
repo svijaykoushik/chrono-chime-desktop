@@ -41,6 +41,8 @@ describe('Navigation testing', () => {
         expect(browser).toHaveUrl('/settings');
         expect($('#settings')).toBeDisplayed();
         expect($('#settings h1')).toHaveText('Settings');
+        expect($('#about')).not.toBeDisplayed();
+        expect($('#attributions')).not.toBeDisplayed();
     });
 
     it('should navigate to attributions', async () => {
@@ -58,6 +60,8 @@ describe('Navigation testing', () => {
         expect(browser).toHaveUrl('/attributions');
         expect($('#attributions')).toBeDisplayed();
         expect($('#attributions h1')).toHaveText('Attributions');
+        expect($('#about')).not.toBeDisplayed();
+        expect($('#settings')).not.toBeDisplayed();
     });
 
     it('should navigate to about', async () => {
@@ -75,5 +79,7 @@ describe('Navigation testing', () => {
         expect(browser).toHaveUrl('/about');
         expect($('#about')).toBeDisplayed();
         expect($('#about h1')).toHaveText('About');
+        expect($('#attributions')).not.toBeDisplayed();
+        expect($('#settings')).not.toBeDisplayed();
     });
 });

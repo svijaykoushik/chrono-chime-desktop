@@ -39,6 +39,9 @@ describe('Settings page navigation tests', () => {
         expect(section).toBeDisplayed();
         const sectionHeading = await section.$('h2');
         expect(sectionHeading).toHaveText('General ⚙️');
+        expect($('#sound')).not.toBeDisplayed();
+        expect($('#content')).not.toBeDisplayed();
+        expect($('#reset')).not.toBeDisplayed();
     });
 
     it('should navigate to Notification sound section', async () => {
@@ -54,6 +57,9 @@ describe('Settings page navigation tests', () => {
         expect(section).toBeDisplayed();
         const sectionHeading = await section.$('h2');
         expect(sectionHeading).toHaveText('🔊 Notification Sound');
+        expect($('#general')).not.toBeDisplayed();
+        expect($('#content')).not.toBeDisplayed();
+        expect($('#reset')).not.toBeDisplayed();
     });
 
     it('should navigate to Notification content section', async () => {
@@ -69,6 +75,9 @@ describe('Settings page navigation tests', () => {
         expect(section).toBeDisplayed();
         const sectionHeading = await section.$('h2');
         expect(sectionHeading).toHaveText('🔊 Notification Content ✉️');
+        expect($('#sound')).not.toBeDisplayed();
+        expect($('#general')).not.toBeDisplayed();
+        expect($('#reset')).not.toBeDisplayed();
     });
 
     it('should navigate to Reset section', async () => {
@@ -81,6 +90,9 @@ describe('Settings page navigation tests', () => {
             timeoutMsg: 'Reset section did not appear within 5 seconds',
         });
         expect(section).toBeDisplayed();
+        expect($('#sound')).not.toBeDisplayed();
+        expect($('#content')).not.toBeDisplayed();
+        expect($('#general')).not.toBeDisplayed();
     });
 
     it('should navigate back to general section', async () => {
@@ -104,6 +116,9 @@ describe('Settings page navigation tests', () => {
         expect(section).toBeDisplayed();
         const sectionHeading = await section.$('h2');
         expect(sectionHeading).toHaveText('General ⚙️');
+        expect($('#sound')).not.toBeDisplayed();
+        expect($('#content')).not.toBeDisplayed();
+        expect($('#reset')).not.toBeDisplayed();
         await toggleDrawerButton.click();
         await appDrawer.waitForStable({
             timeout: 5000,

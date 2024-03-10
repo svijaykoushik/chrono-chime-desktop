@@ -18,4 +18,16 @@ describe('Spawn tests', () => {
         const countdownTimer = await $('#main #countdownTimer');
         expect(countdownTimer).toBeDisplayed();
     });
+    it('should not show ask permission button', async()=>{
+        await expect($('#askPermissionButton')).not.toBeDisplayed();
+    });
+    it('should not show settings',async ()=>{
+        await expect($('#settings')).not.toBeDisplayed();
+    });    
+    it('should not show attributions',async ()=>{
+        await expect($('#attributions')).not.toBeDisplayed();
+    });
+    it('should not show about',async ()=>{
+        await expect($('#about')).not.toBeDisplayed();
+    });
 });
