@@ -21,7 +21,7 @@ jobs:
       - name: 📦 Bundle Application
         run: npm run package
       - name: 🧪 Run Tests
-        # if: ${{ matrix.os != 'macOS-latest'}}
+        if: ${{ matrix.os != 'macOS-latest'}}
         uses: coactions/setup-xvfb@v1
         with:
           run: npm run wdio
