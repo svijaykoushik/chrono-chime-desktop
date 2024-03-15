@@ -46,6 +46,49 @@ if (!getSettingsFromLocalStorage()) {
 
 let settings = getSettingsFromLocalStorage() || defaultSettings;
 
+const reminders = [];
+const reminderScheduler = new Map();
+
+function addReminder(title, time, description = '') {
+  const reminder = {
+    id: crypto.randomUUID(),
+    title,
+    time: new Date(time),
+    description,
+    status: 'active'
+  };
+  reminders.push(reminder);
+  return reminder;
+}
+
+function scheduleReminders() {
+  reminderScheduler.forEach((timeoutId) => {
+    clearTimeout(timeoutId);
+  });
+  reminders.forEach((reminder, index) => {
+    const timeoutId = setTimeout(() => {
+      const options = {
+        body: reminder.description,
+        icon: 'chrono-chime-icon-192.png', // Replace with the path to your notification icon (192x192 pixels)
+        vibrate: [200, 100, 200], // Vibration pattern (optional)
+        // Add other notification options here if needed
+      };
+      new Notification(reminder.title, options);
+      reminder.status = 'completed';
+      reminderScheduler.delete(reminder.id);
+    }, Math.abs(reminder.time.getTime() - Date.now()));
+    reminderScheduler.set(reminder.id, timeoutId);
+  });
+}
+
+let reminderClearIntervalId;
+function clearCompletedReminders(){
+  reminderClearIntervalId = setInterval(()=>{
+    const completedReminders = reminders.filter((reminder)=>reminder.status==='completed');
+
+  })
+}
+
 // Function to show the notification and play the sound
 function showNotification() {
   const options = {
@@ -87,40 +130,40 @@ function showNotification() {
   }
 }
 
-function showAskPermissionButton(){
+function showAskPermissionButton() {
   askPermissionButton.style.opacity = 1;
   askPermissionButton.style.visibility = 'visible';
 }
 
-function hideAskPermissionButton(){
+function hideAskPermissionButton() {
   askPermissionButton.style.opacity = 0;
   askPermissionButton.style.visibility = 'hidden';
 }
 
-function showCountdownTimer(){
+function showCountdownTimer() {
   countdownTimer.style.opacity = 1;
   countdownTimer.style.visibility = 'visible';
 }
 
-function hideCountdownTimer(){
+function hideCountdownTimer() {
   countdownTimer.style.opacity = 0;
   countdownTimer.style.visibility = 'hidden';
 }
 
-function clearIntervals(){
+function clearIntervals() {
   __electronLog.info('Clearing intervals');
   clearTimeout(nextHourTimeout);
   clearInterval(notificationInterval);
   clearInterval(countdownInterval);
 }
 
-function startCountdown(intervalHours,timeUntilNextHour) {
+function startCountdown(intervalHours, timeUntilNextHour) {
   resetCountdownTime(timeUntilNextHour);
   updateCountdownTimer(intervalHours);
   countdownInterval = setInterval(() => updateCountdownTimer(intervalHours), 1000);
 }
 
-function scheduleNextNotification(intervalHours, timeUntilNextHour){
+function scheduleNextNotification(intervalHours, timeUntilNextHour) {
   __electronLog.info(
     'Scheduling next notification after ',
     Math.round(timeUntilNextHour / (1000 * 60)),
@@ -208,7 +251,7 @@ function scheduleNotifications() {
   const timeUntilNextHour = setNextNotificationInterval(intervalHours);
 
   // Start the countdown timer
-  startCountdown(intervalHours,timeUntilNextHour);
+  startCountdown(intervalHours, timeUntilNextHour);
 
   scheduleNextNotification(intervalHours, timeUntilNextHour);
 }
