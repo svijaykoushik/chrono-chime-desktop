@@ -35,8 +35,8 @@ const defaultSettings = {
   isOff: false,
   interval: '1', // Default interval, e.g., '1' for 1 hour
   notificationSound: 'sound1', // Default sound, e.g., 'sound1',
-  notificationTitle: 'Hourly notification',
-  notificationContent: 'This is an hourly notification from ChronoChime!', // Default content
+  notificationTitle: 'Time Keeper Extraordinaire',
+  notificationContent: 'This is a personalized notification from ChronoChime!', // Default content
 };
 
 // Store the settings object in localStorage

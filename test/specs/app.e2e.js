@@ -1,7 +1,7 @@
 const { browser, expect, $ } = require('@wdio/globals');
 describe('Spawn tests', () => {
     it('should check app title', async () => {
-        const expectedTitle = 'ChronoChime - Hourly Notification';
+        const expectedTitle = 'ChronoChime - Time Keeper Extraordinaire';
         const receivedTitle = await browser.getTitle();
         expect(receivedTitle).toEqual(expectedTitle);
     });
@@ -11,7 +11,7 @@ describe('Spawn tests', () => {
     });
     it('should check main screen heading', async () => {
         const heading = await $('#main h1');
-        const expectedTitle = 'ChronoChime - Hourly Notification PWA';
+        const expectedTitle = 'ChronoChime - Time Keeper Extraordinaire';
         expect(expectedTitle).toEqual(await heading.getText());
     });
     it('should find countdown timer', async () => {

@@ -50,7 +50,7 @@
       width: 800,
       height: 600,
       icon: join(__dirname, 'chrono-chime-icon-512.png'),
-      title: 'ChronoChime - Hourly Notification',
+      title: 'ChronoChime - Time Keeper Extraordinaire',
       webPreferences: {
         preload: join(__dirname, 'preload.js')
       }
