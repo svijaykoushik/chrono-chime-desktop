@@ -1,8 +1,14 @@
 /* Declare variable values */
-:root{
+:root {
     --app-font-family: 'Poppins';
     --accent-color-rgb-string: 245, 137, 178;
     --accent-color-hex: #f589b2;
+    --scrollbar-color-thumb: #8d8d8d;
+    --scrollbar-color-track: #dadada;
+    --scrollbar-border-radius: 5px;
+    --scrollbar-background-track: none;
+    --scrollbar-width-legacy: 5px;
+    --form-field-error: #ac0002;
 }
 
 /* Add the font with font-display: swap */
@@ -491,14 +497,228 @@ small a:hover {
     background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
 }
 
-div.about-logo{
+div.about-logo {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+dialog.basic-dialog * {
+    margin: 0;
+    padding: 0;
+}
+
+dialog.basic-dialog {
+    min-width: 280px;
+    max-width: 560px;
+    text-align: center;
+    box-shadow: 24px 12px 6px rgba(0, 0, 0, 0.14);
+    background: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0;
+}
+
+dialog.basic-dialog .dialog-content {
+    padding: 0 24px;
+    font-size: 16px;
+}
+
+dialog.basic-dialog .dialog-content>* {
+    margin-bottom: 16px;
+}
+
+dialog.basic-dialog .dialog-header {
+    height: 64px;
+    padding: 0 24px;
+}
+
+dialog.basic-dialog h6 {
+    font-weight: bolder;
+    font-size: 21px;
+    line-height: 48px;
+}
+
+dialog.basic-dialog input {
+    width: 100%;
+}
+
+dialog.basic-dialog .action-container {
+    height: 52px;
+    padding: 8px;
+    text-align: right;
+}
+
+dialog.basic-dialog .action-container>*:not(:last-child) {
+    margin-right: 8px;
+}
+
+dialog.basic-dialog button.dialog-action {
+    background: none;
+    border: none;
+    font-weight: bold;
+    font-size: 15px;
+    color: var(--accent-color-hex);
+    height: 100%;
+    padding: 8px;
+}
+
+dialog.basic-dialog::backdrop {
+    background: rgb(0 0 0 / 20%);
+}
+
+#reminderListContainer {
+    position: relative;
+    position: relative;
+    min-height: 50px;
+    max-height: 500px;
+    overflow-y: overlay;
+
+}
+
+ul.list {
+    max-width: 550px;
+    list-style-type: none;
+    text-align: start;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin: 0 auto;
+    max-height: 100%;
+}
+
+ul.list li {
+    height: 72px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+ul.list li span.heading {
+    height: 28px;
+    display: block;
+    font-size: 16px;
+}
+
+ul.list li span.caption {
+    height: 20px;
+    display: block;
+    font-size: 12px;
+}
+
+form .field {
+    position: relative;
+    position: relative;
+    margin-top: 24px;
+}
+
+form .field label {
+    font-size: 14px;
+    font-weight: lighter;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    transform-origin: 0 0;
+    transform: translate3d(12px, 12px, 0);
+    line-height: 20px;
+    transition: transform 0.2s;
+    background: #fff;
+}
+
+form .field input {
+    font-size: 16px;
+    border-radius: 4px;
+    width: 280px;
+    height: 48px;
+    padding-left: 16px !important;
+    padding-right: 12px !important;
+    border: 1px solid #000;
+    outline: none;
+    appearance: none;
+    line-height: 20px;
+}
+
+form .field input:focus {
+    border-color: var(--accent-color-hex);
+}
+
+form .field input:focus + label {
+    color: var(--accent-color-hex);
+}
+
+form .field input[type="text"]:focus + label {
+    transform: translate3d(12px, -9px, 0);
+    font-size: 12px;
+}
+
+form .field input[type="time"] + label {
+    transform: translate3d(12px, -9px, 0) !important;
+    font-size: 12px !important;
+}
+
+form .field span.validation-error{
+    font-size: 12px;
+    color: var(--form-field-error);
+    transition: display 0.2s;
+    display: none;
+    width: 280px;
+    margin-top: 10px;
+    text-align: left;
+    padding-left: 12px;
+}
+
+form .field input.validation-error{
+    border-color: var(--form-field-error) !important;
+}
+
+form .field input.validation-error:focus + label {
+    color: var(--form-field-error);
+}
+
+form .field input[type="time"].validation-error + label {
+    color: var(--form-field-error);
+}
+
+.field input[type="text"]:not(:placeholder-shown) + label {
+    transform: translate3d(12px, -9px, 0) !important;
+}
+
+form .field input::placeholder {
+    color: transparent !important;
+    user-select: none !important;
+}
+
+.d-block{
+    display: block !important;
+}
+
+.d-none{
+    display: none !important;
+}
+
+@supports selector(::-webkit-scrollbar) {
+    ::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-color-thumb);
+        border-radius: var(--scrollbar-border-radius);
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--scrollbar-background-track);
+    }
+
+    ::-webkit-scrollbar {
+        max-width: var(--scrollbar-width-legacy);
+        max-height: var(--scrollbar-width-legacy);
+    }
+}
+
 @media (min-width: 768px) {
     .container {
         width: 720px
+    }
+
+    #reminderListContainer {
+        max-height: 500px;
     }
 }

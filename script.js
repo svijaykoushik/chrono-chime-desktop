@@ -65,7 +65,7 @@ function scheduleReminders() {
   reminderScheduler.forEach((timeoutId) => {
     clearTimeout(timeoutId);
   });
-  reminders.forEach((reminder, index) => {
+  reminders.forEach((reminder) => {
     const timeoutId = setTimeout(() => {
       const options = {
         body: reminder.description,
@@ -81,13 +81,137 @@ function scheduleReminders() {
   });
 }
 
+const reminderListContainer = document.getElementById('reminderListContainer');
+function renderReminder(){
+  reminderListContainer.innerHTML='';
+  if(reminders.length===0){
+    return;
+  }
+  let reminderListItems = '';
+  reminders.forEach((reminder)=>{
+    // Get the time string
+    const timeString = reminder.time.toTimeString();
+
+    // Extract only the time portion (hours, minutes, and seconds)
+    const timeOnly = timeString.split(' ')[0];
+      reminderListItems+=`<li>
+        <span class="heading">${reminder.title}</h2>
+        <span class="caption">⏲️ ${timeOnly}</span>
+      </li>`;
+  });
+  const remindersList = `<ul class='list'>${reminderListItems}</ul>`;
+  reminderListContainer.innerHTML=remindersList;
+}
+
 let reminderClearIntervalId;
 function clearCompletedReminders(){
-  reminderClearIntervalId = setInterval(()=>{
-    const completedReminders = reminders.filter((reminder)=>reminder.status==='completed');
-
-  })
+  reminderClearIntervalId = setInterval(() => {
+    const completedReminders = reminders.filter(
+      (reminder) => reminder.status === 'completed'
+    );
+    completedReminders.forEach((reminder) => {
+      const index = reminders.findIndex(
+        (innerReminder) => innerReminder.id === reminder.id
+      );
+      if (index !== -1) {
+        reminders.splice(index, 1);
+      }
+    });
+  });
 }
+
+/**
+ * @type {HTMLDialogElement}
+ */
+const remindersModal = document.getElementById('remindersModal');
+const newReminderBtn = document.getElementById('newReminderBtn');
+const cancelAddReminderBtn = document.getElementById('cancelAddReminderBtn');
+const addReminderBtn = document.getElementById('addReminderBtn');
+
+function closeRemindersModal(){
+  remindersModal.close();
+}
+newReminderBtn.addEventListener('click',(ev)=>{
+  ev.preventDefault();
+  remindersModal.showModal();
+});
+cancelAddReminderBtn.addEventListener('click',(ev)=>{
+  ev.preventDefault();
+  closeRemindersModal();
+});
+// Function to generate random date within a range
+function getRandomDate(start, end) {
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
+addReminderBtn.addEventListener('click',(ev)=>{
+  ev.preventDefault();
+  const reminderTitleInput = document.getElementById('reminderTitleInput');
+  const reminderTimeInput = document.getElementById('reminderTimeInput');
+  const reminderTitleInputError =  document.getElementById('reminderTitleInputError');
+  const reminderTimeInputError = document.getElementById('reminderTimeInputError');
+  if (reminderTitleInput.checkValidity() === false) {
+    reminderTitleInput.classList.contains('validation-error') === false
+      ? reminderTitleInput.classList.add('validation-error')
+      : null;
+    reminderTitleInputError.classList.contains('d-block') === false
+      ? reminderTitleInputError.classList.add('d-block')
+      : null;
+  } else {
+    reminderTitleInput.classList.contains('validation-error')
+      ? reminderTitleInput.classList.remove('validation-error')
+      : false;
+    reminderTitleInputError.classList.contains('d-block')
+      ? reminderTitleInputError.classList.remove('d-block')
+      : null;
+  }
+  if (reminderTimeInput.checkValidity() === false) {
+    reminderTimeInput.classList.contains('validation-error') === false
+      ? reminderTimeInput.classList.add('validation-error')
+      : null;
+    reminderTimeInputError.classList.contains('d-block') === false
+      ? reminderTimeInputError.classList.add('d-block')
+      : null;
+  } else {
+    reminderTimeInput.classList.contains('validation-error')
+      ? reminderTimeInput.classList.remove('validation-error')
+      : false;
+    reminderTimeInputError.classList.contains('d-block')
+      ? reminderTimeInputError.classList.remove('d-block')
+      : null;
+  }
+
+  if (
+    [reminderTitleInput, reminderTimeInput].some(
+      (input) => input.checkValidity() === false
+    )
+  ) {
+    return;
+  }
+  const title = reminderTitleInput.value;
+  const time = reminderTimeInput.value;
+  closeRemindersModal();
+  reminderTitleInput.value = '';
+  reminderTimeInput.value = '';
+  const reminderDate = new Date();
+  const [hours, minutes] = time.split(':');
+  reminderDate.setHours(parseInt(hours));
+  reminderDate.setMinutes(parseInt(minutes));
+  reminderDate.setSeconds(0);
+  addReminder(title,reminderDate);
+
+  // Generating 10 dummy reminders
+for (let i = 0; i < 10; i++) {
+  addReminder(
+    `Reminder ${i + 1}`,
+    getRandomDate(new Date(), new Date(2024, 11, 31)),
+    `Description for Reminder ${i + 1}`
+  );
+}
+  renderReminder();
+});
+
+
+clearCompletedReminders();
 
 // Function to show the notification and play the sound
 function showNotification() {

@@ -19,6 +19,7 @@
             </div>
             <ul class="drawer-menu">
                 <!-- Links to different sections -->
+                <li><a href="/reminders">✅ Reminders</a></li>
                 <li><a href="/settings">🛠️ Settings</a></li>
                 <li><a href="/attributions">👍 Attributions</a></li>
                 <li><a href="/about">ℹ️ About</a></li>
@@ -44,6 +45,40 @@
             <button id="askPermissionButton" class="cta-button">
                 🥺 Allow Notifications
             </button>
+        </div>
+        <div id="reminders" class="container">
+            <h1>Reminders</h1>
+            <button type="button" class="cta-button" id="newReminderBtn">➕ Add reminder</button>
+            <div id="reminderListContainer">
+                
+            </div>
+            <dialog id="remindersModal" role="dialog" class="basic-dialog">
+                <div class="dialog-header">
+                    <h6>Reminder</h6>
+                </div>
+                <form id="remindersForm" method="dialog" name="remindersForm">
+                    <div class="dialog-content">
+                        <div class="field">
+                            <input name="reminderTitleInput" id="reminderTitleInput" type="text" placeholder="Title" required/>
+                            <label for="reminderTitleInput">Title</label>
+                            <span class="validation-error" id="reminderTitleInputError">Title should be at least 3 characters and at most 250 characters</span>
+                        </div>
+                        <div class="field">
+                            <input name="reminderTimeInput" id="reminderTimeInput" type="time" placeholder="Time" required/>
+                            <label for="reminderTimeInput">Time</label>
+                            <span class="validation-error" id="reminderTimeInputError">Time should be a valid time</span>
+                        </div>
+                    </div>
+                    <div class="action-container">   
+                        <button id="cancelAddReminderBtn" class="dialog-action">
+                            Cancel
+                        </button>                     
+                        <button id="addReminderBtn" type="submit" class="dialog-action">
+                            Add reminder
+                        </button>
+                    </div>
+                </form>
+            </dialog>
         </div>
         <div class="container" id="settings">
             <h1>Settings</h1>
