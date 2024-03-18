@@ -76,6 +76,7 @@ function scheduleReminders() {
       new Notification(reminder.title, options);
       reminder.status = 'completed';
       reminderScheduler.delete(reminder.id);
+      renderReminder();      
     }, Math.abs(reminder.time.getTime() - Date.now()));
     reminderScheduler.set(reminder.id, timeoutId);
   });
@@ -207,6 +208,8 @@ for (let i = 0; i < 10; i++) {
     `Description for Reminder ${i + 1}`
   );
 }
+
+  scheduleReminders();
   renderReminder();
 });
 
