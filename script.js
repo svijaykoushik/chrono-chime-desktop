@@ -66,6 +66,23 @@ function scheduleReminders() {
     clearTimeout(timeoutId);
   });
   reminders.forEach((reminder) => {
+    const now = Date.now();
+    const timeRemaining = Math.abs(reminder.time.getTime() - now);
+    const hours =
+      timeRemaining >= 3600000 ? Math.floor(timeRemaining / 3600000) : 0;
+    const minutes =
+      timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
+    const seconds =
+      timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
+    console.log(
+      'Remaining time for reminder %s between %s and %s is %d hours %d minutes %d seconds',
+      reminder.title,
+      reminder.time.toTimeString(),
+      new Date(now).toTimeString(),
+      hours,
+      minutes,
+      seconds
+    );
     const timeoutId = setTimeout(() => {
       const options = {
         body: reminder.description,
@@ -89,7 +106,18 @@ function renderReminder(){
     return;
   }
   let reminderListItems = '';
-  reminders.forEach((reminder)=>{
+  reminders.sort((reminderA,reminderB)=>{
+    if (reminderA.status === 'active' && reminderB.status === 'completed') {
+      return -1; // 'active' comes before 'completed'
+    } else if (
+      reminderA.status === 'completed' &&
+      reminderB.status === 'active'
+    ) {
+      return 1; // 'completed' comes after 'active'
+    } else {
+      return 0; // Maintain the same order for 'active' and 'completed'
+    }
+  }).forEach((reminder)=>{
     // Get the time string
     const timeString = reminder.time.toTimeString();
 
@@ -104,9 +132,8 @@ function renderReminder(){
   reminderListContainer.innerHTML=remindersList;
 }
 
-let reminderClearIntervalId;
 function clearCompletedReminders(){
-  reminderClearIntervalId = setInterval(() => {
+  setInterval(() => {
     const completedReminders = reminders.filter(
       (reminder) => reminder.status === 'completed'
     );
@@ -118,7 +145,9 @@ function clearCompletedReminders(){
         reminders.splice(index, 1);
       }
     });
-  });
+    console.log('Reminder Cleanup');
+    renderReminder();
+  },30000);
 }
 
 /**
@@ -141,8 +170,19 @@ cancelAddReminderBtn.addEventListener('click',(ev)=>{
   closeRemindersModal();
 });
 // Function to generate random date within a range
-function getRandomDate(start, end) {
-  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+function getRandomTimeUntilEndOfDay() {
+  const now = new Date();
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 0); // Set end of day to 23:59:59.000
+
+  // Calculate random time between now and end of day
+  const randomTime = new Date(now.getTime() + Math.random() * (endOfDay.getTime() - now.getTime()));
+
+  // Set seconds and milliseconds to 0
+  randomTime.setSeconds(0);
+  randomTime.setMilliseconds(0);
+
+  return randomTime;
 }
 addReminderBtn.addEventListener('click',(ev)=>{
   ev.preventDefault();
@@ -204,7 +244,7 @@ addReminderBtn.addEventListener('click',(ev)=>{
 for (let i = 0; i < 10; i++) {
   addReminder(
     `Reminder ${i + 1}`,
-    getRandomDate(new Date(), new Date(2024, 11, 31)),
+    getRandomTimeUntilEndOfDay(),
     `Description for Reminder ${i + 1}`
   );
 }
