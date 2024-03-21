@@ -1,3 +1,6 @@
+@import url('./poppins.css');
+@import url('./noto-color-emoji.css');
+
 /* Declare variable values */
 :root {
     --app-font-family: 'Poppins';
@@ -11,28 +14,8 @@
     --form-field-error: #ac0002;
 }
 
-/* Add the font with font-display: swap */
-@font-face {
-    font-family: 'Poppins';
-    font-style: normal;
-    font-weight: 400;
-    src: url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,400;0,700;1,100;1,200;1,400;1,700&display=swap');
-    font-display: swap;
-}
-
 * {
     box-sizing: border-box;
-}
-
-/* Apply Font style */
-body,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p {
     font-family: var(--app-font-family), sans-serif;
 }
 
@@ -85,12 +68,62 @@ body {
 h1,
 h2 {
     color: black;
-    font-weight: 100;
+    font-weight: 300;
+}
+
+h1 {
+    letter-spacing: -1.5px;
+}
+
+h2 {
+    letter-spacing: 0.5px;
+}
+
+h3 {
+    letter-spacing: 0px;
+    font-weight: 400;
+}
+
+h6 {
+    letter-spacing: 0.15px;
+    font-weight: 500;
+}
+
+button {
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    text-transform: uppercase;
 }
 
 p {
     color: black;
-    font-weight: 200;
+    font-weight: 400;
+    size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.body1 {
+    font-weight: 400;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.body2 {
+    font-weight: 400;
+    font-size: 14px;
+    letter-spacing: 0.25px;
+}
+
+.subtitle1 {
+    font-weight: 400;
+    font-size: 16px;
+    letter-spacing: 0.15px;
+}
+
+.subtitle2 {
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.1px;
 }
 
 /* Add styles for the button */
@@ -102,8 +135,8 @@ p {
     border-radius: none;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s ease-in-out,
-        filter 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transition: background-color 0.3s ease-in-out, filter 0.3s ease-in-out,
+        transform 0.3s ease-in-out;
     /* Apply a smooth background color transition */
 }
 
@@ -128,8 +161,8 @@ p {
 .background-wrapper {
     opacity: 0;
     /* Set initial opacity to 0 */
-    transition: opacity 0.5s cubic-bezier(0.4, 0, 1, 1),
-        width 0.3s ease-in-out, height 0.3s ease-in-out;
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 1, 1), width 0.3s ease-in-out,
+        height 0.3s ease-in-out;
     /* Apply a smooth opacity transition,
                Add transition properties for size change */
 }
@@ -153,7 +186,6 @@ small a:hover {
 }
 
 @keyframes pulse {
-
     0%,
     100% {
         transform: scale(1);
@@ -383,7 +415,7 @@ small a:hover {
     line-height: 1.5;
 }
 
-.toggle-switch>input {
+.toggle-switch > input {
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -404,14 +436,14 @@ small a:hover {
     transition: opacity 0.3s 0.1s, transform 0.2s 0.1s;
 }
 
-.toggle-switch>span {
+.toggle-switch > span {
     display: inline-block;
     width: 100%;
     cursor: pointer;
 }
 
-.toggle-switch>span::before {
-    content: "";
+.toggle-switch > span::before {
+    content: '';
     float: right;
     display: inline-block;
     margin: 5px 0 5px 10px;
@@ -423,8 +455,8 @@ small a:hover {
     transition: background-color 0.2s, opacity 0.2s;
 }
 
-.toggle-switch>span::after {
-    content: "";
+.toggle-switch > span::after {
+    content: '';
     position: absolute;
     top: 2px;
     right: 16px;
@@ -432,68 +464,69 @@ small a:hover {
     width: 20px;
     height: 20px;
     background-color: rgb(255, 255, 255);
-    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2),
+        0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
     transition: background-color 0.2s, transform 0.2s;
 }
 
-.toggle-switch>input:checked {
+.toggle-switch > input:checked {
     right: -10px;
     background-color: rgb(var(--accent-color-rgb-string, 33, 150, 243));
 }
 
-.toggle-switch>input:checked+span::before {
+.toggle-switch > input:checked + span::before {
     background-color: rgba(var(--accent-color-rgb-string, 33, 150, 243), 0.6);
 }
 
-.toggle-switch>input:checked+span::after {
+.toggle-switch > input:checked + span::after {
     background-color: rgb(var(--accent-color-rgb-string, 33, 150, 243));
     transform: translateX(16px);
 }
 
 /* Hover, Focus */
-.toggle-switch:hover>input {
+.toggle-switch:hover > input {
     opacity: 0.04;
 }
 
-.toggle-switch>input:focus {
+.toggle-switch > input:focus {
     opacity: 0.12;
 }
 
-.toggle-switch:hover>input:focus {
+.toggle-switch:hover > input:focus {
     opacity: 0.16;
 }
 
 /* Active */
-.toggle-switch>input:active {
+.toggle-switch > input:active {
     opacity: 1;
     transform: scale(0);
     transition: transform 0s, opacity 0s;
 }
 
-.toggle-switch>input:active+span::before {
+.toggle-switch > input:active + span::before {
     background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
 }
 
-.toggle-switch>input:checked:active+span::before {
+.toggle-switch > input:checked:active + span::before {
     background-color: rgba(0, 0, 0, 0.38);
 }
 
 /* Disabled */
-.toggle-switch>input:disabled {
+.toggle-switch > input:disabled {
     opacity: 0;
 }
 
-.toggle-switch>input:disabled+span {
+.toggle-switch > input:disabled + span {
     color: rgb(0, 0, 0);
     opacity: 0.38;
     cursor: default;
 }
 
-.toggle-switch>input:disabled+span::before {
+.toggle-switch > input:disabled + span::before {
     background-color: rgba(0, 0, 0, 0.38);
 }
 
-.toggle-switch>input:checked:disabled+span::before {
+.toggle-switch > input:checked:disabled + span::before {
     background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
 }
 
@@ -524,7 +557,7 @@ dialog.basic-dialog .dialog-content {
     font-size: 16px;
 }
 
-dialog.basic-dialog .dialog-content>* {
+dialog.basic-dialog .dialog-content > * {
     margin-bottom: 16px;
 }
 
@@ -549,7 +582,7 @@ dialog.basic-dialog .action-container {
     text-align: right;
 }
 
-dialog.basic-dialog .action-container>*:not(:last-child) {
+dialog.basic-dialog .action-container > *:not(:last-child) {
     margin-right: 8px;
 }
 
@@ -573,7 +606,6 @@ dialog.basic-dialog::backdrop {
     min-height: 50px;
     max-height: 500px;
     overflow-y: overlay;
-
 }
 
 ul.list {
@@ -647,17 +679,17 @@ form .field input:focus + label {
     color: var(--accent-color-hex);
 }
 
-form .field input[type="text"]:focus + label {
+form .field input[type='text']:focus + label {
     transform: translate3d(12px, -9px, 0);
     font-size: 12px;
 }
 
-form .field input[type="time"] + label {
+form .field input[type='time'] + label {
     transform: translate3d(12px, -9px, 0) !important;
     font-size: 12px !important;
 }
 
-form .field span.validation-error{
+form .field span.validation-error {
     font-size: 12px;
     color: var(--form-field-error);
     transition: display 0.2s;
@@ -668,7 +700,7 @@ form .field span.validation-error{
     padding-left: 12px;
 }
 
-form .field input.validation-error{
+form .field input.validation-error {
     border-color: var(--form-field-error) !important;
 }
 
@@ -676,11 +708,11 @@ form .field input.validation-error:focus + label {
     color: var(--form-field-error);
 }
 
-form .field input[type="time"].validation-error + label {
+form .field input[type='time'].validation-error + label {
     color: var(--form-field-error);
 }
 
-.field input[type="text"]:not(:placeholder-shown) + label {
+.field input[type='text']:not(:placeholder-shown) + label {
     transform: translate3d(12px, -9px, 0) !important;
 }
 
@@ -689,11 +721,11 @@ form .field input::placeholder {
     user-select: none !important;
 }
 
-.d-block{
+.d-block {
     display: block !important;
 }
 
-.d-none{
+.d-none {
     display: none !important;
 }
 
@@ -715,7 +747,7 @@ form .field input::placeholder {
 
 @media (min-width: 768px) {
     .container {
-        width: 720px
+        width: 720px;
     }
 
     #reminderListContainer {
