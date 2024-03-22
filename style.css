@@ -4,6 +4,7 @@
 /* Declare variable values */
 :root {
     --app-font-family: 'Poppins';
+    --app-emoji-font-family: 'Noto Color Emoji';
     --accent-color-rgb-string: 245, 137, 178;
     --accent-color-hex: #f589b2;
     --scrollbar-color-thumb: #8d8d8d;
@@ -287,11 +288,11 @@ small a:hover {
 
 /* Style for the app drawer container */
 .drawer {
-    width: 250px;
+    width: 256px;
     background-color: rgba(255, 255, 255, 1);
     position: fixed;
     top: 0;
-    left: -250px;
+    left: -256px;
     /* Initially hidden off-screen */
     height: 100%;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
@@ -328,19 +329,27 @@ small a:hover {
 .drawer-menu {
     list-style: none;
     padding: 0;
+    margin: 0;
+    margin-left: 16px;
 }
 
 .drawer-menu li {
-    padding: 15px;
+    padding: 8px;
     border-bottom: 1px solid #ccc;
+}
+
+.drawer-menu li .icon {
+    font-family: var(--app-emoji-font-family);
+    font-size: 16px;
+    display: inline-block;
 }
 
 /* Style for links in the drawer menu */
 .drawer-menu a {
     text-decoration: none;
-    color: #333;
-    font-weight: 100;
-    display: block;
+    color: #000;
+    display: inline-block;
+    margin-left: 16px;
 }
 
 /* Hover effect for links */
