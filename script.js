@@ -124,8 +124,8 @@ function renderReminder(){
     // Extract only the time portion (hours, minutes, and seconds)
     const timeOnly = timeString.split(' ')[0];
       reminderListItems+=`<li>
-        <span class="heading">${reminder.title}</h2>
-        <span class="caption">⏲️ ${timeOnly}</span>
+        <span class="heading subtitle1">${reminder.title}</h2>
+        <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
       </li>`;
   });
   const remindersList = `<ul class='list'>${reminderListItems}</ul>`;
@@ -176,7 +176,9 @@ function getRandomTimeUntilEndOfDay() {
   endOfDay.setHours(23, 59, 59, 0); // Set end of day to 23:59:59.000
 
   // Calculate random time between now and end of day
-  const randomTime = new Date(now.getTime() + Math.random() * (endOfDay.getTime() - now.getTime()));
+  const randomTime = new Date(
+    now.getTime() + Math.random() * (endOfDay.getTime() - now.getTime())
+  );
 
   // Set seconds and milliseconds to 0
   randomTime.setSeconds(0);

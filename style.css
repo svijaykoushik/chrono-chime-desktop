@@ -34,6 +34,10 @@ body {
     background-color: var(--accent-color-hex);
 }
 
+.emoji{
+    font-family: var(--app-emoji-font-family);
+}
+
 /* Create a wrapper for the background */
 .background-wrapper {
     position: absolute;
@@ -95,6 +99,7 @@ button {
     letter-spacing: 1.5px;
     font-weight: 500;
     text-transform: uppercase;
+    font-size: 14px;
 }
 
 p {
@@ -650,8 +655,6 @@ dialog.basic-dialog .action-container>*:not(:last-child) {
 dialog.basic-dialog button.dialog-action {
     background: none;
     border: none;
-    font-weight: bold;
-    font-size: 15px;
     color: var(--accent-color-hex);
     height: 100%;
     padding: 8px;
@@ -690,13 +693,12 @@ ul.list li {
 ul.list li span.heading {
     height: 28px;
     display: block;
-    font-size: 16px;
 }
 
 ul.list li span.caption {
     height: 20px;
     display: block;
-    font-size: 12px;
+    color: #959595;
 }
 
 form .field {
@@ -706,8 +708,9 @@ form .field {
 }
 
 form .field label {
-    font-size: 14px;
-    font-weight: lighter;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.4px;
     position: absolute;
     top: 0;
     left: 0;
@@ -721,6 +724,8 @@ form .field label {
 
 form .field input {
     font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
     border-radius: 4px;
     width: 280px;
     height: 48px;
