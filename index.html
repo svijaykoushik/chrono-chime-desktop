@@ -113,15 +113,15 @@
             </div>
             <form id="settingsForm">
                 <section id="general" class="tabcontent">
-                    <h2>General ⚙️</h2>
+                    <h2>General <span class="emoji">⚙️</span></h2>
                     <p>
                         <label for="allowNotificationCheckbox" class="toggle-switch">
                             <input id="allowNotificationCheckbox" type="checkbox" name="allowNotificationCheckbox"/>
-                            <span>🔔 Allow notification</span>
+                            <span><span class="emoji d-inline">🔔</span>&nbsp;Allow notification</span>
                         </label>
                     </p>
                     <p>
-                        <label for="interval">⏰ Interval:</label>
+                        <label for="interval"><span class="emoji d-inline">⏰</span> Interval:</label>
                         <select id="interval" name="interval">
                             <option value="1">1 hour</option>
                             <option value="2">2 hours</option>
@@ -131,20 +131,20 @@
                     <p>
                         <label for="autoLaunchCheckbox" class="toggle-switch">
                             <input id="autoLaunchCheckbox" type="checkbox" name="autoLaunchCheckbox"/>
-                            <span>🏁 Auto launch on startup</span>
+                            <span><span class="emoji d-inline">🏁</span>&nbsp;Auto launch on startup</span>
                         </label>
                     </p>
                 </section>
                 <section id="sound" class="tabcontent">
-                    <h2>🔊 Notification Sound</h2>
+                    <h2><span class="emoji">🔊</span> Notification Sound</h2>
                     <p>
-                        <label for="notificationSound">🔉 Select Sound:</label>
+                        <label for="notificationSound"><span class="emoji d-inline">🔉</span> Select Sound:</label>
                         <div class="custom-select">
                             <select id="notificationSound" name="notificationSound">
-                                <option value="sound1">🔔 Sound 1</option>
-                                <option value="sound2">🎵 Sound 2</option>
-                                <option value="sound3">🎶 Sound 3</option>
-                                <option value="mute">🔇 Mute</option>
+                                <option value="sound1"><span class="emoji d-inline">🔔</span> Sound 1</option>
+                                <option value="sound2"><span class="emoji d-inline">🎵</span> Sound 2</option>
+                                <option value="sound3"><span class="emoji d-inline">🎶</span> Sound 3</option>
+                                <option value="mute"><span class="emoji d-inline">🔇</span> Mute</option>
                             </select>
                             <button id="playSoundButton">Preview Sound</button>
                             <audio id="sound1Audio">
@@ -160,10 +160,10 @@
                     </p>
                 </section>
                 <section id="content" class="tabcontent">
-                    <h2>Notification Content ✉️</h2>
+                    <h2>Notification Content <span class="emoji d-inline">✉️</span></h2>
                     <p>
                         <label for="notificationTitle"
-                            >📛 Custom Title:</label
+                            ><span class="emoji d-inline">📛</span> Custom Title:</label
                         >
                         <input
                             type="text"
@@ -173,7 +173,7 @@
                     </p>
                     <p>
                         <label for="notificationContent"
-                            >📝 Custom Message:</label
+                            ><span class="emoji d-inline">📝</span> Custom Message:</label
                         >
                         <textarea
                             id="notificationContent"
@@ -184,14 +184,14 @@
                     </p>
                     <p>
                         <button id="previewNotification" type="button" class="cta-button">
-                            🔔 Preview Notification
+                            <span class="emoji d-inline">🔔</span> Preview Notification
                         </button>
                     </p>
                 </section>
                 <section id="reset" class="tabcontent">
                     <p>
                         <button type="button" class="cta-button" id="resetSettings">
-                            🔄 Reset to Default
+                            <span class="emoji d-inline">🔄</span> Reset to Default
                         </button>
                     </p>
                 </section>

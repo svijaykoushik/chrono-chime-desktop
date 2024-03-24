@@ -794,6 +794,9 @@ form .field input::placeholder {
 .d-none {
     display: none !important;
 }
+.d-inline {
+    display: inline !important;
+}
 
 @supports selector(::-webkit-scrollbar) {
     ::-webkit-scrollbar-thumb {
