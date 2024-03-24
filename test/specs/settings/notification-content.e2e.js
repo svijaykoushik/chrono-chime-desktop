@@ -21,10 +21,10 @@ describe('Notification content section tests', () => {
             timeoutMsg: 'appDrawer did not expand within 5 seconds',
         });
         const appDrawerItems = await $$('#appDrawer .drawer-menu li');
-        const settingsLink = await appDrawerItems[0].$('a');
+        const settingsLink = await appDrawerItems[1].$('a');
         await settingsLink.click();
         const settings = await $('#settings');
-        browser.waitUntil(
+        await browser.waitUntil(
             () => {
                 return settings.isDisplayed();
             },
@@ -46,7 +46,7 @@ describe('Notification content section tests', () => {
         await sectionNavItem.click();
 
         section = await $('#content');
-        section.waitForExist({
+        await section.waitForExist({
             timeout: 5000,
             timeoutMsg:
                 'Notification Content section did not appear within 5 seconds',

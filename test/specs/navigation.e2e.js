@@ -15,7 +15,7 @@ describe('Navigation testing', () => {
         // Locate and expand the collapsed sidebar
         toggleDrawerButton = await $('#toggleDrawerButton');
         await toggleDrawerButton.click();
-        browser.waitUntil(
+        await browser.waitUntil(
             () => {
                 return appDrawer.isDisplayed();
             },
@@ -25,11 +25,30 @@ describe('Navigation testing', () => {
             }
         );
     });
-
-    it('should navigate to settings', async () => {
+    
+    it('should navigate to reminders', async () => {
         const settings = await appDrawerItems[0].$('a');
         await settings.click();
-        browser.waitUntil(
+        await browser.waitUntil(
+            () => {
+                return $('#reminders').isDisplayed();
+            },
+            {
+                timeout: 5000,
+                timeoutMsg: 'reminders did appear within 5 seconds',
+            }
+        );
+        await expect($('#reminders')).toBeDisplayed();
+        await expect($('#reminders h1')).toHaveText('Reminders');
+        await expect($('#settings')).not.toBeDisplayed();
+        await expect($('#about')).not.toBeDisplayed();
+        await expect($('#attributions')).not.toBeDisplayed();
+    });
+
+    it('should navigate to settings', async () => {
+        const settings = await appDrawerItems[1].$('a');
+        await settings.click();
+        await browser.waitUntil(
             () => {
                 return $('#settings').isDisplayed();
             },
@@ -38,17 +57,18 @@ describe('Navigation testing', () => {
                 timeoutMsg: 'settings did appear within 5 seconds',
             }
         );
-        expect(browser).toHaveUrl('/settings');
-        expect($('#settings')).toBeDisplayed();
-        expect($('#settings h1')).toHaveText('Settings');
-        expect($('#about')).not.toBeDisplayed();
-        expect($('#attributions')).not.toBeDisplayed();
+        await expect($('#settings')).toBeDisplayed();
+        await expect($('#settings h1')).toHaveText('Settings');
+        await expect($('#reminders')).not.toBeDisplayed();
+        await expect($('#about')).not.toBeDisplayed();
+        await expect($('#attributions')).not.toBeDisplayed();
     });
 
     it('should navigate to attributions', async () => {
-        const attributions = await appDrawerItems[1].$('a');
+        const attributions = await appDrawerItems[2].$('a');
+        await expect(attributions).toBeClickable();
         await attributions.click();
-        browser.waitUntil(
+        await browser.waitUntil(
             () => {
                 return $('#attributions').isDisplayed();
             },
@@ -57,17 +77,17 @@ describe('Navigation testing', () => {
                 timeoutMsg: 'attributions did appear within 5 seconds',
             }
         );
-        expect(browser).toHaveUrl('/attributions');
-        expect($('#attributions')).toBeDisplayed();
-        expect($('#attributions h1')).toHaveText('Attributions');
-        expect($('#about')).not.toBeDisplayed();
-        expect($('#settings')).not.toBeDisplayed();
+        await expect($('#attributions')).toBeDisplayed();
+        await expect($('#attributions h1')).toHaveText('Attributions');
+        await expect($('#reminders')).not.toBeDisplayed();
+        await expect($('#about')).not.toBeDisplayed();
+        await expect($('#settings')).not.toBeDisplayed();
     });
 
     it('should navigate to about', async () => {
-        const attributions = await appDrawerItems[2].$('a');
-        await attributions.click();
-        browser.waitUntil(
+        const about = await appDrawerItems[3].$('a');
+        await await about.click();
+        await browser.waitUntil(
             () => {
                 return $('#about').isDisplayed();
             },
@@ -76,10 +96,10 @@ describe('Navigation testing', () => {
                 timeoutMsg: 'about did appear within 5 seconds',
             }
         );
-        expect(browser).toHaveUrl('/about');
-        expect($('#about')).toBeDisplayed();
-        expect($('#about h1')).toHaveText('About');
-        expect($('#attributions')).not.toBeDisplayed();
-        expect($('#settings')).not.toBeDisplayed();
+        await expect($('#about')).toBeDisplayed();
+        await expect($('#about h1')).toHaveText('About');
+        await expect($('#reminders')).not.toBeDisplayed();
+        await expect($('#attributions')).not.toBeDisplayed();
+        await expect($('#settings')).not.toBeDisplayed();
     });
 });

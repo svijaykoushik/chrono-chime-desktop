@@ -11,7 +11,7 @@ describe('General page smoke tests', () => {
             timeoutMsg: 'appDrawer did not expand within 5 seconds',
         });
         const appDrawerItems = await $$('#appDrawer .drawer-menu li');
-        const settingsLink = await appDrawerItems[0].$('a');
+        const settingsLink = await appDrawerItems[1].$('a');
         await settingsLink.click();
         const settings = await $('#settings');
         await browser.waitUntil(
