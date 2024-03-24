@@ -106,15 +106,6 @@ function addReminder(title, time, description = '') {
     showAppToast('Failed to Add reminder');
     console.log('Error adding reminder:', event.target.error);
   };
-  // const reminder = {
-  //   id: crypto.randomUUID(),
-  //   title,
-  //   time: new Date(time),
-  //   description,
-  //   status: 'active'
-  // };
-  // reminders.push(reminder);
-  // return reminder;
 }
 
 function scheduleReminders() {
@@ -181,6 +172,19 @@ function scheduleReminders() {
   };
 }
 
+// eslint-disable-next-line no-unused-vars
+function deleteReminder(reminderId){
+
+   // Start a transaction to read data
+   const transaction = remindersDb.transaction(['reminders'], 'readwrite');
+
+   // Get the object store
+   const objectStore = transaction.objectStore('reminders');
+
+   objectStore.delete(reminderId);
+   renderReminder();  
+}
+
 const reminderListContainer = document.getElementById('reminderListContainer');
 function renderReminder() {
   // Start a transaction to read data
@@ -226,10 +230,17 @@ function renderReminder() {
 
           // Extract only the time portion (hours, minutes, and seconds)
           const timeOnly = timeString.split(' ')[0];
-          reminderListItems += `<li>
-        <span class="heading subtitle1">${reminder.title}</h2>
-        <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
-      </li>`;
+          reminderListItems += `<li data-reminder-id="${reminder.id}">
+              <div>
+              <span class="heading subtitle1">${reminder.title}</h2>
+              <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
+            </div>
+            <div class="list-secondary-action">
+              <button type="button" onclick="deleteReminder('${reminder.id}')">
+                <span class="emoji">🗑️</span>
+              </button>
+            </div>
+          </li>`;
         });
 
       const remindersList = `<ul class='list'>${reminderListItems}</ul>`;
@@ -332,16 +343,7 @@ addReminderBtn.addEventListener('click', (ev) => {
   reminderDate.setHours(parseInt(hours));
   reminderDate.setMinutes(parseInt(minutes));
   reminderDate.setSeconds(0);
-  addReminder(title, reminderDate, null);
-
-  // Generating 10 dummy reminders
-  for (let i = 0; i < 10; i++) {
-    addReminder(
-      `Reminder ${i + 1}`,
-      getRandomTimeUntilEndOfDay(),
-      `Description for Reminder ${i + 1}`
-    );
-  }
+  addReminder(title, reminderDate);
 
   scheduleReminders();
   renderReminder();
@@ -358,23 +360,6 @@ cancelAddReminderBtn.addEventListener('click', (ev) => {
   ev.preventDefault();
   closeRemindersModal();
 });
-// Function to generate random date within a range
-function getRandomTimeUntilEndOfDay() {
-  const now = new Date();
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 0); // Set end of day to 23:59:59.000
-
-  // Calculate random time between now and end of day
-  const randomTime = new Date(
-    now.getTime() + Math.random() * (endOfDay.getTime() - now.getTime())
-  );
-
-  // Set seconds and milliseconds to 0
-  randomTime.setSeconds(0);
-  randomTime.setMilliseconds(0);
-
-  return randomTime;
-}
 
 // Function to show the notification and play the sound
 function showNotification() {

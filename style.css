@@ -34,7 +34,7 @@ body {
     background-color: var(--accent-color-hex);
 }
 
-.emoji{
+.emoji {
     font-family: var(--app-emoji-font-family);
 }
 
@@ -133,7 +133,7 @@ p {
     letter-spacing: 0.1px;
 }
 
-.caption{
+.caption {
     font-weight: 400;
     font-size: 12px;
     letter-spacing: 0.4px;
@@ -440,8 +440,8 @@ small a:hover {
     margin: 8px 16px;
 }
 
-.social-icons .social-title{
-   margin: 8px 0 0 0;
+.social-icons .social-title {
+    margin: 8px 0 0 0;
 }
 
 .social-icons a {
@@ -452,13 +452,13 @@ small a:hover {
     height: 64px;
 }
 
-.social-icons a span{
+.social-icons a span {
     display: inline-block;
     margin: 0 16px !important;
     padding: 0;
 }
 
-.social-icons a img{
+.social-icons a img {
     margin: 0;
     padding: 0;
 }
@@ -688,6 +688,9 @@ ul.list li {
     padding-right: 16px;
     padding-top: 8px;
     padding-bottom: 8px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
 }
 
 ul.list li span.heading {
@@ -699,6 +702,18 @@ ul.list li span.caption {
     height: 20px;
     display: block;
     color: #454545;
+}
+
+ul.list li .list-secondary-action {
+    margin: 0 0 0 16px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+ul.list li .list-secondary-action button {
+    border: none;
+    background: none;
 }
 
 form .field {
@@ -794,6 +809,7 @@ form .field input::placeholder {
 .d-none {
     display: none !important;
 }
+
 .d-inline {
     display: inline !important;
 }
