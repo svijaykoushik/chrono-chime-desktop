@@ -21,7 +21,14 @@
             }
         ],
         "quotes": ["error", "single", { "avoidEscape": true }],
-        "arrow-parens": ["error", "always"]
+        "arrow-parens": ["error", "always"],
+        "no-use-before-define": [
+          "error",
+          {
+            "variables": true,
+            "functions": false
+          }
+        ]
     },
     "parserOptions": {
         "ecmaVersion": 2020,
