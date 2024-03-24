@@ -13,11 +13,10 @@ describe('Navigation testing', () => {
     beforeEach(async () => {
 
         // Locate and expand the collapsed sidebar
-        toggleDrawerButton = await $('#toggleDrawerButton');
         await toggleDrawerButton.click();
         await browser.waitUntil(
             () => {
-                return appDrawer.isDisplayed();
+                return appDrawer.isClickable();
             },
             {
                 timeout: 5000,
@@ -25,10 +24,21 @@ describe('Navigation testing', () => {
             }
         );
     });
+
+    afterEach(async () => {
+        // Close the app drawer
+        await toggleDrawerButton.click();
+        const appDrawer = await $('#appDrawer');
+        await appDrawer.waitForStable({
+            timeout: 5000,
+            timeoutMsg: 'appDrawer did not close within 5 seconds',
+        });
+    });
     
     it('should navigate to reminders', async () => {
-        const settings = await appDrawerItems[0].$('a');
-        await settings.click();
+        const reminders = await appDrawerItems[0].$('a');
+        await expect(reminders).toBeClickable();
+        await reminders.click();
         await browser.waitUntil(
             () => {
                 return $('#reminders').isDisplayed();
@@ -47,6 +57,7 @@ describe('Navigation testing', () => {
 
     it('should navigate to settings', async () => {
         const settings = await appDrawerItems[1].$('a');
+        await expect(settings).toBeClickable();
         await settings.click();
         await browser.waitUntil(
             () => {
@@ -86,7 +97,8 @@ describe('Navigation testing', () => {
 
     it('should navigate to about', async () => {
         const about = await appDrawerItems[3].$('a');
-        await await about.click();
+        await expect(about).toBeClickable();
+        await about.click();
         await browser.waitUntil(
             () => {
                 return $('#about').isDisplayed();
