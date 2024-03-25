@@ -194,7 +194,7 @@
     ]);
     trayIcon.setContextMenu(contextMenu);
     trayIcon.setTitle('ChronoChime');
-    trayIcon.setToolTip('ChronoChime - Hourly Notification');
+    trayIcon.setToolTip('ChronoChime - Time Keeper Extraordinaire');
 
     // Toggle context menu item visibility based on main window visibility
     mainWindow.on('show', () => {

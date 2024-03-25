@@ -1,7 +1,7 @@
 let notificationInterval; // Store the interval ID for the notification timer
 let countdownInterval; // Store the interval ID for the countdown timer
 let countdownTimeRemaining = 0; // Global variable to store the countdown time in milliseconds
-let nextHourTimeout; // Store the timeout ID of the next hout timeout
+let nextHourTimeout; // Store the timeout ID of the next hour timeout
 
 const soundSelect = document.getElementById('notificationSound');
 const intervalSelect = document.getElementById('interval');
@@ -18,9 +18,7 @@ const countdownTimer = document.getElementById('countdownTimer');
 const allowNotificationCheckbox = document.getElementById(
   'allowNotificationCheckbox'
 );
-const autoLaunchCheckbox = document.getElementById(
-  'autoLaunchCheckbox'
-);
+const autoLaunchCheckbox = document.getElementById('autoLaunchCheckbox');
 const generalTabLink = document.getElementById('generalTabLink');
 const soundTabLink = document.getElementById('soundTabLink');
 const contentTabLink = document.getElementById('contentTabLink');
@@ -45,6 +43,323 @@ if (!getSettingsFromLocalStorage()) {
 }
 
 let settings = getSettingsFromLocalStorage() || defaultSettings;
+
+const reminderScheduler = new Map();
+
+let remindersDb;
+
+// Open (or create) the IndexedDB database
+const request = window.indexedDB.open('Reminders', 1);
+
+// Handle database upgrade (creation or schema change)
+request.onupgradeneeded = function (event) {
+  const db = event.target.result;
+
+  // Create an object store (table) with the specified schema
+  const objectStore = db.createObjectStore('reminders', { keyPath: 'id' });
+
+  // Define the schema for the object store
+  objectStore.createIndex('title', 'title', { unique: false });
+  objectStore.createIndex('time', 'time', { unique: false });
+  objectStore.createIndex('description', 'description', { unique: false });
+  objectStore.createIndex('status', 'status', { unique: false });
+};
+
+// Handle database opening success
+request.onsuccess = function (event) {
+  remindersDb = event.target.result;
+
+  clearCompletedReminders(remindersDb);
+};
+
+// Handle database opening error
+request.onerror = function (event) {
+  console.log('Error opening database:', event.target.error);
+  showAppToast('Error opening reminders database');
+};
+
+function addReminder(title, time, description = '') {
+  // Start a database transaction
+  const transaction = remindersDb.transaction(['reminders'], 'readwrite');
+
+  // Get the object store
+  const objectStore = transaction.objectStore('reminders');
+
+  // Define the data to be added
+  const reminder = {
+    id: crypto.randomUUID(),
+    title,
+    time: new Date(time),
+    description,
+    status: 'active',
+  };
+
+  // Add the data to the object store
+  const addRequest = objectStore.add(reminder);
+
+  // Handle the success or error of the add operation
+  addRequest.onsuccess = function () {
+    showAppToast('Reminder Added');
+  };
+
+  addRequest.onerror = function (event) {
+    showAppToast('Failed to Add reminder');
+    console.log('Error adding reminder:', event.target.error);
+  };
+}
+
+function scheduleReminders() {
+  // Start a transaction to read data
+  const transaction = remindersDb.transaction(['reminders'], 'readonly');
+
+  // Get the object store
+  const objectStore = transaction.objectStore('reminders');
+
+  const reminders = [];
+
+  // Open a cursor to iterate over all reminders
+  objectStore.openCursor().onsuccess = function (event) {
+    const cursor = event.target.result;
+    if (cursor) {
+      // Push each reminder into the array
+      reminders.push(cursor.value);
+      cursor.continue();
+    } else {
+      // All reminders have been retrieved, you can now use the 'reminders' array
+
+      reminderScheduler.forEach((timeoutId) => {
+        clearTimeout(timeoutId);
+      });
+      reminders.forEach((reminder) => {
+        const now = Date.now();
+        const timeRemaining = Math.abs(reminder.time.getTime() - now);
+        const hours =
+          timeRemaining >= 3600000 ? Math.floor(timeRemaining / 3600000) : 0;
+        const minutes =
+          timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
+        const seconds =
+          timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
+        console.log(
+          'Remaining time for reminder %s between %s and %s is %d hours %d minutes %d seconds',
+          reminder.title,
+          reminder.time.toTimeString(),
+          new Date(now).toTimeString(),
+          hours,
+          minutes,
+          seconds
+        );
+        const timeoutId = setTimeout(() => {
+          const options = {
+            body: reminder.description,
+            icon: 'chrono-chime-icon-192.png', // Replace with the path to your notification icon (192x192 pixels)
+            vibrate: [200, 100, 200], // Vibration pattern (optional)
+            // Add other notification options here if needed
+          };
+          new Notification(reminder.title, options);
+          reminder.status = 'completed';
+          const transaction = remindersDb.transaction(
+            ['reminders'],
+            'readwrite'
+          );
+          const objectStore = transaction.objectStore('reminders');
+          objectStore.put(reminder);
+          reminderScheduler.delete(reminder.id);
+          renderReminder();
+        }, Math.abs(reminder.time.getTime() - Date.now()));
+        reminderScheduler.set(reminder.id, timeoutId);
+      });
+    }
+  };
+}
+
+// eslint-disable-next-line no-unused-vars
+function deleteReminder(reminderId){
+
+   // Start a transaction to read data
+   const transaction = remindersDb.transaction(['reminders'], 'readwrite');
+
+   // Get the object store
+   const objectStore = transaction.objectStore('reminders');
+
+   objectStore.delete(reminderId);
+   renderReminder();  
+}
+
+const reminderListContainer = document.getElementById('reminderListContainer');
+function renderReminder() {
+  // Start a transaction to read data
+  const transaction = remindersDb.transaction(['reminders'], 'readonly');
+
+  // Get the object store
+  const objectStore = transaction.objectStore('reminders');
+
+  let reminderListItems = '';
+  const reminders = [];
+
+  // Open a cursor to iterate over all reminders
+  objectStore.openCursor().onsuccess = function (event) {
+    const cursor = event.target.result;
+    if (cursor) {
+      // Push each reminder into the array
+      reminders.push(cursor.value);
+      cursor.continue();
+    } else {
+      // All reminders have been retrieved, you can now use the 'reminders' array
+      reminders
+        .sort((reminderA, reminderB) => {
+          return reminderA.time.getTime() - reminderB.time.getTime();
+        })
+        .sort((reminderA, reminderB) => {
+          if (
+            reminderA.status === 'active' &&
+            reminderB.status === 'completed'
+          ) {
+            return -1; // 'active' comes before 'completed'
+          } else if (
+            reminderA.status === 'completed' &&
+            reminderB.status === 'active'
+          ) {
+            return 1; // 'completed' comes after 'active'
+          } else {
+            return 0; // Maintain the same order for 'active' and 'completed'
+          }
+        })
+        .forEach((reminder) => {
+          // Get the time string
+          const timeString = reminder.time.toTimeString();
+
+          // Extract only the time portion (hours, minutes, and seconds)
+          const timeOnly = timeString.split(' ')[0];
+          reminderListItems += `<li data-reminder-id="${reminder.id}">
+              <div>
+              <span class="heading subtitle1">${reminder.title}</h2>
+              <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
+            </div>
+            <div class="list-secondary-action">
+              <button type="button" onclick="deleteReminder('${reminder.id}')">
+                <span class="emoji">🗑️</span>
+              </button>
+            </div>
+          </li>`;
+        });
+
+      const remindersList = `<ul class='list'>${reminderListItems}</ul>`;
+      reminderListContainer.innerHTML = remindersList;
+    }
+  };
+}
+
+function clearCompletedReminders() {
+  setInterval(() => {
+    // Start a database transaction
+    const transaction = remindersDb.transaction(['reminders'], 'readwrite');
+
+    // Get the object store
+    const objectStore = transaction.objectStore('reminders');
+
+    // Open a cursor to iterate over all reminders
+    objectStore.openCursor().onsuccess = function (event) {
+      const cursor = event.target.result;
+      if (cursor) {
+        // Check if the reminder is completed
+        if (cursor.value.status === 'completed') {
+          // Delete the reminder if it's completed
+          objectStore.delete(cursor.primaryKey);
+        }
+        cursor.continue();
+      } else {
+        // All reminders have been processed
+        console.log('Reminder cleanup complete');
+        renderReminder();
+      }
+    };
+  }, 30000);
+}
+
+/**
+ * @type {HTMLDialogElement}
+ */
+const remindersModal = document.getElementById('remindersModal');
+const newReminderBtn = document.getElementById('newReminderBtn');
+const cancelAddReminderBtn = document.getElementById('cancelAddReminderBtn');
+const addReminderBtn = document.getElementById('addReminderBtn');
+
+// Handle add reminders
+addReminderBtn.addEventListener('click', (ev) => {
+  ev.preventDefault();
+  const reminderTitleInput = document.getElementById('reminderTitleInput');
+  const reminderTimeInput = document.getElementById('reminderTimeInput');
+  const reminderTitleInputError = document.getElementById(
+    'reminderTitleInputError'
+  );
+  const reminderTimeInputError = document.getElementById(
+    'reminderTimeInputError'
+  );
+  if (reminderTitleInput.checkValidity() === false) {
+    reminderTitleInput.classList.contains('validation-error') === false
+      ? reminderTitleInput.classList.add('validation-error')
+      : null;
+    reminderTitleInputError.classList.contains('d-block') === false
+      ? reminderTitleInputError.classList.add('d-block')
+      : null;
+  } else {
+    reminderTitleInput.classList.contains('validation-error')
+      ? reminderTitleInput.classList.remove('validation-error')
+      : false;
+    reminderTitleInputError.classList.contains('d-block')
+      ? reminderTitleInputError.classList.remove('d-block')
+      : null;
+  }
+  if (reminderTimeInput.checkValidity() === false) {
+    reminderTimeInput.classList.contains('validation-error') === false
+      ? reminderTimeInput.classList.add('validation-error')
+      : null;
+    reminderTimeInputError.classList.contains('d-block') === false
+      ? reminderTimeInputError.classList.add('d-block')
+      : null;
+  } else {
+    reminderTimeInput.classList.contains('validation-error')
+      ? reminderTimeInput.classList.remove('validation-error')
+      : false;
+    reminderTimeInputError.classList.contains('d-block')
+      ? reminderTimeInputError.classList.remove('d-block')
+      : null;
+  }
+
+  if (
+    [reminderTitleInput, reminderTimeInput].some(
+      (input) => input.checkValidity() === false
+    )
+  ) {
+    return;
+  }
+  const title = reminderTitleInput.value;
+  const time = reminderTimeInput.value;
+  closeRemindersModal();
+  reminderTitleInput.value = '';
+  reminderTimeInput.value = '';
+  const reminderDate = new Date();
+  const [hours, minutes] = time.split(':');
+  reminderDate.setHours(parseInt(hours));
+  reminderDate.setMinutes(parseInt(minutes));
+  reminderDate.setSeconds(0);
+  addReminder(title, reminderDate);
+
+  scheduleReminders();
+  renderReminder();
+});
+
+function closeRemindersModal() {
+  remindersModal.close();
+}
+newReminderBtn.addEventListener('click', (ev) => {
+  ev.preventDefault();
+  remindersModal.showModal();
+});
+cancelAddReminderBtn.addEventListener('click', (ev) => {
+  ev.preventDefault();
+  closeRemindersModal();
+});
 
 // Function to show the notification and play the sound
 function showNotification() {
@@ -87,40 +402,43 @@ function showNotification() {
   }
 }
 
-function showAskPermissionButton(){
+function showAskPermissionButton() {
   askPermissionButton.style.opacity = 1;
   askPermissionButton.style.visibility = 'visible';
 }
 
-function hideAskPermissionButton(){
+function hideAskPermissionButton() {
   askPermissionButton.style.opacity = 0;
   askPermissionButton.style.visibility = 'hidden';
 }
 
-function showCountdownTimer(){
+function showCountdownTimer() {
   countdownTimer.style.opacity = 1;
   countdownTimer.style.visibility = 'visible';
 }
 
-function hideCountdownTimer(){
+function hideCountdownTimer() {
   countdownTimer.style.opacity = 0;
   countdownTimer.style.visibility = 'hidden';
 }
 
-function clearIntervals(){
+function clearIntervals() {
   __electronLog.info('Clearing intervals');
   clearTimeout(nextHourTimeout);
   clearInterval(notificationInterval);
   clearInterval(countdownInterval);
 }
 
-function startCountdown(intervalHours,timeUntilNextHour) {
+function startCountdown(intervalHours, timeUntilNextHour) {
   resetCountdownTime(timeUntilNextHour);
   updateCountdownTimer(intervalHours);
-  countdownInterval = setInterval(() => updateCountdownTimer(intervalHours), 1000);
+  countdownInterval = setInterval(
+    () => updateCountdownTimer(intervalHours),
+    1000
+  );
 }
 
-function scheduleNextNotification(intervalHours, timeUntilNextHour){
+function scheduleNextNotification(intervalHours, timeUntilNextHour) {
   __electronLog.info(
     'Scheduling next notification after ',
     Math.round(timeUntilNextHour / (1000 * 60)),
@@ -208,14 +526,13 @@ function scheduleNotifications() {
   const timeUntilNextHour = setNextNotificationInterval(intervalHours);
 
   // Start the countdown timer
-  startCountdown(intervalHours,timeUntilNextHour);
+  startCountdown(intervalHours, timeUntilNextHour);
 
   scheduleNextNotification(intervalHours, timeUntilNextHour);
 }
 
 // Function to update the countdown timer
 function updateCountdownTimer(intervalHours) {
-
   countdownTimeRemaining -= 1000; // Subtract 1 second (1000 milliseconds) from the remaining time
 
   if (countdownTimeRemaining <= 0) {
@@ -318,6 +635,11 @@ function loadContent(url) {
     settings = getSettingsFromLocalStorage();
     scheduleNotifications();
     initializeSettingsForm(settings);
+  } else if (url === '/reminders') {
+    settings = getSettingsFromLocalStorage();
+    scheduleNotifications();
+    scheduleReminders();
+    renderReminder();
   } else {
     settings = getSettingsFromLocalStorage();
     scheduleNotifications();
@@ -350,7 +672,6 @@ loadContent('/');
 
 // JavaScript function to open a specific tab
 function openTab(evt, tabName) {
-
   // Hide all tab content
   const tabcontent = document.getElementsByClassName('tabcontent');
   for (i = 0; i < tabcontent.length; i++) {
@@ -369,7 +690,6 @@ function openTab(evt, tabName) {
 }
 
 function saveSettingsToLocalStorage(settings) {
-
   // Add new settings options if missing in
   // stored settings
   const settingsOptions = Object.keys(settings);
@@ -421,7 +741,6 @@ function getSettingsFromLocalStorage() {
 }
 
 function initializeSettingsForm(settingsArg) {
-
   // Set the notification status based on the loaded setting
   if (settingsArg.isOff !== undefined && settingsArg.isOff !== null) {
     allowNotificationCheckbox.checked = !settingsArg.isOff;

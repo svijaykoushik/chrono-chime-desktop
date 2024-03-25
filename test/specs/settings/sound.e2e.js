@@ -11,10 +11,10 @@ describe('Notification sound section tests', () => {
             timeoutMsg: 'appDrawer did not expand within 5 seconds',
         });
         const appDrawerItems = await $$('#appDrawer .drawer-menu li');
-        const settingsLink = await appDrawerItems[0].$('a');
+        const settingsLink = await appDrawerItems[1].$('a');
         await settingsLink.click();
         const settings = await $('#settings');
-        browser.waitUntil(
+        await browser.waitUntil(
             () => {
                 return settings.isDisplayed();
             },
@@ -36,7 +36,7 @@ describe('Notification sound section tests', () => {
         await sectionNavItem.click();
 
         const section = await $('#sound');
-        section.waitForExist({
+        await section.waitForExist({
             timeout: 5000,
             timeoutMsg:
                 'Notification Sound section did not appear within 5 seconds',
@@ -46,9 +46,9 @@ describe('Notification sound section tests', () => {
     it('should land on Notification Sound section', async () => {
 
         const section = await $('#sound');
-        expect(section).toBeDisplayed();
+        await expect(section).toBeDisplayed();
         const sectionHeading = await section.$('h2');
-        expect(sectionHeading).toHaveText('🔊 Notification Sound');
+        await expect(sectionHeading).toHaveText('🔊 Notification Sound');
     });
 
     describe('Sound selection tests', () => {
@@ -69,7 +69,7 @@ describe('Notification sound section tests', () => {
 
         it('should have default sound1', async () => {
             const selectedValue = await notificationSound.getValue();
-            expect(selectedValue).toEqual('sound1');
+            await expect(selectedValue).toEqual('sound1');
         });
 
         it('should select sound2', async () => {
@@ -80,8 +80,8 @@ describe('Notification sound section tests', () => {
             });
             const selectedValue = await notificationSound.getValue();
             const notificationText = await toastNotification.getText();
-            expect(notificationText).toEqual('✅ Settings saved.');
-            expect(selectedValue).toEqual('sound2');
+            await expect(notificationText).toEqual('✅ Settings saved.');
+            await expect(selectedValue).toEqual('sound2');
         });
 
         it('should select sound3', async () => {
@@ -92,8 +92,8 @@ describe('Notification sound section tests', () => {
             });
             const selectedValue = await notificationSound.getValue();
             const notificationText = await toastNotification.getText();
-            expect(notificationText).toEqual('✅ Settings saved.');
-            expect(selectedValue).toEqual('sound3');
+            await expect(notificationText).toEqual('✅ Settings saved.');
+            await expect(selectedValue).toEqual('sound3');
         });
 
         it('should select mute', async () => {
@@ -104,20 +104,20 @@ describe('Notification sound section tests', () => {
             });
             const selectedValue = await notificationSound.getValue();
             const notificationText = await toastNotification.getText();
-            expect(notificationText).toEqual('✅ Settings saved.');
-            expect(selectedValue).toEqual('mute');
+            await expect(notificationText).toEqual('✅ Settings saved.');
+            await expect(selectedValue).toEqual('mute');
         });
 
         it('should select sound1', async () => {
             await notificationSound.selectByAttribute('value', 'sound1');
-            toastNotification.waitForStable({
+            await toastNotification.waitForStable({
                 timeout: 5000,
                 timeoutMsg: 'Toast notification did not appear within 5 seconds'
             });
             const selectedValue = await notificationSound.getValue();
             const notificationText = await toastNotification.getText();
-            expect(notificationText).toEqual('✅ Settings saved.');
-            expect(selectedValue).toEqual('sound1');
+            await expect(notificationText).toEqual('✅ Settings saved.');
+            await expect(selectedValue).toEqual('sound1');
         });
     });
 });

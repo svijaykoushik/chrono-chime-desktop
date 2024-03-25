@@ -11,10 +11,10 @@ describe('Settings page navigation tests', () => {
             timeoutMsg: 'appDrawer did not expand within 5 seconds',
         });
         const appDrawerItems = await $$('#appDrawer .drawer-menu li');
-        const settingsLink = await appDrawerItems[0].$('a');
+        const settingsLink = await appDrawerItems[1].$('a');
         await settingsLink.click();
         const settings = await $('#settings');
-        browser.waitUntil(
+        await browser.waitUntil(
             () => {
                 return settings.isDisplayed();
             },
@@ -36,12 +36,12 @@ describe('Settings page navigation tests', () => {
     });
     it('should land on general section', async () => {
         const section = await $('#general');
-        expect(section).toBeDisplayed();
+        await expect(section).toBeDisplayed();
         const sectionHeading = await section.$('h2');
-        expect(sectionHeading).toHaveText('General ⚙️');
-        expect($('#sound')).not.toBeDisplayed();
-        expect($('#content')).not.toBeDisplayed();
-        expect($('#reset')).not.toBeDisplayed();
+        await expect(sectionHeading).toHaveText('General ⚙️');
+        await expect($('#sound')).not.toBeDisplayed();
+        await expect($('#content')).not.toBeDisplayed();
+        await expect($('#reset')).not.toBeDisplayed();
     });
 
     it('should navigate to Notification sound section', async () => {
@@ -54,12 +54,12 @@ describe('Settings page navigation tests', () => {
             timeoutMsg:
                 'Notification Sound section did not appear within 5 seconds',
         });
-        expect(section).toBeDisplayed();
+        await expect(section).toBeDisplayed();
         const sectionHeading = await section.$('h2');
-        expect(sectionHeading).toHaveText('🔊 Notification Sound');
-        expect($('#general')).not.toBeDisplayed();
-        expect($('#content')).not.toBeDisplayed();
-        expect($('#reset')).not.toBeDisplayed();
+        await expect(sectionHeading).toHaveText('🔊 Notification Sound');
+        await expect($('#general')).not.toBeDisplayed();
+        await expect($('#content')).not.toBeDisplayed();
+        await expect($('#reset')).not.toBeDisplayed();
     });
 
     it('should navigate to Notification content section', async () => {
@@ -72,12 +72,12 @@ describe('Settings page navigation tests', () => {
             timeoutMsg:
                 'Notification content section did not appear within 5 seconds',
         });
-        expect(section).toBeDisplayed();
+        await expect(section).toBeDisplayed();
         const sectionHeading = await section.$('h2');
-        expect(sectionHeading).toHaveText('🔊 Notification Content ✉️');
-        expect($('#sound')).not.toBeDisplayed();
-        expect($('#general')).not.toBeDisplayed();
-        expect($('#reset')).not.toBeDisplayed();
+        await expect(sectionHeading).toHaveText('Notification Content ✉️');
+        await expect($('#sound')).not.toBeDisplayed();
+        await expect($('#general')).not.toBeDisplayed();
+        await expect($('#reset')).not.toBeDisplayed();
     });
 
     it('should navigate to Reset section', async () => {
@@ -85,14 +85,14 @@ describe('Settings page navigation tests', () => {
         await sectionNavItem.click();
 
         const section = await $('#reset');
-        section.waitForExist({
+        await section.waitForExist({
             timeout: 5000,
             timeoutMsg: 'Reset section did not appear within 5 seconds',
         });
-        expect(section).toBeDisplayed();
-        expect($('#sound')).not.toBeDisplayed();
-        expect($('#content')).not.toBeDisplayed();
-        expect($('#general')).not.toBeDisplayed();
+        await expect(section).toBeDisplayed();
+        await expect($('#sound')).not.toBeDisplayed();
+        await expect($('#content')).not.toBeDisplayed();
+        await expect($('#general')).not.toBeDisplayed();
     });
 
     it('should navigate back to general section', async () => {
@@ -113,12 +113,12 @@ describe('Settings page navigation tests', () => {
             timeoutMsg:
                 'General section did not appear within 5 seconds',
         });
-        expect(section).toBeDisplayed();
+        await expect(section).toBeDisplayed();
         const sectionHeading = await section.$('h2');
-        expect(sectionHeading).toHaveText('General ⚙️');
-        expect($('#sound')).not.toBeDisplayed();
-        expect($('#content')).not.toBeDisplayed();
-        expect($('#reset')).not.toBeDisplayed();
+        await expect(sectionHeading).toHaveText('General ⚙️');
+        await expect($('#sound')).not.toBeDisplayed();
+        await expect($('#content')).not.toBeDisplayed();
+        await expect($('#reset')).not.toBeDisplayed();
         await toggleDrawerButton.click();
         await appDrawer.waitForStable({
             timeout: 5000,

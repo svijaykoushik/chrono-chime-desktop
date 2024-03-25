@@ -1,32 +1,23 @@
+@import url('./poppins.css');
+@import url('./noto-color-emoji.css');
+
 /* Declare variable values */
-:root{
+:root {
     --app-font-family: 'Poppins';
+    --app-emoji-font-family: 'Noto Color Emoji';
     --accent-color-rgb-string: 245, 137, 178;
     --accent-color-hex: #f589b2;
-}
-
-/* Add the font with font-display: swap */
-@font-face {
-    font-family: 'Poppins';
-    font-style: normal;
-    font-weight: 400;
-    src: url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,400;0,700;1,100;1,200;1,400;1,700&display=swap');
-    font-display: swap;
+    --scrollbar-color-thumb: #8d8d8d;
+    --scrollbar-color-track: #dadada;
+    --scrollbar-border-radius: 5px;
+    --scrollbar-background-track: none;
+    --scrollbar-width-legacy: 5px;
+    --form-field-error: #ac0002;
+    --text-color-hex: #000;
 }
 
 * {
     box-sizing: border-box;
-}
-
-/* Apply Font style */
-body,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p {
     font-family: var(--app-font-family), sans-serif;
 }
 
@@ -41,6 +32,10 @@ body {
     position: relative;
     /* Set the body as the positioning context */
     background-color: var(--accent-color-hex);
+}
+
+.emoji {
+    font-family: var(--app-emoji-font-family);
 }
 
 /* Create a wrapper for the background */
@@ -79,12 +74,69 @@ body {
 h1,
 h2 {
     color: black;
-    font-weight: 100;
+    font-weight: 300;
+}
+
+h1 {
+    letter-spacing: -1.5px;
+}
+
+h2 {
+    letter-spacing: 0.5px;
+}
+
+h3 {
+    letter-spacing: 0px;
+    font-weight: 400;
+}
+
+h6 {
+    letter-spacing: 0.15px;
+    font-weight: 500;
+}
+
+button {
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 14px;
 }
 
 p {
     color: black;
-    font-weight: 200;
+    font-weight: 400;
+    size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.body1 {
+    font-weight: 400;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.body2 {
+    font-weight: 400;
+    font-size: 14px;
+    letter-spacing: 0.25px;
+}
+
+.subtitle1 {
+    font-weight: 400;
+    font-size: 16px;
+    letter-spacing: 0.15px;
+}
+
+.subtitle2 {
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.1px;
+}
+
+.caption {
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.4px;
 }
 
 /* Add styles for the button */
@@ -96,8 +148,8 @@ p {
     border-radius: none;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s ease-in-out,
-        filter 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transition: background-color 0.3s ease-in-out, filter 0.3s ease-in-out,
+        transform 0.3s ease-in-out;
     /* Apply a smooth background color transition */
 }
 
@@ -122,8 +174,8 @@ p {
 .background-wrapper {
     opacity: 0;
     /* Set initial opacity to 0 */
-    transition: opacity 0.5s cubic-bezier(0.4, 0, 1, 1),
-        width 0.3s ease-in-out, height 0.3s ease-in-out;
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 1, 1), width 0.3s ease-in-out,
+        height 0.3s ease-in-out;
     /* Apply a smooth opacity transition,
                Add transition properties for size change */
 }
@@ -249,11 +301,11 @@ small a:hover {
 
 /* Style for the app drawer container */
 .drawer {
-    width: 250px;
+    width: 256px;
     background-color: rgba(255, 255, 255, 1);
     position: fixed;
     top: 0;
-    left: -250px;
+    left: -256px;
     /* Initially hidden off-screen */
     height: 100%;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
@@ -262,51 +314,80 @@ small a:hover {
 }
 
 /* Style for the drawer header */
-.drawer-header {
+.drawer .drawer-header {
     background-color: var(--accent-color-hex);
     color: white;
-    padding: 20px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    height: 128px;
+}
+
+.drawer .drawer-header a {
+    color: white;
+    text-decoration: none;
+    margin-right: 16px;
+    display: inline-block;
+    padding: 0;
+}
+
+.drawer .drawer-header a:hover {
+    color: white;
+}
+
+.drawer .drawer-header .heading {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    vertical-align: text-bottom;
+    top: 42px;
+    position: absolute;
+    left: 64px;
+}
+
+/* Style for the app logo */
+.drawer .drawer-header .app-logo {
+    width: 24px;
+    height: 24px;
+}
+
+/* Style for the drawer menu (list of links) */
+.drawer .drawer-menu {
+    list-style: none;
+    padding: 0;
+    margin: 8px 16px;
+}
+
+.drawer .drawer-menu li {
+    padding: 8px 0;
+    height: 64px;
     display: flex;
     align-items: center;
 }
 
-.drawer-header a {
-    color: white;
-    text-decoration: none;
-}
-
-.drawer-header a:hover {
-    color: white;
-}
-
-/* Style for the app logo */
-.app-logo {
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
-}
-
-/* Style for the drawer menu (list of links) */
-.drawer-menu {
-    list-style: none;
+.drawer hr.separator {
+    border-top: 0.5px solid #e1e1e1;
+    margin: 8px 0;
+    height: 1px;
     padding: 0;
 }
 
-.drawer-menu li {
-    padding: 15px;
-    border-bottom: 1px solid #ccc;
+.drawer .drawer-menu li .icon {
+    font-family: var(--app-emoji-font-family);
+    font-size: 24px;
+    display: inline-block;
 }
 
 /* Style for links in the drawer menu */
-.drawer-menu a {
+.drawer .drawer-menu a {
     text-decoration: none;
-    color: #333;
-    font-weight: 100;
-    display: block;
+    color: var(--text-color-hex);
+    display: inline-block;
+    margin-left: 16px;
 }
 
 /* Hover effect for links */
-.drawer-menu a:hover {
+.drawer .drawer-menu a:hover {
     color: var(--accent-color-hex);
 }
 
@@ -354,18 +435,41 @@ small a:hover {
 
 .social-icons {
     display: flex;
-    justify-content: space-evenly;
-    align-items: center;
+    flex-direction: column;
+    padding: 0;
+    margin: 8px 16px;
+}
+
+.social-icons .social-title {
+    margin: 8px 0 0 0;
 }
 
 .social-icons a {
     text-decoration: none;
-    color: #fff;
+    color: var(--text-color-hex);
+    display: flex;
+    align-items: center;
+    height: 64px;
+}
+
+.social-icons a span {
+    display: inline-block;
+    margin: 0 16px !important;
+    padding: 0;
+}
+
+.social-icons a img {
+    margin: 0;
+    padding: 0;
 }
 
 .social-icons a:visited {
     text-decoration: none;
-    color: #fff;
+    color: var(--text-color-hex);
+}
+
+.social-icons a:hover {
+    color: var(--accent-color-hex);
 }
 
 .toggle-switch {
@@ -405,7 +509,7 @@ small a:hover {
 }
 
 .toggle-switch>span::before {
-    content: "";
+    content: '';
     float: right;
     display: inline-block;
     margin: 5px 0 5px 10px;
@@ -418,7 +522,7 @@ small a:hover {
 }
 
 .toggle-switch>span::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 2px;
     right: 16px;
@@ -426,7 +530,8 @@ small a:hover {
     width: 20px;
     height: 20px;
     background-color: rgb(255, 255, 255);
-    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2),
+        0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
     transition: background-color 0.2s, transform 0.2s;
 }
 
@@ -491,14 +596,246 @@ small a:hover {
     background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
 }
 
-div.about-logo{
+div.about-logo {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+dialog.basic-dialog * {
+    margin: 0;
+    padding: 0;
+}
+
+dialog.basic-dialog {
+    min-width: 280px;
+    max-width: 560px;
+    text-align: center;
+    box-shadow: 24px 12px 6px rgba(0, 0, 0, 0.14);
+    background: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0;
+}
+
+dialog.basic-dialog .dialog-content {
+    padding: 0 24px;
+    font-size: 16px;
+}
+
+dialog.basic-dialog .dialog-content>* {
+    margin-bottom: 16px;
+}
+
+dialog.basic-dialog .dialog-header {
+    height: 64px;
+    padding: 0 24px;
+}
+
+dialog.basic-dialog h6 {
+    font-weight: bolder;
+    font-size: 21px;
+    line-height: 48px;
+}
+
+dialog.basic-dialog input {
+    width: 100%;
+}
+
+dialog.basic-dialog .action-container {
+    height: 52px;
+    padding: 8px;
+    text-align: right;
+}
+
+dialog.basic-dialog .action-container>*:not(:last-child) {
+    margin-right: 8px;
+}
+
+dialog.basic-dialog button.dialog-action {
+    background: none;
+    border: none;
+    color: var(--accent-color-hex);
+    height: 100%;
+    padding: 8px;
+}
+
+dialog.basic-dialog::backdrop {
+    background: rgb(0 0 0 / 20%);
+}
+
+#reminderListContainer {
+    position: relative;
+    position: relative;
+    min-height: 50px;
+    max-height: 500px;
+    overflow-y: overlay;
+}
+
+ul.list {
+    max-width: 550px;
+    list-style-type: none;
+    text-align: start;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin: 0 auto;
+    max-height: 100%;
+}
+
+ul.list li {
+    height: 72px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+ul.list li span.heading {
+    height: 28px;
+    display: block;
+}
+
+ul.list li span.caption {
+    height: 20px;
+    display: block;
+    color: #454545;
+}
+
+ul.list li .list-secondary-action {
+    margin: 0 0 0 16px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+ul.list li .list-secondary-action button {
+    border: none;
+    background: none;
+}
+
+form .field {
+    position: relative;
+    position: relative;
+    margin-top: 24px;
+}
+
+form .field label {
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.4px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    transform-origin: 0 0;
+    transform: translate3d(12px, 12px, 0);
+    line-height: 20px;
+    transition: transform 0.2s;
+    background: #fff;
+}
+
+form .field input {
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    border-radius: 4px;
+    width: 280px;
+    height: 48px;
+    padding-left: 16px !important;
+    padding-right: 12px !important;
+    border: 1px solid var(--text-color-hex);
+    outline: none;
+    appearance: none;
+    line-height: 20px;
+}
+
+form .field input:focus {
+    border-color: var(--accent-color-hex);
+}
+
+form .field input:focus+label {
+    color: var(--accent-color-hex);
+}
+
+form .field input[type='text']:focus+label {
+    transform: translate3d(12px, -9px, 0);
+    font-size: 12px;
+}
+
+form .field input[type='time']+label {
+    transform: translate3d(12px, -9px, 0) !important;
+    font-size: 12px !important;
+}
+
+form .field span.validation-error {
+    font-size: 12px;
+    color: var(--form-field-error);
+    transition: display 0.2s;
+    display: none;
+    width: 280px;
+    margin-top: 10px;
+    text-align: left;
+    padding-left: 12px;
+}
+
+form .field input.validation-error {
+    border-color: var(--form-field-error) !important;
+}
+
+form .field input.validation-error:focus+label {
+    color: var(--form-field-error);
+}
+
+form .field input[type='time'].validation-error+label {
+    color: var(--form-field-error);
+}
+
+.field input[type='text']:not(:placeholder-shown)+label {
+    transform: translate3d(12px, -9px, 0) !important;
+}
+
+form .field input::placeholder {
+    color: transparent !important;
+    user-select: none !important;
+}
+
+.d-block {
+    display: block !important;
+}
+
+.d-none {
+    display: none !important;
+}
+
+.d-inline {
+    display: inline !important;
+}
+
+@supports selector(::-webkit-scrollbar) {
+    ::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-color-thumb);
+        border-radius: var(--scrollbar-border-radius);
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--scrollbar-background-track);
+    }
+
+    ::-webkit-scrollbar {
+        max-width: var(--scrollbar-width-legacy);
+        max-height: var(--scrollbar-width-legacy);
+    }
+}
+
 @media (min-width: 768px) {
     .container {
-        width: 720px
+        width: 720px;
+    }
+
+    #reminderListContainer {
+        max-height: 500px;
     }
 }
