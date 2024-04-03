@@ -78,7 +78,7 @@ request.onerror = function (event) {
   showAppToast('Error opening reminders database');
 };
 
-function addReminder(title, time, description = '') {
+function addReminder(title, time, isRecurring, description = '') {
   // Start a database transaction
   const transaction = remindersDb.transaction(['reminders'], 'readwrite');
 
@@ -91,7 +91,7 @@ function addReminder(title, time, description = '') {
     title,
     time: new Date(time),
     description,
-    status: 'active',
+    status: isRecurring ? 'recurring' : 'active',
   };
 
   // Add the data to the object store
@@ -156,14 +156,18 @@ function scheduleReminders() {
             // Add other notification options here if needed
           };
           new Notification(reminder.title, options);
-          reminder.status = 'completed';
+          if (reminder.status === 'active') {
+            reminder.status = 'completed';
+          }
           const transaction = remindersDb.transaction(
             ['reminders'],
             'readwrite'
           );
-          const objectStore = transaction.objectStore('reminders');
-          objectStore.put(reminder);
-          reminderScheduler.delete(reminder.id);
+          if (reminder.status == 'completed') {
+            const objectStore = transaction.objectStore('reminders');
+            objectStore.put(reminder);
+            reminderScheduler.delete(reminder.id);
+          }
           renderReminder();
         }, Math.abs(reminder.time.getTime() - Date.now()));
         reminderScheduler.set(reminder.id, timeoutId);
@@ -173,16 +177,16 @@ function scheduleReminders() {
 }
 
 // eslint-disable-next-line no-unused-vars
-function deleteReminder(reminderId){
+function deleteReminder(reminderId) {
 
-   // Start a transaction to read data
-   const transaction = remindersDb.transaction(['reminders'], 'readwrite');
+  // Start a transaction to read data
+  const transaction = remindersDb.transaction(['reminders'], 'readwrite');
 
-   // Get the object store
-   const objectStore = transaction.objectStore('reminders');
+  // Get the object store
+  const objectStore = transaction.objectStore('reminders');
 
-   objectStore.delete(reminderId);
-   renderReminder();  
+  objectStore.delete(reminderId);
+  renderReminder();
 }
 
 const reminderListContainer = document.getElementById('reminderListContainer');
@@ -234,6 +238,7 @@ function renderReminder() {
               <div>
               <span class="heading subtitle1">${reminder.title}</h2>
               <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
+              ${reminder.status === 'recurring' ? '<span class="caption">Everyday</span>' : ''}
             </div>
             <div class="list-secondary-action">
               <button type="button" onclick="deleteReminder('${reminder.id}')">
@@ -295,6 +300,7 @@ addReminderBtn.addEventListener('click', (ev) => {
   const reminderTimeInputError = document.getElementById(
     'reminderTimeInputError'
   );
+  const isRecurringReminder = document.getElementById('isRecurringReminder');
   if (reminderTitleInput.checkValidity() === false) {
     reminderTitleInput.classList.contains('validation-error') === false
       ? reminderTitleInput.classList.add('validation-error')
@@ -343,7 +349,8 @@ addReminderBtn.addEventListener('click', (ev) => {
   reminderDate.setHours(parseInt(hours));
   reminderDate.setMinutes(parseInt(minutes));
   reminderDate.setSeconds(0);
-  addReminder(title, reminderDate);
+  isRecurringReminder.checked = false;
+  addReminder(title, reminderDate, isRecurringReminder.checked);
 
   scheduleReminders();
   renderReminder();
