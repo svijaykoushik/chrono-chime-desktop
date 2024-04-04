@@ -368,6 +368,9 @@ cancelAddReminderBtn.addEventListener('click', (ev) => {
   closeRemindersModal();
 });
 
+// Scedule reminders on app start
+scheduleReminders();
+
 // Function to show the notification and play the sound
 function showNotification() {
   const options = {
@@ -645,7 +648,6 @@ function loadContent(url) {
   } else if (url === '/reminders') {
     settings = getSettingsFromLocalStorage();
     scheduleNotifications();
-    scheduleReminders();
     renderReminder();
   } else {
     settings = getSettingsFromLocalStorage();
