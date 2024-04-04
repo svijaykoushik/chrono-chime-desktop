@@ -70,6 +70,9 @@ request.onsuccess = function (event) {
   remindersDb = event.target.result;
 
   clearCompletedReminders(remindersDb);
+
+  // Scedule reminders on app start
+  scheduleReminders();
 };
 
 // Handle database opening error
@@ -367,9 +370,6 @@ cancelAddReminderBtn.addEventListener('click', (ev) => {
   ev.preventDefault();
   closeRemindersModal();
 });
-
-// Scedule reminders on app start
-scheduleReminders();
 
 // Function to show the notification and play the sound
 function showNotification() {
