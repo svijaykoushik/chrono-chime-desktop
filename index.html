@@ -45,7 +45,7 @@
             <h1>ChronoChime - Time Keeper Extraordinaire</h1>
             <p id="countdownTimer"></p>
             <button id="askPermissionButton" class="cta-button">
-                🥺 Allow Notifications
+                <span class="emoji">🥺</span> Allow Notifications
             </button>
         </div>
         <div id="reminders" class="container">
@@ -70,6 +70,12 @@
                             <label for="reminderTimeInput">Time</label>
                             <span class="validation-error" id="reminderTimeInputError">Time should be a valid time</span>
                         </div>
+                        <div class="field">
+                            <label for="isRecurringReminder" class="toggle-switch">
+                                <input id="isRecurringReminder" type="checkbox" name="isRecurringReminder" />
+                                <span><span class="emoji d-inline">🔁</span>&nbsp;Repeat Everyday</span>
+                            </label>
+                        </div>
                     </div>
                     <div class="action-container">   
                         <button id="cancelAddReminderBtn" class="dialog-action">
@@ -90,25 +96,25 @@
                     id="generalTabLink"
                     onclick="openTab(event, 'general')"
                 >
-                    ⚙️ General
+                    <span class="emoji">⚙️</span> General
                 </button>
                 <button
                     class="tablinks"
                     id="soundTabLink"
                 >
-                    🔊 Notification Sound
+                    <span class="emoji">🔊</span> Notification Sound
                 </button>
                 <button
                     class="tablinks"
                     id="contentTabLink"
                 >
-                    ✉️ Notification Content 
+                    <span class="emoji">✉️</span> Notification Content 
                 </button>
                 <button
                     class="tablinks"
                     id="resetTabLink"
                 >
-                    🔄 Reset
+                   <span class="emoji">🔄</span> Reset
                 </button>
             </div>
             <form id="settingsForm">

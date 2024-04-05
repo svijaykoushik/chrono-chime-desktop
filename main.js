@@ -3,6 +3,14 @@
 (() => {// Handle default squirrel events (Windows installation)
   if (require('electron-squirrel-startup')) return;
 
+  const log = require('electron-log/main');
+
+  // initialize logger
+  log.initialize();
+
+  // Overide the default console log functions
+  Object.assign(console, log.functions);
+
   // run the auto updater
   const { updateElectronApp } = require('update-electron-app');
 
@@ -21,10 +29,6 @@
   } = require('electron');
   const { join } = require('path');
   const AutoLaunch = require('auto-launch');
-  const log = require('electron-log/main');
-
-  // initialize logger
-  log.initialize();
 
   // enable error logging
   log.errorHandler.startCatching();
@@ -36,13 +40,14 @@
   const autoLauncher = new AutoLaunch({
     name: 'chrono-chime-desktop'
   });
-  autoLauncher.isEnabled((isEnabled) => {
-    mainWindow.webContents.send('auto-launch-status', isEnabled);
-  });
 
   /** @type {BrowserWindow} */
   let mainWindow = null;
   let isQuitting = false;
+
+  autoLauncher.isEnabled((isEnabled) => {
+    mainWindow.webContents.send('auto-launch-status', isEnabled);
+  });
 
   const createWindow = () => {
     // Create the browser window.
@@ -76,9 +81,9 @@
     });
 
     // Open urls in browser
-    mainWindow.webContents.setWindowOpenHandler((details)=>{
+    mainWindow.webContents.setWindowOpenHandler((details) => {
       shell.openExternal(details.url);
-      return {action: 'deny'}; // Prevent app from opening url
+      return { action: 'deny' }; // Prevent app from opening url
     });
 
     // Open the DevTools.

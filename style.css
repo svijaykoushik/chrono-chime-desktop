@@ -475,7 +475,7 @@ small a:hover {
 
 .toggle-switch {
     z-index: 0;
-    position: relative;
+    position: relative !important;
     display: inline-block;
     color: rgba(0, 0, 0, 0.87);
     font-size: 16px;
@@ -492,9 +492,9 @@ small a:hover {
     top: -8px;
     display: block;
     margin: 0;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    border-radius: 50% !important;
+    width: 40px !important;
+    height: 40px !important;
     background-color: rgba(0, 0, 0, 0.38);
     outline: none;
     opacity: 0;
@@ -691,7 +691,7 @@ ul.list li {
     padding-bottom: 8px;
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
 }
 
 ul.list li span.heading {
@@ -710,11 +710,20 @@ ul.list li .list-secondary-action {
     height: 100%;
     display: flex;
     align-items: center;
+    float: right
 }
 
 ul.list li .list-secondary-action button {
     border: none;
     background: none;
+}
+
+.clear-float{
+    float: none !important;
+}
+
+.flex-grow {
+    flex-grow: 1;
 }
 
 form .field {

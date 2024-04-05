@@ -70,15 +70,18 @@ request.onsuccess = function (event) {
   remindersDb = event.target.result;
 
   clearCompletedReminders(remindersDb);
+
+  // Scedule reminders on app start
+  scheduleReminders();
 };
 
 // Handle database opening error
 request.onerror = function (event) {
-  console.log('Error opening database:', event.target.error);
+  __electronLog.error('Error opening database:', event.target.error);
   showAppToast('Error opening reminders database');
 };
 
-function addReminder(title, time, description = '') {
+function addReminder(title, time, isRecurring, description = '') {
   // Start a database transaction
   const transaction = remindersDb.transaction(['reminders'], 'readwrite');
 
@@ -91,7 +94,7 @@ function addReminder(title, time, description = '') {
     title,
     time: new Date(time),
     description,
-    status: 'active',
+    status: isRecurring ? 'recurring' : 'active',
   };
 
   // Add the data to the object store
@@ -104,11 +107,14 @@ function addReminder(title, time, description = '') {
 
   addRequest.onerror = function (event) {
     showAppToast('Failed to Add reminder');
-    console.log('Error adding reminder:', event.target.error);
+    __electronLog.error('Error adding reminder:', event.target.error);
   };
 }
 
 function scheduleReminders() {
+
+  __electronLog.log('Scheduling reminders');
+
   // Start a transaction to read data
   const transaction = remindersDb.transaction(['reminders'], 'readonly');
 
@@ -131,23 +137,23 @@ function scheduleReminders() {
         clearTimeout(timeoutId);
       });
       reminders.forEach((reminder) => {
-        const now = Date.now();
-        const timeRemaining = Math.abs(reminder.time.getTime() - now);
-        const hours =
-          timeRemaining >= 3600000 ? Math.floor(timeRemaining / 3600000) : 0;
-        const minutes =
-          timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
-        const seconds =
-          timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
-        console.log(
-          'Remaining time for reminder %s between %s and %s is %d hours %d minutes %d seconds',
-          reminder.title,
-          reminder.time.toTimeString(),
-          new Date(now).toTimeString(),
-          hours,
-          minutes,
-          seconds
-        );
+        // const now = Date.now();
+        // const timeRemaining = Math.abs(reminder.time.getTime() - now);
+        // const hours =
+        //   timeRemaining >= 3600000 ? Math.floor(timeRemaining / 3600000) : 0;
+        // const minutes =
+        //   timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
+        // const seconds =
+        //   timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
+        // console.log(
+        //   'Remaining time for reminder %s between %s and %s is %d hours %d minutes %d seconds',
+        //   reminder.title,
+        //   reminder.time.toTimeString(),
+        //   new Date(now).toTimeString(),
+        //   hours,
+        //   minutes,
+        //   seconds
+        // );
         const timeoutId = setTimeout(() => {
           const options = {
             body: reminder.description,
@@ -156,14 +162,18 @@ function scheduleReminders() {
             // Add other notification options here if needed
           };
           new Notification(reminder.title, options);
-          reminder.status = 'completed';
+          if (reminder.status === 'active') {
+            reminder.status = 'completed';
+          }
           const transaction = remindersDb.transaction(
             ['reminders'],
             'readwrite'
           );
-          const objectStore = transaction.objectStore('reminders');
-          objectStore.put(reminder);
-          reminderScheduler.delete(reminder.id);
+          if (reminder.status == 'completed') {
+            const objectStore = transaction.objectStore('reminders');
+            objectStore.put(reminder);
+            reminderScheduler.delete(reminder.id);
+          }
           renderReminder();
         }, Math.abs(reminder.time.getTime() - Date.now()));
         reminderScheduler.set(reminder.id, timeoutId);
@@ -173,16 +183,16 @@ function scheduleReminders() {
 }
 
 // eslint-disable-next-line no-unused-vars
-function deleteReminder(reminderId){
+function deleteReminder(reminderId) {
 
-   // Start a transaction to read data
-   const transaction = remindersDb.transaction(['reminders'], 'readwrite');
+  // Start a transaction to read data
+  const transaction = remindersDb.transaction(['reminders'], 'readwrite');
 
-   // Get the object store
-   const objectStore = transaction.objectStore('reminders');
+  // Get the object store
+  const objectStore = transaction.objectStore('reminders');
 
-   objectStore.delete(reminderId);
-   renderReminder();  
+  objectStore.delete(reminderId);
+  renderReminder();
 }
 
 const reminderListContainer = document.getElementById('reminderListContainer');
@@ -231,15 +241,17 @@ function renderReminder() {
           // Extract only the time portion (hours, minutes, and seconds)
           const timeOnly = timeString.split(' ')[0];
           reminderListItems += `<li data-reminder-id="${reminder.id}">
-              <div>
+            <div class="flex-grow">
               <span class="heading subtitle1">${reminder.title}</h2>
               <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
+              ${reminder.status === 'recurring' ? '<span class="caption">Everyday</span>' : ''}
             </div>
             <div class="list-secondary-action">
               <button type="button" onclick="deleteReminder('${reminder.id}')">
-                <span class="emoji">🗑️</span>
+                <span class="emoji">❌</span>
               </button>
             </div>
+            <div class="clear-float"></div>
           </li>`;
         });
 
@@ -295,6 +307,7 @@ addReminderBtn.addEventListener('click', (ev) => {
   const reminderTimeInputError = document.getElementById(
     'reminderTimeInputError'
   );
+  const isRecurringReminder = document.getElementById('isRecurringReminder');
   if (reminderTitleInput.checkValidity() === false) {
     reminderTitleInput.classList.contains('validation-error') === false
       ? reminderTitleInput.classList.add('validation-error')
@@ -335,6 +348,7 @@ addReminderBtn.addEventListener('click', (ev) => {
   }
   const title = reminderTitleInput.value;
   const time = reminderTimeInput.value;
+  const isRecurring = isRecurringReminder.checked;
   closeRemindersModal();
   reminderTitleInput.value = '';
   reminderTimeInput.value = '';
@@ -343,7 +357,8 @@ addReminderBtn.addEventListener('click', (ev) => {
   reminderDate.setHours(parseInt(hours));
   reminderDate.setMinutes(parseInt(minutes));
   reminderDate.setSeconds(0);
-  addReminder(title, reminderDate);
+  isRecurringReminder.checked = false;
+  addReminder(title, reminderDate, isRecurring);
 
   scheduleReminders();
   renderReminder();
@@ -638,7 +653,6 @@ function loadContent(url) {
   } else if (url === '/reminders') {
     settings = getSettingsFromLocalStorage();
     scheduleNotifications();
-    scheduleReminders();
     renderReminder();
   } else {
     settings = getSettingsFromLocalStorage();
@@ -663,7 +677,7 @@ navLinks.forEach((link) => {
 // Listen for the popstate event to handle back/forward navigation
 window.addEventListener('popstate', () => {
   const url = window.location.pathname;
-  console.log('Navigation to %s due to history change', url);
+  __electronLog.log('Navigation to %s due to history change', url);
   loadContent(url);
 });
 
