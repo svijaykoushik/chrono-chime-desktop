@@ -77,7 +77,7 @@ request.onsuccess = function (event) {
 
 // Handle database opening error
 request.onerror = function (event) {
-  console.log('Error opening database:', event.target.error);
+  __electronLog.error('Error opening database:', event.target.error);
   showAppToast('Error opening reminders database');
 };
 
@@ -107,11 +107,14 @@ function addReminder(title, time, isRecurring, description = '') {
 
   addRequest.onerror = function (event) {
     showAppToast('Failed to Add reminder');
-    console.log('Error adding reminder:', event.target.error);
+    __electronLog.error('Error adding reminder:', event.target.error);
   };
 }
 
 function scheduleReminders() {
+
+  __electronLog.log('Scheduling reminders');
+
   // Start a transaction to read data
   const transaction = remindersDb.transaction(['reminders'], 'readonly');
 
@@ -134,23 +137,23 @@ function scheduleReminders() {
         clearTimeout(timeoutId);
       });
       reminders.forEach((reminder) => {
-        const now = Date.now();
-        const timeRemaining = Math.abs(reminder.time.getTime() - now);
-        const hours =
-          timeRemaining >= 3600000 ? Math.floor(timeRemaining / 3600000) : 0;
-        const minutes =
-          timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
-        const seconds =
-          timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
-        console.log(
-          'Remaining time for reminder %s between %s and %s is %d hours %d minutes %d seconds',
-          reminder.title,
-          reminder.time.toTimeString(),
-          new Date(now).toTimeString(),
-          hours,
-          minutes,
-          seconds
-        );
+        // const now = Date.now();
+        // const timeRemaining = Math.abs(reminder.time.getTime() - now);
+        // const hours =
+        //   timeRemaining >= 3600000 ? Math.floor(timeRemaining / 3600000) : 0;
+        // const minutes =
+        //   timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
+        // const seconds =
+        //   timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
+        // console.log(
+        //   'Remaining time for reminder %s between %s and %s is %d hours %d minutes %d seconds',
+        //   reminder.title,
+        //   reminder.time.toTimeString(),
+        //   new Date(now).toTimeString(),
+        //   hours,
+        //   minutes,
+        //   seconds
+        // );
         const timeoutId = setTimeout(() => {
           const options = {
             body: reminder.description,
@@ -238,16 +241,17 @@ function renderReminder() {
           // Extract only the time portion (hours, minutes, and seconds)
           const timeOnly = timeString.split(' ')[0];
           reminderListItems += `<li data-reminder-id="${reminder.id}">
-              <div>
+            <div class="flex-grow">
               <span class="heading subtitle1">${reminder.title}</h2>
               <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
               ${reminder.status === 'recurring' ? '<span class="caption">Everyday</span>' : ''}
             </div>
             <div class="list-secondary-action">
               <button type="button" onclick="deleteReminder('${reminder.id}')">
-                <span class="emoji">🗑️</span>
+                <span class="emoji">❌</span>
               </button>
             </div>
+            <div class="clear-float"></div>
           </li>`;
         });
 
@@ -344,6 +348,7 @@ addReminderBtn.addEventListener('click', (ev) => {
   }
   const title = reminderTitleInput.value;
   const time = reminderTimeInput.value;
+  const isRecurring = isRecurringReminder.checked;
   closeRemindersModal();
   reminderTitleInput.value = '';
   reminderTimeInput.value = '';
@@ -353,7 +358,7 @@ addReminderBtn.addEventListener('click', (ev) => {
   reminderDate.setMinutes(parseInt(minutes));
   reminderDate.setSeconds(0);
   isRecurringReminder.checked = false;
-  addReminder(title, reminderDate, isRecurringReminder.checked);
+  addReminder(title, reminderDate, isRecurring);
 
   scheduleReminders();
   renderReminder();
@@ -672,7 +677,7 @@ navLinks.forEach((link) => {
 // Listen for the popstate event to handle back/forward navigation
 window.addEventListener('popstate', () => {
   const url = window.location.pathname;
-  console.log('Navigation to %s due to history change', url);
+  __electronLog.log('Navigation to %s due to history change', url);
   loadContent(url);
 });
 

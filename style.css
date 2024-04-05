@@ -691,7 +691,7 @@ ul.list li {
     padding-bottom: 8px;
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
 }
 
 ul.list li span.heading {
@@ -710,11 +710,20 @@ ul.list li .list-secondary-action {
     height: 100%;
     display: flex;
     align-items: center;
+    float: right
 }
 
 ul.list li .list-secondary-action button {
     border: none;
     background: none;
+}
+
+.clear-float{
+    float: none !important;
+}
+
+.flex-grow {
+    flex-grow: 1;
 }
 
 form .field {
