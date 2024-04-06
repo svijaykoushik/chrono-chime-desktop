@@ -167,27 +167,30 @@
                 </section>
                 <section id="content" class="tabcontent">
                     <h2>Notification Content <span class="emoji d-inline">✉️</span></h2>
-                    <p>
-                        <label for="notificationTitle"
-                            ><span class="emoji d-inline">📛</span> Custom Title:</label
-                        >
+                    <div class="field">
                         <input
                             type="text"
                             id="notificationTitle"
                             name="notificationTitle"
+                            placeholder=" "
                         />
-                    </p>
-                    <p>
-                        <label for="notificationContent"
-                            ><span class="emoji d-inline">📝</span> Custom Message:</label
+                        <label for="notificationTitle"
+                            ><span class="emoji d-inline">📛</span> Custom Title</label
                         >
+                        <span class="validation-error" id="reminderTimeInputError">Time should be a valid time</span>
+                    </div>
+                    <div class="field">
                         <textarea
                             id="notificationContent"
                             name="notificationContent"
                             rows="1"
                             cols="30"
+                            placeholder=" "
                         ></textarea>
-                    </p>
+                        <label for="notificationContent"
+                            ><span class="emoji d-inline">📝</span> Custom Message</label
+                        >
+                    </div>
                     <p>
                         <button id="previewNotification" type="button" class="cta-button">
                             <span class="emoji d-inline">🔔</span> Preview Notification

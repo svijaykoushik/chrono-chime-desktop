@@ -728,8 +728,9 @@ ul.list li .list-secondary-action button {
 
 form .field {
     position: relative;
-    position: relative;
+    margin: 0 auto;
     margin-top: 24px;
+    width: 280px;
 }
 
 form .field label {
@@ -747,7 +748,7 @@ form .field label {
     background: #fff;
 }
 
-form .field input {
+form .field input, form .field textarea {
     font-size: 16px;
     font-weight: 400;
     letter-spacing: 1.5px;
@@ -762,15 +763,22 @@ form .field input {
     line-height: 20px;
 }
 
-form .field input:focus {
+form .field textarea{
+    height: 144px !important;
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+    resize: none;
+}
+
+form .field input:focus, form .field textarea:focus {
     border-color: var(--accent-color-hex);
 }
 
-form .field input:focus + label {
+form .field input:focus + label, form .field textarea:focus + label {
     color: var(--accent-color-hex);
 }
 
-form .field input[type='text']:focus + label {
+form .field input[type='text']:focus + label, form .field textarea:focus + label {
     transform: translate3d(12px, -9px, 0);
     font-size: 12px;
 }
@@ -791,11 +799,11 @@ form .field span.validation-error {
     padding-left: 12px;
 }
 
-form .field input.validation-error {
+form .field input.validation-error, form .field textarea.validation-error {
     border-color: var(--form-field-error) !important;
 }
 
-form .field input.validation-error:focus + label {
+form .field input.validation-error:focus + label, form .field textarea.validation-error:focus + label {
     color: var(--form-field-error);
 }
 
@@ -803,11 +811,11 @@ form .field input[type='time'].validation-error + label {
     color: var(--form-field-error);
 }
 
-.field input[type='text']:not(:placeholder-shown) + label {
+.field input[type='text']:not(:placeholder-shown) + label, form .field textarea:not(:placeholder-shown) +label {
     transform: translate3d(12px, -9px, 0) !important;
 }
 
-form .field input::placeholder {
+form .field input::placeholder, form .field textarea::placeholder {
     color: transparent !important;
     user-select: none !important;
 }
