@@ -126,14 +126,14 @@
                             <span><span class="emoji d-inline">🔔</span>&nbsp;Allow notification</span>
                         </label>
                     </p>
-                    <p>
-                        <label for="interval"><span class="emoji d-inline">⏰</span> Interval:</label>
+                    <div class="field">
                         <select id="interval" name="interval">
                             <option value="1">1 hour</option>
                             <option value="2">2 hours</option>
                             <option value="3">3 hours</option>
                         </select>
-                    </p>
+                        <label for="interval"><span class="emoji d-inline">⏰</span> Interval</label>
+                    </div>
                     <p>
                         <label for="autoLaunchCheckbox" class="toggle-switch">
                             <input id="autoLaunchCheckbox" type="checkbox" name="autoLaunchCheckbox"/>
@@ -144,15 +144,7 @@
                 <section id="sound" class="tabcontent">
                     <h2><span class="emoji">🔊</span> Notification Sound</h2>
                     <p>
-                        <label for="notificationSound"><span class="emoji d-inline">🔉</span> Select Sound:</label>
                         <div class="custom-select">
-                            <select id="notificationSound" name="notificationSound">
-                                <option value="sound1"><span class="emoji d-inline">🔔</span> Sound 1</option>
-                                <option value="sound2"><span class="emoji d-inline">🎵</span> Sound 2</option>
-                                <option value="sound3"><span class="emoji d-inline">🎶</span> Sound 3</option>
-                                <option value="mute"><span class="emoji d-inline">🔇</span> Mute</option>
-                            </select>
-                            <button id="playSoundButton">Preview Sound</button>
                             <audio id="sound1Audio">
                                 <source src="notification.mp3" type="audio/mpeg">
                             </audio>
@@ -162,7 +154,38 @@
                             <audio id="sound3Audio">
                                 <source src="notification3.wav" type="audio/wav">
                             </audio>
-                        </div>                        
+                        </div> 
+                        <fieldset class="radio-group" id="notificationSound">
+                            <legend><span class="emoji d-inline">🔉</span> Select Sound</legend>
+                            <div class="field">
+                                <input type="radio" id="sound1" name="sound" value="sound1"><label for="sound1"><span class="emoji d-inline">🔔</span> Sound 1</label>
+                                <div class="secondary-action">
+                                    <span class="emoji" id="actionSound1">
+                                        ▶️
+                                    </span>
+                                </div>
+                                <div class="clear-float"></div>
+                            </div>
+                            <div class="field">
+                                <input type="radio" id="sound2" name="sound" value="sound2"><label for="sound2"><span class="emoji d-inline">🎵</span> Sound 2</label>
+                                <div class="secondary-action">
+                                    <span class="emoji" id="actionSound2">
+                                        ▶️
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <input type="radio" id="sound3" name="sound" value="sound3"><label for="sound3"><span class="emoji d-inline">🎶</span> Sound 3</label>
+                                <div class="secondary-action">
+                                    <span class="emoji" id="actionSound3">
+                                        ▶️
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <input type="radio" id="mute" name="sound" value="mute"><label for="mute"><span class="emoji d-inline">🔇</span> Mute</label>   
+                            </div>
+                        </fieldset>                              
                     </p>
                 </section>
                 <section id="content" class="tabcontent">

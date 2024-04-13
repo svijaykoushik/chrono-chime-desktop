@@ -748,7 +748,7 @@ form .field label {
     background: #fff;
 }
 
-form .field input, form .field textarea {
+form .field input, form .field textarea,form .field select {
     font-size: 16px;
     font-weight: 400;
     letter-spacing: 1.5px;
@@ -770,11 +770,11 @@ form .field textarea{
     resize: none;
 }
 
-form .field input:focus, form .field textarea:focus {
+form .field input:focus, form .field textarea:focus, form .field select {
     border-color: var(--accent-color-hex);
 }
 
-form .field input:focus + label, form .field textarea:focus + label {
+form .field input:focus + label, form .field textarea:focus + label, form .field select:focus + label {
     color: var(--accent-color-hex);
 }
 
@@ -783,7 +783,7 @@ form .field input[type='text']:focus + label, form .field textarea:focus + label
     font-size: 12px;
 }
 
-form .field input[type='time'] + label {
+form .field input[type='time'] + label, form .field select + label {
     transform: translate3d(12px, -9px, 0) !important;
     font-size: 12px !important;
 }
@@ -799,7 +799,7 @@ form .field span.validation-error {
     padding-left: 12px;
 }
 
-form .field input.validation-error, form .field textarea.validation-error {
+form .field input.validation-error, form .field textarea.validation-error, form .field select.validation-error {
     border-color: var(--form-field-error) !important;
 }
 
@@ -807,7 +807,7 @@ form .field input.validation-error:focus + label, form .field textarea.validatio
     color: var(--form-field-error);
 }
 
-form .field input[type='time'].validation-error + label {
+form .field input[type='time'].validation-error + label, form .field select.validation-error:focus + label {
     color: var(--form-field-error);
 }
 
@@ -820,8 +820,86 @@ form .field input::placeholder, form .field textarea::placeholder {
     user-select: none !important;
 }
 
+form .field input[type="radio"] +label {
+    display: inline-block;
+    min-height: 20px;
+    position: relative;
+    padding: 0 30px;
+    margin-bottom: 0;
+    cursor: pointer;
+    vertical-align: bottom;
+    background: inherit;
+    font-size: 16px;
+    font-weight: 400;
+    transform: translate3d(0, 0, 0);
+    text-align: left;
+}
+
+form .field input[type="radio"] +label:before,form .field input[type="radio"] +label:after{
+  position: absolute;
+  content: "";
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  transition-property: transform, border-color;
+}
+form .field input[type="radio"] +label:before{
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--text-color-hex);
+}
+
+form .field input[type="radio"] +label:after{
+    top: 6px;
+    left: 6px;
+    width: 10px;
+    height: 10px;
+    margin: 0;
+    padding: 0;
+    transform: scale(0);
+    background: var(--accent-color-hex)
+}
+
+form .field input[type="radio"] {
+   display: none;
+}
+
+form .field input[type=radio]:checked + label:before {
+  border-color: var(--accent-color-hex);
+  animation: ripple 0.2s linear forwards;
+  margin-right: 16px;
+}
+
+form .field input[type=radio]:checked + label:after {
+  transform: scale(1);
+}
+
+form fieldset.radio-group legend {
+    font-weight: 400;
+    line-height: 0.5px;
+    font-size: 16px;
+}
+
+form fieldset.radio-group {    
+    border: none;
+    margin: 0 auto;
+    padding: 0;
+    width: 280px;
+    text-align: start;
+}
+
+form fieldset.radio-group .field .secondary-action{
+    float: right;
+    display: none;
+}
+
+form fieldset.radio-group .field input[type="radio"]:checked ~ .secondary-action{
+    display: block;
+}
+
 .d-block {
-    display: block !important;
+  display: block !important;
 }
 
 .d-none {

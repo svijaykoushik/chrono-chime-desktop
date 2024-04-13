@@ -3,13 +3,11 @@ let countdownInterval; // Store the interval ID for the countdown timer
 let countdownTimeRemaining = 0; // Global variable to store the countdown time in milliseconds
 let nextHourTimeout; // Store the timeout ID of the next hour timeout
 
-const soundSelect = document.getElementById('notificationSound');
 const intervalSelect = document.getElementById('interval');
 const notificationTitleText = document.getElementById('notificationTitle');
 const notificationContentText = document.getElementById('notificationContent');
 const previewNotificationBtn = document.getElementById('previewNotification');
 const resetSettingsButton = document.getElementById('resetSettings');
-const playButton = document.getElementById('playSoundButton');
 const sound1Audio = document.getElementById('sound1Audio');
 const sound2Audio = document.getElementById('sound2Audio');
 const sound3Audio = document.getElementById('sound3Audio');
@@ -27,6 +25,7 @@ const resetTabLink = document.getElementById('resetTabLink');
 // Get references to the app drawer and toggle button
 const appDrawer = document.getElementById('appDrawer');
 const toggleButton = document.getElementById('toggleDrawerButton');
+const notificationSoundOptions = document.querySelectorAll('input[name="sound"]');
 
 const defaultSettings = {
   autoLaunch: false,
@@ -767,7 +766,7 @@ function initializeSettingsForm(settingsArg) {
 
   // Set the selected option based on the loaded setting
   if (settingsArg.notificationSound) {
-    soundSelect.value = settingsArg.notificationSound;
+    document.querySelector(`#${settingsArg.notificationSound}`).checked=true;
   }
 
   // Set the selected option based on the loaded setting
@@ -806,29 +805,109 @@ function initializeSettingsForm(settingsArg) {
   }
 }
 
-playButton.addEventListener('click', (e) => {
+sound1Audio.addEventListener('ended', (e) => {
   e.preventDefault();
-  const selectedSound = soundSelect.value;
+  document.querySelector('input#sound1').parentElement.querySelector(
+    '.secondary-action'
+  ).style.display = 'none';
+});  
+sound2Audio.addEventListener('ended', (e) => {
+  e.preventDefault();
+  document.querySelector('input#sound2').parentElement.querySelector(
+    '.secondary-action'
+  ).style.display = 'none';
+});  
+sound3Audio.addEventListener('ended', (e) => {
+  e.preventDefault();
+  document.querySelector('input#sound3').parentElement.querySelector(
+    '.secondary-action'
+  ).style.display = 'none';
+});
 
+sound1Audio.addEventListener('pause', (e) => {
+  e.preventDefault();
+  document.querySelector('input#sound1').parentElement.querySelector(
+    '.secondary-action'
+  ).style.display = 'none';
+});
+sound2Audio.addEventListener('pause', (e) => {
+  e.preventDefault();
+  document.querySelector('input#sound2').parentElement.querySelector(
+    '.secondary-action'
+  ).style.display = 'none';
+});
+sound3Audio.addEventListener('pause', (e) => {
+  e.preventDefault();
+  document.querySelector('input#sound3').parentElement.querySelector(
+    '.secondary-action'
+  ).style.display = 'none';
+}); 
+
+sound1Audio.addEventListener('play', (e) => {
+  e.preventDefault();
+  document.querySelector('input#sound1').parentElement.querySelector(
+    '.secondary-action'
+  ).style.display = 'block';
+});
+sound2Audio.addEventListener('play', (e) => {
+  e.preventDefault();
+  document.querySelector('input#sound2').parentElement.querySelector(
+    '.secondary-action'
+  ).style.display = 'block';
+});
+sound3Audio.addEventListener('play', (e) => {
+  e.preventDefault();
+  document.querySelector('input#sound3').parentElement.querySelector(
+    '.secondary-action'
+  ).style.display = 'block';
+});
+
+function playAudio(target){
   sound1Audio.pause();
   sound2Audio.pause();
   sound3Audio.pause();
 
-  if (selectedSound === 'sound1') {
-    sound1Audio.currentTime = 0;
-    sound1Audio.play();
-  } else if (selectedSound === 'sound2') {
-    sound2Audio.currentTime = 0;
-    sound2Audio.play();
-  } else if (selectedSound === 'sound3') {
-    sound3Audio.currentTime = 0;
-    sound3Audio.play();
+  switch (target) {
+    case 'sound1':
+      {
+        sound1Audio.currentTime = 0;
+        sound1Audio.play();
+      }
+      break;
+    case 'sound2':
+      {
+        sound2Audio.currentTime = 0;
+        sound2Audio.play();
+      }
+      break;
+    case 'sound3':
+      {
+        sound3Audio.currentTime = 0;
+        sound3Audio.play();
+      }
+      break;
   }
-});
+}
+notificationSoundOptions.forEach((option)=>{
+  option.addEventListener('change', (e) => {
+    e.preventDefault();
+    const target = e.target;
+    const selectedSound = target.value;
 
-soundSelect.addEventListener('change', () => {
-  settings.notificationSound = soundSelect.value;
-  saveSettingsToLocalStorage(settings);
+    settings.notificationSound = selectedSound;
+    saveSettingsToLocalStorage(settings);
+    playAudio(selectedSound);
+  });
+  option.addEventListener('click',(e)=>{
+    const target = e.target;
+    const selectedSound = target.value;
+    if (
+      e.target.checked &&
+      document.querySelector(`audio#${selectedSound}Audio`).paused
+    ) {
+      playAudio(selectedSound);
+    }
+  });
 });
 
 intervalSelect.addEventListener('change', () => {
