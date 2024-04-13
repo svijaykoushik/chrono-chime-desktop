@@ -480,6 +480,8 @@ small a:hover {
     color: rgba(0, 0, 0, 0.87);
     font-size: 16px;
     line-height: 1.5;
+    width: 280px;
+    text-align: start;
 }
 
 .toggle-switch > input {
@@ -595,6 +597,11 @@ small a:hover {
 
 .toggle-switch > input:checked:disabled + span::before {
     background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
+}
+
+form .field label.toggle-switch {
+    display: inline-block !important;
+    transform: none;
 }
 
 div.about-logo {
