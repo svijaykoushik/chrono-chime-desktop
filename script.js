@@ -1,3 +1,5 @@
+const DAY_IN_MS = 8.64e+7;
+
 let notificationInterval; // Store the interval ID for the notification timer
 let countdownInterval; // Store the interval ID for the countdown timer
 let countdownTimeRemaining = 0; // Global variable to store the countdown time in milliseconds
@@ -136,23 +138,38 @@ function scheduleReminders() {
         clearTimeout(timeoutId);
       });
       reminders.forEach((reminder) => {
-        // const now = Date.now();
-        // const timeRemaining = Math.abs(reminder.time.getTime() - now);
-        // const hours =
-        //   timeRemaining >= 3600000 ? Math.floor(timeRemaining / 3600000) : 0;
-        // const minutes =
-        //   timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
-        // const seconds =
-        //   timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
-        // console.log(
-        //   'Remaining time for reminder %s between %s and %s is %d hours %d minutes %d seconds',
-        //   reminder.title,
-        //   reminder.time.toTimeString(),
-        //   new Date(now).toTimeString(),
-        //   hours,
-        //   minutes,
-        //   seconds
-        // );
+        const now = Date.now();
+        let timeRemaining = Math.abs(reminder.time.getTime() - now);
+        if (reminder.time.getTime() < now && reminder.status === 'recurring') {
+          const nextOccurance = reminder.time.getTime() + DAY_IN_MS; // update for next day
+
+          // Update the reminder and save it to storage
+          reminder.time = new Date(nextOccurance);
+          updateReminder(reminder);
+
+          timeRemaining = Math.abs(nextOccurance - now);
+        }
+        const days =
+          timeRemaining >= DAY_IN_MS
+            ? Math.floor(timeRemaining / DAY_IN_MS)
+            : 0;
+        const hours =
+          timeRemaining >= 3600000 ? Math.floor(timeRemaining / 3600000) : 0;
+        const minutes =
+          timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
+        const seconds =
+          timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
+        console.log(
+          'Remaining time for reminder %s between %s and %s is %d days %d hours %d minutes %d seconds',
+          reminder.title,
+          reminder.time.toTimeString(),
+          new Date(now).toTimeString(),
+          days,
+          hours,
+          minutes,
+          seconds,
+          reminder.time
+        );
         const timeoutId = setTimeout(() => {
           const options = {
             body: reminder.description,
@@ -163,18 +180,13 @@ function scheduleReminders() {
           new Notification(reminder.title, options);
           if (reminder.status === 'active') {
             reminder.status = 'completed';
+          }else if(reminder.status === 'recurring'){
+            const nextOccurance = reminder.time.getTime() + 8.64e7; // update for next day
+            reminder.time = new Date(nextOccurance);
           }
-          const transaction = remindersDb.transaction(
-            ['reminders'],
-            'readwrite'
-          );
-          if (reminder.status == 'completed') {
-            const objectStore = transaction.objectStore('reminders');
-            objectStore.put(reminder);
-            reminderScheduler.delete(reminder.id);
-          }
+          updateReminder(reminder);
           renderReminder();
-        }, Math.abs(reminder.time.getTime() - Date.now()));
+        }, timeRemaining);
         reminderScheduler.set(reminder.id, timeoutId);
       });
     }
@@ -192,6 +204,18 @@ function deleteReminder(reminderId) {
 
   objectStore.delete(reminderId);
   renderReminder();
+}
+
+function updateReminder(reminder){
+
+  // Start a transaction to read data
+  const transaction = remindersDb.transaction(['reminders'], 'readwrite');
+
+  // Get the object store
+  const objectStore = transaction.objectStore('reminders');
+
+  objectStore.put(reminder);
+
 }
 
 const reminderListContainer = document.getElementById('reminderListContainer');
@@ -272,9 +296,25 @@ function clearCompletedReminders() {
     objectStore.openCursor().onsuccess = function (event) {
       const cursor = event.target.result;
       if (cursor) {
+        const reminder = cursor.value;
         // Check if the reminder is completed
-        if (cursor.value.status === 'completed') {
+        if (reminder.status === 'completed') {
           // Delete the reminder if it's completed
+          objectStore.delete(cursor.primaryKey);
+        } else if (
+          reminder.status === 'recurring' &&
+          reminder.time.getTime() < Date.now()
+        ) {
+          // update the reminder to next day if recurring
+          // and the time has passed
+          const nextOccurance = reminder.time.getTime() + DAY_IN_MS; // update for next day
+          reminder.time = new Date(nextOccurance);
+          objectStore.put(reminder);
+        } else if (
+          reminder.status === 'active' &&
+          reminder.time.getTime() < Date.now()
+        ) {
+          // Delete the past reminder
           objectStore.delete(cursor.primaryKey);
         }
         cursor.continue();
@@ -766,7 +806,7 @@ function initializeSettingsForm(settingsArg) {
 
   // Set the selected option based on the loaded setting
   if (settingsArg.notificationSound) {
-    document.querySelector(`#${settingsArg.notificationSound}`).checked=true;
+    document.querySelector(`#${settingsArg.notificationSound}`).checked = true;
   }
 
   // Set the selected option based on the loaded setting
@@ -810,13 +850,13 @@ sound1Audio.addEventListener('ended', (e) => {
   document.querySelector('input#sound1').parentElement.querySelector(
     '.secondary-action'
   ).style.display = 'none';
-});  
+});
 sound2Audio.addEventListener('ended', (e) => {
   e.preventDefault();
   document.querySelector('input#sound2').parentElement.querySelector(
     '.secondary-action'
   ).style.display = 'none';
-});  
+});
 sound3Audio.addEventListener('ended', (e) => {
   e.preventDefault();
   document.querySelector('input#sound3').parentElement.querySelector(
@@ -841,7 +881,7 @@ sound3Audio.addEventListener('pause', (e) => {
   document.querySelector('input#sound3').parentElement.querySelector(
     '.secondary-action'
   ).style.display = 'none';
-}); 
+});
 
 sound1Audio.addEventListener('play', (e) => {
   e.preventDefault();
@@ -862,7 +902,7 @@ sound3Audio.addEventListener('play', (e) => {
   ).style.display = 'block';
 });
 
-function playAudio(target){
+function playAudio(target) {
   sound1Audio.pause();
   sound2Audio.pause();
   sound3Audio.pause();
@@ -888,7 +928,7 @@ function playAudio(target){
       break;
   }
 }
-notificationSoundOptions.forEach((option)=>{
+notificationSoundOptions.forEach((option) => {
   option.addEventListener('change', (e) => {
     e.preventDefault();
     const target = e.target;
@@ -898,7 +938,7 @@ notificationSoundOptions.forEach((option)=>{
     saveSettingsToLocalStorage(settings);
     playAudio(selectedSound);
   });
-  option.addEventListener('click',(e)=>{
+  option.addEventListener('click', (e) => {
     const target = e.target;
     const selectedSound = target.value;
     if (
