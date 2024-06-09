@@ -26,9 +26,10 @@
           "error",
           {
             "variables": true,
-            "functions": false
+            "functions": true
           }
-        ]
+        ],
+        "func-style": ["error", "declaration"]
     },
     "parserOptions": {
         "ecmaVersion": 2020,
