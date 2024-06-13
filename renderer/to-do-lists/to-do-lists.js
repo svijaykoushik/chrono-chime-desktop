@@ -3,53 +3,28 @@
  * @description This module provides functions to manage to-do lists and tasks using IndexedDB.
  */
 
+import createDBConnection from '../utils/indexed-db-utils.js';
+
 // IndexedDB Utilities
 
 /**
  * @function dbPromise
- * @description Opens a connection to the IndexedDB database named 'todoApp'.
- * @returns {Promise<IDBDatabase>} A Promise that resolves to the IDBDatabase object.
+ * @description Opens a connection to the IndexedDB database named 'todo_list'.
+ * @returns {Promise<import('../utils/indexed-db-utils.js').DBConnection>} A Promise that resolves to the DBConnection object.
  * @throws {Error} An error if the database fails to open.
  */
-function dbPromise() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open('todo_list', 1);
+async function dbPromise() {
+    const connection = await createDBConnection('todo_list', 1, (db) => {
+        const listStore = db.createObjectStore('lists', { keyPath: 'id', autoIncrement: true });
 
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            const listStore = db.createObjectStore('lists', { keyPath: 'id', autoIncrement: true });
+        listStore.createIndex('name', 'name', { unique: true });
 
-            listStore.createIndex('name', 'name', { unique: true });
+        const tasksStore = db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true });
 
-            const tasksStore = db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true });
-
-            tasksStore.createIndex('description', 'description', { unique: false });
-            tasksStore.createIndex('status', 'status', { unique: false });
-        };
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = (event) => reject(event.target.errorCode);
+        tasksStore.createIndex('description', 'description', { unique: false });
+        tasksStore.createIndex('status', 'status', { unique: false });
     });
-};
-
-/**
- * @function dbTransaction
- * @description Creates a transaction on a specific object store within the IndexedDB database.
- * @param {string} storeName The name of the object store to access ('lists' or 'tasks').
- * @param {string} mode The mode of the transaction ('readonly' or 'readwrite').
- * @returns {Promise<IDBObjectStore>} A Promise that resolves to the IDBObjectStore object.
- * @throws {Error} An error if the transaction fails to create.
- */
-async function dbTransaction(storeName, mode) {
-    const db = await dbPromise();
-    return db.transaction(storeName, mode).objectStore(storeName);
-};
-
-function dbRequestHandler(request) {
-    return new Promise((resolve, reject) => {
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+    return connection;
 };
 
 // To-Do List Functions
@@ -61,8 +36,9 @@ function dbRequestHandler(request) {
  * @throws {Error} An error if creating the list fails.
  */
 export async function createList(name) {
-    const store = await dbTransaction('lists', 'readwrite');
-    return await dbRequestHandler(store.add({ name }));
+    const conn = await dbPromise();
+    const store = conn.createTransaction('lists', 'readwrite');
+    return await conn.handleRequest(store.add({ name }));
 };
 
 /**
@@ -73,8 +49,9 @@ export async function createList(name) {
  * @throws {Error} An error if deleting the list fails.
  */
 export async function deleteList(id) {
-    const store = await dbTransaction('lists', 'readwrite');
-    return await dbRequestHandler(store.delete(id));
+    const conn = await dbPromise();
+    const store = conn.createTransaction('lists', 'readwrite');
+    return await conn.handleRequest(store.delete(id));
 };
 
 /**
@@ -86,8 +63,9 @@ export async function deleteList(id) {
  * @throws {Error} An error if adding the task fails.
  */
 export async function addTask(listId, task) {
-    const store = await dbTransaction('tasks', 'readwrite');
-    return await dbRequestHandler(store.add({ listId, task }));
+    const conn = await dbPromise();
+    const store = conn.createTransaction('tasks', 'readwrite');
+    return await conn.handleRequest(store.add({ listId, task }));
 };
 
 /**
@@ -98,8 +76,9 @@ export async function addTask(listId, task) {
  * @throws {Error} An error if deleting the task fails.
  */
 export async function removeTask(id) {
-    const store = await dbTransaction('tasks', 'readwrite');
-    return await dbRequestHandler(store.delete(id));
+    const conn = await dbPromise();
+    const store = conn.createTransaction('tasks', 'readwrite');
+    return await conn.handleRequest(store.delete(id));
 };
 
 /**
@@ -113,8 +92,9 @@ export async function removeTask(id) {
  * @throws {Error} An error if updating the task fails.
  */
 export async function updateTask(id, updatedTask) {
-    const store = await dbTransaction('tasks', 'readwrite');
-    return await dbRequestHandler(store.put({ ...updatedTask, id }));
+    const conn = await dbPromise();
+    const store = conn.createTransaction('tasks', 'readwrite');
+    return await conn.handleRequest(store.put({ ...updatedTask, id }));
 };
 
 /**
@@ -126,8 +106,9 @@ export async function updateTask(id, updatedTask) {
  * @throws {Error} An error if retrieving lists fails.
  */
 export async function getLists() {
-    const store = await dbTransaction('lists', 'readonly');
-    return await dbRequestHandler(store.getAll());
+    const conn = await dbPromise();
+    const store = conn.createTransaction('lists', 'readonly');
+    return await conn.handleRequest(store.getAll());
 };
 
 /**
@@ -142,7 +123,8 @@ export async function getLists() {
  * @throws {Error} An error if retrieving tasks fails.
  */
 export async function getTasks(listId) {
-    const store = await dbTransaction('tasks', 'readonly');
-    const tasks = await dbRequestHandler(store.getAll());
+    const conn = await dbPromise();
+    const store = conn.createTransaction('tasks', 'readonly');
+    const tasks = await conn.handleRequest(store.getAll());
     return tasks.filter((task) => task.listId === listId);
 };
