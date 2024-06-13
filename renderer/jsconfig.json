@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+      "target": "ES6",                    // Specify ECMAScript target version
+      "module": "ES6",                    // Specify module code generation
+      "checkJs": true,                    // Enable type checking in JavaScript files
+      "allowJs": true,                    // Allow JavaScript files to be imported inside your project
+      "baseUrl": ".",                     // Base directory to resolve non-relative module names
+    },
+    "include": ["./**/*"],              // Include all JavaScript files in the src directory
+    "exclude": ["node_modules", "dist"]   // Exclude certain directories from the project
+  }
