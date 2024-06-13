@@ -672,7 +672,7 @@ dialog.basic-dialog::backdrop {
     background: rgb(0 0 0 / 20%);
 }
 
-#reminderListContainer {
+#reminderListContainer, #taskListContainer {
     position: relative;
     position: relative;
     min-height: 50px;

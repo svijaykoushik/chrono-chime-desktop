@@ -1,5 +1,20 @@
+import {
+  createList,
+  addTask,
+  getLists,
+  // getTasks
+} from './renderer/to-do-lists/to-do-lists.js';
+
+import {
+  addReminder,
+  deleteReminder,
+  getReminders,
+  scheduleReminders,
+  updateReminder,
+} from './renderer/reminders/reminders.js';
+
 //#region declarations
-const DAY_IN_MS = 8.64e+7;
+// const DAY_IN_MS = 8.64e+7;
 
 let notificationInterval; // Store the interval ID for the notification timer
 let countdownInterval; // Store the interval ID for the countdown timer
@@ -101,110 +116,66 @@ if (!getSettingsFromLocalStorage()) {
 let settings = getSettingsFromLocalStorage() || defaultSettings;
 
 //#region Reminders
-const reminderScheduler = new Map();
-
-let remindersDb;
-
-// Open (or create) the IndexedDB database
-const request = window.indexedDB.open('Reminders', 1);
-
-// Handle database upgrade (creation or schema change)
-request.onupgradeneeded = function (event) {
-  const db = event.target.result;
-
-  // Create an object store (table) with the specified schema
-  const objectStore = db.createObjectStore('reminders', { keyPath: 'id' });
-
-  // Define the schema for the object store
-  objectStore.createIndex('title', 'title', { unique: false });
-  objectStore.createIndex('time', 'time', { unique: false });
-  objectStore.createIndex('description', 'description', { unique: false });
-  objectStore.createIndex('status', 'status', { unique: false });
-};
-
 const reminderListContainer = document.getElementById('reminderListContainer');
-function renderReminder() {
-  // Start a transaction to read data
-  const transaction = remindersDb.transaction(['reminders'], 'readonly');
 
-  // Get the object store
-  const objectStore = transaction.objectStore('reminders');
+async function renderReminder() {
 
   let reminderListItems = '';
-  const reminders = [];
+  const reminders = await getReminders();
 
-  // Open a cursor to iterate over all reminders
-  objectStore.openCursor().onsuccess = function (event) {
-    const cursor = event.target.result;
-    if (cursor) {
-      // Push each reminder into the array
-      reminders.push(cursor.value);
-      cursor.continue();
-    } else {
-      // All reminders have been retrieved, you can now use the 'reminders' array
-      reminders
-        .sort((reminderA, reminderB) => {
-          return reminderA.time.getTime() - reminderB.time.getTime();
-        })
-        .sort((reminderA, reminderB) => {
-          if (
-            reminderA.status === 'active' &&
-            reminderB.status === 'completed'
-          ) {
-            return -1; // 'active' comes before 'completed'
-          } else if (
-            reminderA.status === 'completed' &&
-            reminderB.status === 'active'
-          ) {
-            return 1; // 'completed' comes after 'active'
-          } else {
-            return 0; // Maintain the same order for 'active' and 'completed'
-          }
-        })
-        .forEach((reminder) => {
-          // Get the time string
-          const timeString = reminder.time.toTimeString();
+  // All reminders have been retrieved, you can now use the 'reminders' array
+  reminders
+    .sort((reminderA, reminderB) => {
+      return reminderA.time.getTime() - reminderB.time.getTime();
+    })
+    .sort((reminderA, reminderB) => {
+      if (
+        reminderA.status === 'active' &&
+        reminderB.status === 'completed'
+      ) {
+        return -1; // 'active' comes before 'completed'
+      } else if (
+        reminderA.status === 'completed' &&
+        reminderB.status === 'active'
+      ) {
+        return 1; // 'completed' comes after 'active'
+      } else {
+        return 0; // Maintain the same order for 'active' and 'completed'
+      }
+    })
+    .forEach((reminder) => {
+      // Get the time string
+      const timeString = reminder.time.toTimeString();
 
-          // Extract only the time portion (hours, minutes, and seconds)
-          const timeOnly = timeString.split(' ')[0];
-          reminderListItems += `<li data-reminder-id="${reminder.id}">
-            <div class="flex-grow">
-              <span class="heading subtitle1">${reminder.title}</h2>
-              <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
-              ${reminder.status === 'recurring' ? '<span class="caption">Everyday</span>' : ''}
-            </div>
-            <div class="list-secondary-action">
-              <button type="button" onclick="deleteReminder('${reminder.id}')">
-                <span class="emoji">❌</span>
-              </button>
-            </div>
-            <div class="clear-float"></div>
-          </li>`;
-        });
+      // Extract only the time portion (hours, minutes, and seconds)
+      const timeOnly = timeString.split(' ')[0];
+      reminderListItems += `<li data-reminder-id="${reminder.id}">
+      <div class="flex-grow">
+        <span class="heading subtitle1">${reminder.title}</h2>
+        <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
+        ${reminder.status === 'recurring' ? '<span class="caption">Everyday</span>' : ''}
+      </div>
+      <div class="list-secondary-action">
+        <button type="button" onclick="deleteReminder('${reminder.id}')">
+          <span class="emoji">❌</span>
+        </button>
+      </div>
+      <div class="clear-float"></div>
+    </li>`;
+    });
 
-      const remindersList = `<ul class='list'>${reminderListItems}</ul>`;
-      reminderListContainer.innerHTML = remindersList;
-    }
-  };
+  const remindersList = `<ul class='list'>${reminderListItems}</ul>`;
+  reminderListContainer.innerHTML = remindersList;
 }
 
 function clearCompletedReminders() {
   setInterval(() => {
-    // Start a database transaction
-    const transaction = remindersDb.transaction(['reminders'], 'readwrite');
-
-    // Get the object store
-    const objectStore = transaction.objectStore('reminders');
-
-    // Open a cursor to iterate over all reminders
-    objectStore.openCursor().onsuccess = function (event) {
-      const cursor = event.target.result;
-      if (cursor) {
-        const reminder = cursor.value;
-        // Check if the reminder is completed
+    (async () => {
+      const reminders = await getReminders();
+      for (const reminder of reminders) {
         if (reminder.status === 'completed') {
           // Delete the reminder if it's completed
-          objectStore.delete(cursor.primaryKey);
+          await deleteReminder(reminder.id);
         } else if (
           reminder.status === 'recurring' &&
           reminder.time.getTime() < Date.now()
@@ -213,175 +184,23 @@ function clearCompletedReminders() {
           // and the time has passed
           const nextOccurance = reminder.time.getTime() + DAY_IN_MS; // update for next day
           reminder.time = new Date(nextOccurance);
-          objectStore.put(reminder);
+          await updateReminder(reminder);
         } else if (
           reminder.status === 'active' &&
           reminder.time.getTime() < Date.now()
         ) {
           // Delete the past reminder
-          objectStore.delete(cursor.primaryKey);
+          await deleteReminder(reminder.id);
         }
-        cursor.continue();
-      } else {
-        // All reminders have been processed
-        console.log('Reminder cleanup complete');
-        renderReminder();
       }
-    };
+      await renderReminder();
+    })();
   }, 30000);
 }
 
-function updateReminder(reminder){
+clearCompletedReminders();
 
-  // Start a transaction to read data
-  const transaction = remindersDb.transaction(['reminders'], 'readwrite');
-
-  // Get the object store
-  const objectStore = transaction.objectStore('reminders');
-
-  objectStore.put(reminder);
-
-}
-
-function scheduleReminders() {
-
-  __electronLog.log('Scheduling reminders');
-
-  // Start a transaction to read data
-  const transaction = remindersDb.transaction(['reminders'], 'readonly');
-
-  // Get the object store
-  const objectStore = transaction.objectStore('reminders');
-
-  const reminders = [];
-
-  // Open a cursor to iterate over all reminders
-  objectStore.openCursor().onsuccess = function (event) {
-    const cursor = event.target.result;
-    if (cursor) {
-      // Push each reminder into the array
-      reminders.push(cursor.value);
-      cursor.continue();
-    } else {
-      // All reminders have been retrieved, you can now use the 'reminders' array
-
-      reminderScheduler.forEach((timeoutId) => {
-        clearTimeout(timeoutId);
-      });
-      reminders.forEach((reminder) => {
-        const now = Date.now();
-        let timeRemaining = Math.abs(reminder.time.getTime() - now);
-        if (reminder.time.getTime() < now && reminder.status === 'recurring') {
-          const nextOccurance = reminder.time.getTime() + DAY_IN_MS; // update for next day
-
-          // Update the reminder and save it to storage
-          reminder.time = new Date(nextOccurance);
-          updateReminder(reminder);
-
-          timeRemaining = Math.abs(nextOccurance - now);
-        }
-        const days =
-          timeRemaining >= DAY_IN_MS
-            ? Math.floor(timeRemaining / DAY_IN_MS)
-            : 0;
-        const hours =
-          timeRemaining >= 3600000 ? Math.floor(timeRemaining / 3600000) : 0;
-        const minutes =
-          timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
-        const seconds =
-          timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
-        console.log(
-          'Remaining time for reminder %s between %s and %s is %d days %d hours %d minutes %d seconds',
-          reminder.title,
-          reminder.time.toTimeString(),
-          new Date(now).toTimeString(),
-          days,
-          hours,
-          minutes,
-          seconds,
-          reminder.time
-        );
-        const timeoutId = setTimeout(() => {
-          const options = {
-            body: reminder.description,
-            icon: 'chrono-chime-icon-192.png', // Replace with the path to your notification icon (192x192 pixels)
-            vibrate: [200, 100, 200], // Vibration pattern (optional)
-            // Add other notification options here if needed
-          };
-          new Notification(reminder.title, options);
-          if (reminder.status === 'active') {
-            reminder.status = 'completed';
-          }else if(reminder.status === 'recurring'){
-            const nextOccurance = reminder.time.getTime() + 8.64e7; // update for next day
-            reminder.time = new Date(nextOccurance);
-          }
-          updateReminder(reminder);
-          renderReminder();
-        }, timeRemaining);
-        reminderScheduler.set(reminder.id, timeoutId);
-      });
-    }
-  };
-}
-
-// Handle database opening success
-request.onsuccess = function (event) {
-  remindersDb = event.target.result;
-
-  clearCompletedReminders(remindersDb);
-
-  // Scedule reminders on app start
-  scheduleReminders();
-};
-
-// Handle database opening error
-request.onerror = function (event) {
-  __electronLog.error('Error opening database:', event.target.error);
-  showAppToast('Error opening reminders database');
-};
-
-function addReminder(title, time, isRecurring, description = '') {
-  // Start a database transaction
-  const transaction = remindersDb.transaction(['reminders'], 'readwrite');
-
-  // Get the object store
-  const objectStore = transaction.objectStore('reminders');
-
-  // Define the data to be added
-  const reminder = {
-    id: crypto.randomUUID(),
-    title,
-    time: new Date(time),
-    description,
-    status: isRecurring ? 'recurring' : 'active',
-  };
-
-  // Add the data to the object store
-  const addRequest = objectStore.add(reminder);
-
-  // Handle the success or error of the add operation
-  addRequest.onsuccess = function () {
-    showAppToast('Reminder Added');
-  };
-
-  addRequest.onerror = function (event) {
-    showAppToast('Failed to Add reminder');
-    __electronLog.error('Error adding reminder:', event.target.error);
-  };
-}
-
-// eslint-disable-next-line no-unused-vars
-function deleteReminder(reminderId) {
-
-  // Start a transaction to read data
-  const transaction = remindersDb.transaction(['reminders'], 'readwrite');
-
-  // Get the object store
-  const objectStore = transaction.objectStore('reminders');
-
-  objectStore.delete(reminderId);
-  renderReminder();
-}
+scheduleReminders(renderReminder);
 
 /**
  * @type {HTMLDialogElement}
@@ -459,7 +278,7 @@ addReminderBtn.addEventListener('click', (ev) => {
   isRecurringReminder.checked = false;
   addReminder(title, reminderDate, isRecurring);
 
-  scheduleReminders();
+  scheduleReminders(renderReminder);
   renderReminder();
 });
 newReminderBtn.addEventListener('click', (ev) => {
@@ -469,6 +288,87 @@ newReminderBtn.addEventListener('click', (ev) => {
 cancelAddReminderBtn.addEventListener('click', (ev) => {
   ev.preventDefault();
   closeRemindersModal();
+});
+//#endregion
+
+
+//#region Tasks
+// Initialize modals and buttons
+const listsModal = document.getElementById('listsModal');
+const tasksModal = document.getElementById('tasksModal');
+const newListBtn = document.getElementById('newListBtn');
+const addListBtn = document.getElementById('addListBtn');
+const addTaskBtn = document.getElementById('addTaskBtn');
+const cancelAddListBtn = document.getElementById('cancelAddListBtn');
+const cancelAddTaskBtn = document.getElementById('cancelAddTaskBtn');
+const listTitleInput = document.getElementById('listTitleInput');
+const taskTitleInput = document.getElementById('taskTitleInput');
+const taskStatusInput = document.getElementById('taskStatusInput');
+const tasksForm = document.getElementById('tasksForm');
+// const listsForm = document.getElementById('listsForm');
+const taskListContainer = document.getElementById('taskListContainer');
+
+newListBtn.addEventListener('click', () => listsModal.showModal());
+newReminderBtn.addEventListener('click', () => remindersModal.showModal());
+cancelAddListBtn.addEventListener('click', () => listsModal.close());
+cancelAddTaskBtn.addEventListener('click', () => tasksModal.close());
+
+// Example task list rendering
+async function renderTaskLists() {
+  const lists = await getLists();
+  taskListContainer.innerHTML = '';
+  let taskListItems = '';
+  for (const list of lists) {
+    taskListItems += `<li data-list-id="${list.id}">
+            <div class="flex-grow">
+              <span class="heading subtitle1">${list.name}</h2>
+            </div>
+            <div class="list-secondary-action">
+              <button type="button">
+                <span class="emoji">❌</span>
+              </button>
+            </div>
+            <div class="clear-float"></div>
+          </li>`;
+    // const tasks = await getTasks(list.id);
+    // const listElement = document.createElement('div');
+    // listElement.className = 'list';
+    // listElement.innerHTML = `
+    //       <h2>${list.name}</h2>
+    //       <button class="cta-button" onclick="openAddTaskModal(${list.id})"><span class="emoji">➕</span>Add Task</button>
+    //       <ul class="list">
+    //           ${tasks.map((task) => `
+    //               <li>
+    //                   <span>${task.task.title}</span>
+    //                   <span>${task.task.completed ? '✅' : '❌'}</span>
+    //                   <button onclick="deleteTask(${task.id})">Delete</button>
+    //               </li>`).join('')}
+    //       </ul>
+    //   `;
+    // taskListContainer.appendChild(listElement);
+  }
+  taskListContainer.innerHTML = `<ul class="list">${taskListItems}</ul>`;
+}
+
+
+addListBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  const listName = listTitleInput.value.trim();
+  if (listName.length >= 3 && listName.length <= 250) {
+    await createList(listName);
+    renderTaskLists();
+  }
+});
+
+addTaskBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  const taskDescription = taskTitleInput.value.trim();
+  const completed = taskStatusInput.checked;
+  const listId = parseInt(tasksForm.dataset.listId);
+  if (taskDescription.length >= 3 && taskDescription.length <= 250) {
+    await addTask(listId, { title: taskDescription, completed });
+    renderTaskLists();
+  }
 });
 //#endregion
 
@@ -791,6 +691,10 @@ function loadContent(url) {
     settings = getSettingsFromLocalStorage();
     scheduleNotifications();
     renderReminder();
+  } else if (url === '/tasks') {
+    settings = getSettingsFromLocalStorage();
+    scheduleNotifications();
+    renderTaskLists();
   } else {
     settings = getSettingsFromLocalStorage();
     scheduleNotifications();

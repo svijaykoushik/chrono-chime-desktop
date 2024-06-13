@@ -19,6 +19,7 @@
             </div>
             <ul class="drawer-menu">
                 <!-- Links to different sections -->
+                <li><span class="icon">📋</span><a class="body2" href="/tasks">Tasks</a></li>
                 <li><span class="icon">✅</span><a class="body2" href="/reminders">Reminders</a></li>
                 <li><span class="icon">🛠️</span><a class="body2" href="/settings">Settings</a></li>
                 <li><span class="icon">👍</span><a class="body2" href="/attributions">Attributions</a></li>
@@ -47,6 +48,58 @@
             <button id="askPermissionButton" class="cta-button">
                 <span class="emoji">🥺</span> Allow Notifications
             </button>
+        </div>
+        <div id="tasks" class="container">
+            <!-- Tasks Content -->
+            <h1>Tasks</h1>
+            <button type="button" class="cta-button" id="newListBtn"><span class="emoji">➕</span>Add List</button>
+            <div id="taskListContainer"></div>
+            <dialog id="listsModal" role="dialog" class="basic-dialog">
+                <div class="dialog-header">
+                    <h6>New List</h6>
+                </div>
+                <form id="listsForm" method="dialog" name="listsForm">
+                    <div class="dialog-content">
+                        <div class="field">
+                            <input name="listTitleInput" id="listTitleInput" type="text" placeholder="List Name" required
+                                minlength="3" maxlength="250">
+                            <label for="listTitleInput">List Name</label>
+                            <span class="validation-error" id="listTitleInputError">List name should be at least 3 characters
+                                and at most 250 characters</span>
+                        </div>
+                    </div>
+                    <div class="action-container">
+                        <button id="cancelAddListBtn" class="dialog-action">Cancel</button>
+                        <button id="addListBtn" type="submit" class="dialog-action">Add List</button>
+                    </div>
+                </form>
+            </dialog>
+            <dialog id="tasksModal" role="dialog" class="basic-dialog">
+                <div class="dialog-header">
+                    <h6>New Task</h6>
+                </div>
+                <form id="tasksForm" method="dialog" name="tasksForm">
+                    <div class="dialog-content">
+                        <div class="field">
+                            <input name="taskTitleInput" id="taskTitleInput" type="text" placeholder="Task Description" required
+                                minlength="3" maxlength="250">
+                            <label for="taskTitleInput">Task Description</label>
+                            <span class="validation-error" id="taskTitleInputError">Task description should be at least 3
+                                characters and at most 250 characters</span>
+                        </div>
+                        <div class="field">
+                            <label for="taskStatusInput" class="toggle-switch">
+                                <input id="taskStatusInput" type="checkbox" name="taskStatusInput">
+                                <span><span class="emoji d-inline">✅</span>&nbsp;Completed</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="action-container">
+                        <button id="cancelAddTaskBtn" class="dialog-action">Cancel</button>
+                        <button id="addTaskBtn" type="submit" class="dialog-action">Add Task</button>
+                    </div>
+                </form>
+            </dialog>
         </div>
         <div id="reminders" class="container">
             <h1>Reminders</h1>
@@ -320,6 +373,7 @@
             }, 100);
         });
     </script>
-    <script src="./script.js"></script>
+    <script src="./renderer/to-do-lists/to-do-lists.js" type="module"></script>
+    <script src="./script.js" type="module"></script>
   </body>
 </html>
