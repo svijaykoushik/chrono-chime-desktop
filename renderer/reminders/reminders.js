@@ -59,7 +59,7 @@ export async function addReminder(title, time, isRecurring, description = '') {
     description,
     status: isRecurring ? 'recurring' : 'active',
   };
-  return await db.handleRequest(store.add({ reminder }));
+  return await db.handleRequest(store.add(reminder));
 }
 
 /**
