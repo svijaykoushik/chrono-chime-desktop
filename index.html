@@ -5,20 +5,26 @@
   <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.googleapis.com">
     <title>ChronoChime - Time Keeper Extraordinaire</title>
     <link rel="stylesheet" type="text/css" href="./style.css"/>
   </head>
   <body>
+    <nav-rail>
+        <nav-destination icon="🏠" label="Home" href="/"></nav-destination>
+        <nav-destination icon="📋" label="Tasks" href="/tasks"></nav-destination>
+        <nav-destination icon="✅" label="Reminders" href="/reminders"></nav-destination>
+        <nav-destination icon="🛠️" label="Settings" href="/settings"></nav-destination>
+        <nav-destination icon="👍" label="Attributions" href="/attributions"></nav-destination>
+        <nav-destination icon="ℹ️" label="About" href="/about"></nav-destination>
+    </nav-rail>
     <div class="background-wrapper"></div>
-        <div id="appDrawer" class="drawer">
+        <!-- <div id="appDrawer" class="drawer">
             <div class="drawer-header">
-                <!-- Your app logo and name -->
                 <a href="/"><img src="chrono-chime-icon-32.png" alt="ChronoChime Logo" class="app-logo" /></a>
                 <h2 class="heading"><a href="/">ChronoChime</a></h2>
             </div>
             <ul class="drawer-menu">
-                <!-- Links to different sections -->
                 <li><span class="icon">📋</span><a class="body2" href="/tasks">Tasks</a></li>
                 <li><span class="icon">✅</span><a class="body2" href="/reminders">Reminders</a></li>
                 <li><span class="icon">🛠️</span><a class="body2" href="/settings">Settings</a></li>
@@ -26,7 +32,6 @@
                 <li><span class="icon">ℹ️</span><a class="body2" href="/about">About</a></li>
             </ul>
             <hr class="separator"/>
-            <!-- Social Icons Container -->
             <div class="social-icons">
                 <div class="body2 social-title">Socials</div>
                 <a href="https://github.com/svijaykoushik/chorno-chime" target="_blank">
@@ -39,7 +44,7 @@
                     <img src="twitter-logo-black.png" alt="Twitter" width="24" height="24" /> <span class="body2">X</span>
                 </a>
             </div>
-        </div>
+        </div> -->
         <!-- Transparent button to toggle the app drawer -->
         <div id="toggleDrawerButton" class="toggle-button"></div>          
         <div class="container" id="main">
@@ -373,7 +378,8 @@
             }, 100);
         });
     </script>
-    <script src="./renderer/to-do-lists/to-do-lists.js" type="module"></script>
+    <script src="./renderer/components/nav-destination.js"></script>
+    <script src="./renderer/components/nav-rail.js"></script>
     <script src="./script.js" type="module"></script>
   </body>
 </html>

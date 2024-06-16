@@ -6,6 +6,6 @@
       "allowJs": true,                    // Allow JavaScript files to be imported inside your project
       "baseUrl": ".",                     // Base directory to resolve non-relative module names
     },
-    "include": ["./**/*"],              // Include all JavaScript files in the src directory
+    "include": ["./**/*.js"],              // Include all JavaScript files in the src directory
     "exclude": ["node_modules", "dist"]   // Exclude certain directories from the project
   }
