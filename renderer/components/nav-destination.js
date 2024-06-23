@@ -7,13 +7,17 @@ class NavDestination extends HTMLElement {
     const icon = this.getAttribute('icon');
     const label = this.getAttribute('label');
     this.href = this.getAttribute('href');
-    console.log('Href attr',this.href);
+    this.addEventListener('click',(e)=>{
+      e.preventDefault();
+      if (this.href !== '') {
+        history.pushState(null, null, this.href);
+      }
+    });
     this.shadowRoot.innerHTML = `
             <style>${this.getStyle()}</style>
             <div class="icon">${icon}</div>
             <div class="label">${label}</div>
         `;
-    setTimeout(() => this.initDestinations());
   }
 
   getStyle() {
@@ -27,11 +31,12 @@ class NavDestination extends HTMLElement {
         justify-content: center;
         cursor: pointer;
         text-align: center;
-        color: #555;
+        color:  var(--text-color-hex);;
       }
 
       :host(.active) {
         font-weight: bold;
+        color: var(--accent-color-hex); 
       }
 
       .icon {
@@ -45,7 +50,6 @@ class NavDestination extends HTMLElement {
       }
 
       .label {
-        letter-spacing: 1.5px;
         font-weight: 500;
         text-transform: uppercase;
         font-size: 14px;
@@ -53,22 +57,6 @@ class NavDestination extends HTMLElement {
       }
     `;
   }
-
-  initDestinations() {
-    const destinations = this.querySelectorAll('nav-destination');
-    console.log('destinations',destinations);
-    destinations.forEach((destination) => {
-      destination.addEventListener('click', (e) => {
-        e.preventDefault();
-        destinations.forEach((d) => d.classList.remove('active'));
-        destination.classList.add('active');
-        console.log('Selected destination', destination, this.href);
-        if(this.href !==''){
-          history.pushState(null,null,this.href);
-        }
-      });
-    });
-  }
 }
 
-customElements.define('nav-destination',NavDestination);
+customElements.define('nav-destination', NavDestination);
