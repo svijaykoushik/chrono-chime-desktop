@@ -686,7 +686,8 @@ function loadContent(url) {
   for (const container of containers) {
     if (
       url.includes(container.id) ||
-      (url === '/' && container.id === 'main')
+      (url === '/' && container.id === 'main') ||
+      (url === '/index' && container.id === 'main')
     ) {
       setElementPropertiesWithFadeIn(container, 'block');
     } else {
