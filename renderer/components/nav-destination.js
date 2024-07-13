@@ -31,7 +31,7 @@ class NavDestination extends HTMLElement {
         justify-content: center;
         cursor: pointer;
         text-align: center;
-        color:  var(--text-color-hex);;
+        color:  var(--text-color-hex);
       }
 
       :host(.active) {
@@ -41,12 +41,11 @@ class NavDestination extends HTMLElement {
 
       .icon {
         font-size: 24px;
-        margin-bottom: calc(72px / 2 - 1.5em / 2); /* Center vertically */;
         font-family: var(--app-emoji-font-family)
       }
 
       :host(.active) .icon {
-        margin-bottom: 14px;
+        margin-top: 14px;
       }
 
       .label {
@@ -54,6 +53,10 @@ class NavDestination extends HTMLElement {
         text-transform: uppercase;
         font-size: 14px;
         display: inline-block;
+      }
+      
+      :host(.active) .label{
+        margin-bottom: 16px;
       }
     `;
   }
