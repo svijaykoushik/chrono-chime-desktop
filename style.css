@@ -67,6 +67,8 @@ body {
     z-index: 1;
     /* Ensure it appears above the background */
     max-width: 100%;
+    /* Ensure enough space is left for the navigation rail */
+    margin-left: 72px;
 }
 
 /* Add styles for the text content */

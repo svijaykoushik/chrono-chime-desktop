@@ -615,6 +615,17 @@ function handleOnlineStatus() {
   }
 }
 
+// Function to show the toast notification
+function showAppToast(message) {
+  const toastNotification = document.getElementById('toastNotification');
+  toastNotification.innerText = message;
+  toastNotification.classList.add('show');
+  setTimeout(() => {
+    toastNotification.innerText = '';
+    toastNotification.classList.remove('show');
+  }, 5000); // Hide the toast after 5 seconds
+}
+
 // Function to set CSS properties for an element with fade-in animation
 function setElementPropertiesWithFadeIn(element, displayValue) {
   element.style.display = displayValue;
@@ -695,8 +706,8 @@ function loadContent(url) {
     }
   }
 
-  // Check if the URL matches the "/settings" route
-  if (url === '/settings') {
+  // Check if the URL matches the "/config" route
+  if (url === '/config') {
     // Automatically open the 'General' tab when the page loads
     document.getElementById('general').classList.add('tabcontent-active');
     document.getElementById('generalTabLink').classList.add('active');
@@ -705,7 +716,7 @@ function loadContent(url) {
     settings = getSettingsFromLocalStorage();
     scheduleNotifications();
     initializeSettingsForm(settings);
-  } else if (url === '/reminders') {
+  } else if (url === '/config') {
     settings = getSettingsFromLocalStorage();
     scheduleNotifications();
     renderReminder();
@@ -717,6 +728,18 @@ function loadContent(url) {
     settings = getSettingsFromLocalStorage();
     scheduleNotifications();
   }
+}
+
+// Function to set active destination in nav-rail
+function setActiveDestination(route){
+  const navDestinations =  document.querySelectorAll('nav-destination');
+  navDestinations.forEach((d) => d.classList.remove('active'));
+  navDestinations.forEach((destination) => {
+    const href = destination.getAttribute('href');
+    if(href===route){
+      destination.classList.add('active');
+    }
+  });
 }
 
 // Function to handle navigation
@@ -738,6 +761,7 @@ window.addEventListener('popstate', () => {
   const url = window.location.pathname;
   __electronLog.log('Navigation to %s due to history change', url);
   loadContent(url);
+  setActiveDestination(url);
 });
 
 // Load initial content based on the current URL
@@ -747,7 +771,7 @@ loadContent('/');
 function openTab(evt, tabName) {
   // Hide all tab content
   const tabcontent = document.getElementsByClassName('tabcontent');
-  for (i = 0; i < tabcontent.length; i++) {
+  for (let i = 0; i < tabcontent.length; i++) {
     tabcontent[i].classList.remove('tabcontent-active');
   }
 
@@ -934,13 +958,13 @@ function toggleButtonPosition() {
 }
 
 // Add a click event listener to the toggle button
-toggleButton.addEventListener('click', () => {
-  // Toggle the app drawer by adjusting its right property
-  appDrawer.classList.toggle('drawer-open');
+// toggleButton.addEventListener('click', () => {
+//   // Toggle the app drawer by adjusting its right property
+//   appDrawer.classList.toggle('drawer-open');
 
-  // Reposition the toggle button
-  toggleButtonPosition();
-});
+//   // Reposition the toggle button
+//   toggleButtonPosition();
+// });
 
 // Allow notification permission
 askPermissionButton.addEventListener('click', () => {
@@ -989,8 +1013,13 @@ window.addEventListener('offline', handleOnlineStatus);
 navigation.addEventListener('navigate', (navigationEvent) => {
   navigationEvent.preventDefault();
   const url = new URL(navigationEvent.destination.url);
+  __electronLog.log(
+    'Navigation to %s handled by navigate event handler',
+    navigationEvent.destination.url
+  );
   const path = '/' + url.pathname.split('/').pop().split('.')[0];
   loadContent(path);
+  setActiveDestination(path);
 });
 
 window.versions.onAppVersionRecived((e, data) => {

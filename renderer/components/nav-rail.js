@@ -8,7 +8,6 @@ class NavRail extends HTMLElement {
             <style>${this.getStyle()}</style>
             <slot></slot>
         `;
-    setTimeout(() => this.initDestinations());
   }
 
   getStyle() {
@@ -24,20 +23,11 @@ class NavRail extends HTMLElement {
         box-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),
           0px 3px 4px 0px rgba(0,0,0,0.14),
           0px 1px 8px 0px rgba(0,0,0,0.12);
+        position: fixed;
+        left: 0;
         z-index: 3;
       }
     `;
-  }
-
-  initDestinations() {
-    const destinations = this.querySelectorAll('nav-destination');
-    destinations.forEach((destination) => {
-      destination.addEventListener('click', (e) => {
-        e.preventDefault();
-        destinations.forEach((d) => d.classList.remove('active'));
-        destination.classList.add('active');
-      });
-    });
   }
 }
 

@@ -10,14 +10,6 @@
     <link rel="stylesheet" type="text/css" href="./style.css"/>
   </head>
   <body>
-    <nav-rail>
-        <nav-destination icon="🏠" label="Home" href="/"></nav-destination>
-        <nav-destination icon="📋" label="Tasks" href="/tasks"></nav-destination>
-        <nav-destination icon="✅" label="Reminders" href="/reminders"></nav-destination>
-        <nav-destination icon="🛠️" label="Settings" href="/settings"></nav-destination>
-        <nav-destination icon="👍" label="Attributions" href="/attributions"></nav-destination>
-        <nav-destination icon="ℹ️" label="About" href="/about"></nav-destination>
-    </nav-rail>
     <div class="background-wrapper"></div>
         <!-- <div id="appDrawer" class="drawer">
             <div class="drawer-header">
@@ -26,10 +18,10 @@
             </div>
             <ul class="drawer-menu">
                 <li><span class="icon">📋</span><a class="body2" href="/tasks">Tasks</a></li>
-                <li><span class="icon">✅</span><a class="body2" href="/reminders">Reminders</a></li>
-                <li><span class="icon">🛠️</span><a class="body2" href="/settings">Settings</a></li>
-                <li><span class="icon">👍</span><a class="body2" href="/attributions">Attributions</a></li>
-                <li><span class="icon">ℹ️</span><a class="body2" href="/about">About</a></li>
+                <li><span class="icon">✅</span><a class="body2" href="/alerts">Reminders</a></li>
+                <li><span class="icon">🛠️</span><a class="body2" href="/config">Settings</a></li>
+                <li><span class="icon">👍</span><a class="body2" href="/credits">Attributions</a></li>
+                <li><span class="icon">ℹ️</span><a class="body2" href="/info">About</a></li>
             </ul>
             <hr class="separator"/>
             <div class="social-icons">
@@ -46,7 +38,16 @@
             </div>
         </div> -->
         <!-- Transparent button to toggle the app drawer -->
-        <div id="toggleDrawerButton" class="toggle-button"></div>          
+        <!-- <div id="toggleDrawerButton" class="toggle-button"></div>-->
+         
+        <nav-rail>
+            <nav-destination icon="🏠" label="Home" href="/" class="active"></nav-destination>
+            <nav-destination icon="📋" label="Tasks" href="/tasks"></nav-destination>
+            <nav-destination icon="✅" label="Alerts" href="/alerts"></nav-destination>
+            <nav-destination icon="🛠️" label="Config" href="/config"></nav-destination>
+            <nav-destination icon="👍" label="Credits" href="/credits"></nav-destination>
+            <nav-destination icon="ℹ️" label="Info" href="/info"></nav-destination>
+        </nav-rail>
         <div class="container" id="main">
             <h1>ChronoChime - Time Keeper Extraordinaire</h1>
             <p id="countdownTimer"></p>
@@ -106,15 +107,15 @@
                 </form>
             </dialog>
         </div>
-        <div id="reminders" class="container">
-            <h1>Reminders</h1>
-            <button type="button" class="cta-button" id="newReminderBtn"><span class="emoji">➕</span> Add reminder</button>
+        <div id="alerts" class="container">
+            <h1>Alerts</h1>
+            <button type="button" class="cta-button" id="newReminderBtn"><span class="emoji">➕</span> Add Alert</button>
             <div id="reminderListContainer">
                 
             </div>
             <dialog id="remindersModal" role="dialog" class="basic-dialog">
                 <div class="dialog-header">
-                    <h6>Reminder</h6>
+                    <h6>Alerts</h6>
                 </div>
                 <form id="remindersForm" method="dialog" name="remindersForm">
                     <div class="dialog-content">
@@ -140,19 +141,18 @@
                             Cancel
                         </button>                     
                         <button id="addReminderBtn" type="submit" class="dialog-action">
-                            Add reminder
+                            Add Alert
                         </button>
                     </div>
                 </form>
             </dialog>
         </div>
-        <div class="container" id="settings">
-            <h1>Settings</h1>
+        <div class="container" id="config">
+            <h1>Config</h1>
             <div class="tab">
                 <button
                     class="tablinks"
                     id="generalTabLink"
-                    onclick="openTab(event, 'general')"
                 >
                     <span class="emoji">⚙️</span> General
                 </button>
@@ -287,8 +287,8 @@
                 </section>
             </form>
         </div>       
-        <div class="container" id="attributions">
-            <h1>Attributions</h1>
+        <div class="container" id="credits">
+            <h1>Credits</h1>
             <p>
                 Sound 1 by <a
                 href="https://pixabay.com/users/universfield-28281460/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=123107"
@@ -341,8 +341,8 @@
                 </a>
             </p>
         </div>
-        <div class="container" id="about">
-            <h1>About</h1>
+        <div class="container" id="info">
+            <h1>Info</h1>
             <div class="about-logo">
                 <img src="chrono-chime-icon-32.png" alt="ChronoChime Logo" class="app-logo" />
                 <h2>ChronoChime</h2>

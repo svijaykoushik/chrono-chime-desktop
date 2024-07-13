@@ -1,36 +1,25 @@
-const { browser, expect, $, $$ } = require('@wdio/globals');
+const { browser, expect, $ } = require('@wdio/globals');
 
 describe('Notification sound section tests', () => {
   before(async () => {
-    // Locate and expand the collapsed sidebar
-    const toggleDrawerButton = await $('#toggleDrawerButton');
-    await toggleDrawerButton.click();
-    const appDrawer = await $('#appDrawer');
-    await appDrawer.waitForStable({
-      timeout: 5000,
-      timeoutMsg: 'appDrawer did not expand within 5 seconds',
+    const navRail = await $('nav-rail');
+    await expect(navRail).toExist();
+    const navDestinations = await navRail.$$('nav-destination');
+
+    const destination = await navDestinations.find(async (navDestination) => {
+      const href = await navDestination.getAttribute('href');
+      return href === '/config';
     });
-    const appDrawerItems = await $$('#appDrawer .drawer-menu li');
-    const settingsLink = await appDrawerItems[1].$('a');
-    await settingsLink.click();
-    const settings = await $('#settings');
+    await destination.click();
     await browser.waitUntil(
-      () => {
-        return settings.isDisplayed();
+      async () => {
+        return $('#config').isDisplayed();
       },
       {
         timeout: 5000,
-        timeoutMsg: 'settings did appear within 5 seconds',
+        timeoutMsg: '#config did not appear within 5 seconds',
       }
     );
-
-    // Close the app drawer
-    await toggleDrawerButton.click();
-
-    await appDrawer.waitForStable({
-      timeout: 5000,
-      timeoutMsg: 'appDrawer did not close within 5 seconds',
-    });
 
     const sectionNavItem = await $('#soundTabLink');
     await sectionNavItem.click();
@@ -120,7 +109,6 @@ describe('Notification sound section tests', () => {
   // });
 
   describe('Sound selection tests', () => {
-
     /**
      * @type {WebdriverIO.Element}
      */
