@@ -3,6 +3,7 @@
         "asar",
         "chrono",
         "chronochime",
+        "endregion",
         "svijaykoushik"
     ],
     "editor.defaultFormatter": "esbenp.prettier-vscode",

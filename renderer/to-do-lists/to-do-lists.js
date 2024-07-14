@@ -58,7 +58,9 @@ export async function deleteList(id) {
  * @function addTask
  * @description Adds a new task to a specific to-do list in IndexedDB.
  * @param {number} listId The ID of the list to add the task to.
- * @param {string} task The description of the new task.
+ * @param {object} task The description of the new task.
+ * @param {string} task.task
+ * @param {boolean} task.completed
  * @returns {Promise<number>} A Promise that resolves to the ID of the newly created task.
  * @throws {Error} An error if adding the task fails.
  */
@@ -85,9 +87,9 @@ export async function removeTask(id) {
  * @function updateTask
  * @description Updates an existing task in a to-do list in IndexedDB.
  * @param {number} id The ID of the task to update.
- * @param {object} updatedTask An object containing the updated properties for the task.
- * @property {string} [updatedTask.task] The updated task description (optional).
- * @property {boolean} [updatedTask.completed] The updated completion status of the task (optional).
+ * @param {Object} updatedTask An object containing the updated properties for the task.
+ * @param {string} updatedTask.task The updated task description (optional).
+ * @param {boolean} updatedTask.completed The updated completion status of the task (optional).
  * @returns {Promise<void>} A Promise that resolves when the task is updated.
  * @throws {Error} An error if updating the task fails.
  */

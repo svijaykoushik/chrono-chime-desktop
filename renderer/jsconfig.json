@@ -7,5 +7,6 @@
       "baseUrl": ".",                     // Base directory to resolve non-relative module names
     },
     "include": ["./**/*.js","../script.js"],              // Include all JavaScript files in the src directory
-    "exclude": ["node_modules", "dist"]   // Exclude certain directories from the project
+    "exclude": ["node_modules", "dist"],   // Exclude certain directories from the project
+    "typeRoots": ["./types"]
   }

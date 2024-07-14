@@ -49,7 +49,7 @@
     mainWindow.webContents.send('auto-launch-status', isEnabled);
   });
 
-  const createWindow = () => {
+  function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
       width: 800,

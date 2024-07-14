@@ -116,7 +116,7 @@ const reminderScheduler = new Map();
  * A day in milliseconds
  * @type {number}
  */
-const DAY_IN_MS = 8.64e+7;
+export const DAY_IN_MS = 8.64e+7;
 
 /**
  * Schedule reminders

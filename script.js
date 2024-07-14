@@ -1,11 +1,13 @@
+/// <reference path="./renderer/types/custom.d.ts" />
 import {
   createList,
   addTask,
   getLists,
-  getTasks
+  getTasks,
 } from './renderer/to-do-lists/to-do-lists.js';
 
 import {
+  DAY_IN_MS,
   addReminder,
   deleteReminder,
   getReminders,
@@ -21,29 +23,50 @@ let countdownInterval; // Store the interval ID for the countdown timer
 let countdownTimeRemaining = 0; // Global variable to store the countdown time in milliseconds
 let nextHourTimeout; // Store the timeout ID of the next hour timeout
 
-const intervalSelect = document.getElementById('interval');
-const notificationTitleText = document.getElementById('notificationTitle');
-const notificationContentText = document.getElementById('notificationContent');
-const previewNotificationBtn = document.getElementById('previewNotification');
-const resetSettingsButton = document.getElementById('resetSettings');
-const sound1Audio = document.getElementById('sound1Audio');
-const sound2Audio = document.getElementById('sound2Audio');
-const sound3Audio = document.getElementById('sound3Audio');
-const askPermissionButton = document.getElementById('askPermissionButton');
-const countdownTimer = document.getElementById('countdownTimer');
-const allowNotificationCheckbox = document.getElementById(
-  'allowNotificationCheckbox'
+const intervalSelect = /** @type {HTMLSelectElement} */ (
+  document.getElementById('interval')
 );
-const autoLaunchCheckbox = document.getElementById('autoLaunchCheckbox');
+const notificationTitleText = /** @type {HTMLInputElement} */ (
+  document.getElementById('notificationTitle')
+);
+const notificationContentText = /** @type {HTMLInputElement} */ (
+  document.getElementById('notificationContent')
+);
+const previewNotificationBtn = /** @type {HTMLButtonElement} */ (
+  document.getElementById('previewNotification')
+);
+const resetSettingsButton = /** @type {HTMLButtonElement} */ (
+  document.getElementById('resetSettings')
+);
+const sound1Audio = /** @type {HTMLAudioElement} */ (
+  document.getElementById('sound1Audio')
+);
+const sound2Audio = /** @type {HTMLAudioElement} */ (
+  document.getElementById('sound2Audio')
+);
+const sound3Audio = /** @type {HTMLAudioElement} */ (
+  document.getElementById('sound3Audio')
+);
+const askPermissionButton = /** @type {HTMLButtonElement} */ (
+  document.getElementById('askPermissionButton')
+);
+const countdownTimer = document.getElementById('countdownTimer');
+const allowNotificationCheckbox = /** @type {HTMLInputElement} */ (
+  document.getElementById('allowNotificationCheckbox')
+);
+const autoLaunchCheckbox = /** @type {HTMLInputElement} */ (
+  document.getElementById('autoLaunchCheckbox')
+);
 const generalTabLink = document.getElementById('generalTabLink');
 const soundTabLink = document.getElementById('soundTabLink');
 const contentTabLink = document.getElementById('contentTabLink');
 const resetTabLink = document.getElementById('resetTabLink');
-
-// Get references to the app drawer and toggle button
-const appDrawer = document.getElementById('appDrawer');
-const toggleButton = document.getElementById('toggleDrawerButton');
-const notificationSoundOptions = document.querySelectorAll('input[name="sound"]');
+/**
+ * @type {NodeListOf<HTMLInputElement>}
+ */
+const notificationSoundOptions = document.querySelectorAll(
+  'input[name="sound"]'
+);
 
 const defaultSettings = {
   autoLaunch: false,
@@ -79,6 +102,17 @@ function getSettingsFromLocalStorage() {
   return settings;
 }
 
+// Function to show the toast notification
+function showAppToast(message) {
+  const toastNotification = document.getElementById('toastNotification');
+  toastNotification.innerText = message;
+  toastNotification.classList.add('show');
+  setTimeout(() => {
+    toastNotification.innerText = '';
+    toastNotification.classList.remove('show');
+  }, 5000); // Hide the toast after 5 seconds
+}
+
 function saveSettingsToLocalStorage(settings) {
   // Add new settings options if missing in
   // stored settings
@@ -98,15 +132,16 @@ function saveSettingsToLocalStorage(settings) {
   localStorage.setItem('settings', settingsJSON);
 
   // Send the notification status to main process
+  // @ts-ignore
   window.toggleNotification.sendResponse(!settings.isOff);
 
   // Send the auto launch status to main process
+  // @ts-ignore
   window.autoLauncher.sendResponse(settings.autoLaunch);
 
   // Show a toast message
   showAppToast('✅ Settings saved.');
 }
-
 
 // Store the settings object in localStorage
 if (!getSettingsFromLocalStorage()) {
@@ -119,7 +154,6 @@ let settings = getSettingsFromLocalStorage() || defaultSettings;
 const reminderListContainer = document.getElementById('reminderListContainer');
 
 async function renderReminder() {
-
   let reminderListItems = '';
   const reminders = await getReminders();
 
@@ -129,10 +163,7 @@ async function renderReminder() {
       return reminderA.time.getTime() - reminderB.time.getTime();
     })
     .sort((reminderA, reminderB) => {
-      if (
-        reminderA.status === 'active' &&
-        reminderB.status === 'completed'
-      ) {
+      if (reminderA.status === 'active' && reminderB.status === 'completed') {
         return -1; // 'active' comes before 'completed'
       } else if (
         reminderA.status === 'completed' &&
@@ -153,7 +184,11 @@ async function renderReminder() {
       <div class="flex-grow">
         <span class="heading subtitle1">${reminder.title}</h2>
         <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
-        ${reminder.status === 'recurring' ? '<span class="caption">Everyday</span>' : ''}
+        ${
+          reminder.status === 'recurring'
+            ? '<span class="caption">Everyday</span>'
+            : ''
+        }
       </div>
       <div class="list-secondary-action">
         <button type="button" onclick="deleteReminder('${reminder.id}')">
@@ -205,7 +240,9 @@ scheduleReminders(renderReminder);
 /**
  * @type {HTMLDialogElement}
  */
-const remindersModal = document.getElementById('remindersModal');
+const remindersModal = /** @type {HTMLDialogElement} */ (
+  document.getElementById('remindersModal')
+);
 const newReminderBtn = document.getElementById('newReminderBtn');
 const cancelAddReminderBtn = document.getElementById('cancelAddReminderBtn');
 const addReminderBtn = document.getElementById('addReminderBtn');
@@ -217,15 +254,21 @@ function closeRemindersModal() {
 // Handle add reminders
 addReminderBtn.addEventListener('click', (ev) => {
   ev.preventDefault();
-  const reminderTitleInput = document.getElementById('reminderTitleInput');
-  const reminderTimeInput = document.getElementById('reminderTimeInput');
+  const reminderTitleInput = /** @type {HTMLInputElement} */ (
+    document.getElementById('reminderTitleInput')
+  );
+  const reminderTimeInput = /** @type {HTMLInputElement} */ (
+    document.getElementById('reminderTimeInput')
+  );
   const reminderTitleInputError = document.getElementById(
     'reminderTitleInputError'
   );
   const reminderTimeInputError = document.getElementById(
     'reminderTimeInputError'
   );
-  const isRecurringReminder = document.getElementById('isRecurringReminder');
+  const isRecurringReminder = /** @type {HTMLInputElement} */ (
+    document.getElementById('isRecurringReminder')
+  );
   if (reminderTitleInput.checkValidity() === false) {
     reminderTitleInput.classList.contains('validation-error') === false
       ? reminderTitleInput.classList.add('validation-error')
@@ -291,20 +334,41 @@ cancelAddReminderBtn.addEventListener('click', (ev) => {
 });
 //#endregion
 
-
 //#region Tasks
 // Initialize modals and buttons
-const listsModal = document.getElementById('listsModal');
-const tasksModal = document.getElementById('tasksModal');
-const newListBtn = document.getElementById('newListBtn');
-const addListBtn = document.getElementById('addListBtn');
-const addTaskBtn = document.getElementById('addTaskBtn');
-const cancelAddListBtn = document.getElementById('cancelAddListBtn');
-const cancelAddTaskBtn = document.getElementById('cancelAddTaskBtn');
-const listTitleInput = document.getElementById('listTitleInput');
-const taskTitleInput = document.getElementById('taskTitleInput');
-const taskStatusInput = document.getElementById('taskStatusInput');
-const tasksForm = document.getElementById('tasksForm');
+const listsModal = /** @type {HTMLDialogElement} */ (
+  document.getElementById('listsModal')
+);
+const tasksModal = /** @type {HTMLDialogElement} */ (
+  document.getElementById('tasksModal')
+);
+const newListBtn = /** @type {HTMLButtonElement} */ (
+  document.getElementById('newListBtn')
+);
+const addListBtn = /** @type {HTMLButtonElement} */ (
+  document.getElementById('addListBtn')
+);
+const addTaskBtn = /** @type {HTMLButtonElement} */ (
+  document.getElementById('addTaskBtn')
+);
+const cancelAddListBtn = /** @type {HTMLButtonElement} */ (
+  document.getElementById('cancelAddListBtn')
+);
+const cancelAddTaskBtn = /** @type {HTMLButtonElement} */ (
+  document.getElementById('cancelAddTaskBtn')
+);
+const listTitleInput = /** @type {HTMLInputElement} */ (
+  document.getElementById('listTitleInput')
+);
+const taskTitleInput = /** @type {HTMLInputElement} */ (
+  document.getElementById('taskTitleInput')
+);
+const taskStatusInput = /** @type {HTMLInputElement} */ (
+  document.getElementById('taskStatusInput')
+);
+const tasksForm = /** @type {HTMLFormElement} */ (
+  document.getElementById('tasksForm')
+);
 // const listsForm = document.getElementById('listsForm');
 const taskListContainer = document.getElementById('taskListContainer');
 
@@ -313,7 +377,7 @@ cancelAddListBtn.addEventListener('click', () => listsModal.close());
 cancelAddTaskBtn.addEventListener('click', () => tasksModal.close());
 
 // eslint-disable-next-line no-unused-vars
-function openAddTaskModal(listId){
+function openAddTaskModal(listId) {
   tasksModal.showModal();
 }
 
@@ -322,7 +386,7 @@ async function renderTaskLists() {
   const lists = await getLists();
   taskListContainer.innerHTML = '';
   const taskList = document.createElement('ul');
-  taskList.className='list';
+  taskList.className = 'list';
   // let taskListItems = '';
   for (const list of lists) {
     // taskListItems += `<li data-list-id="${list.id}">
@@ -338,18 +402,24 @@ async function renderTaskLists() {
     //       </li>`;
     const tasks = await getTasks(list.id);
     const listElement = document.createElement('li');
-    listElement.setAttribute('data-list-id',list.id);
+    listElement.setAttribute('data-list-id', list.id);
     listElement.innerHTML = `<li data-list-id="${list.id}">
          <div class="flex-grow">
            <span class="heading subtitle1">${list.name}</h2>
-           <button class="cta-button" onclick="openAddTaskModal(${list.id})"><span class="emoji">➕</span>Add Task</button>
+           <button class="cta-button" onclick="openAddTaskModal(${
+             list.id
+           })"><span class="emoji">➕</span>Add Task</button>
           <ul class="list">
-              ${tasks.map((task) => `
+              ${tasks
+                .map(
+                  (task) => `
                   <li>
                       <span>${task.task.title}</span>
                       <span>${task.task.completed ? '✅' : '❌'}</span>
                       <button onclick="deleteTask(${task.id})">Delete</button>
-                  </li>`).join('')}
+                  </li>`
+                )
+                .join('')}
           </ul>
          </div>
          <div class="list-secondary-action">
@@ -359,12 +429,11 @@ async function renderTaskLists() {
          </div>
          <div class="clear-float"></div>
        </li>`;
-       taskList.appendChild(listElement);
+    taskList.appendChild(listElement);
   }
   // taskListContainer.innerHTML = `<ul class="list">${taskListItems}</ul>`;
   taskListContainer.appendChild(taskList);
 }
-
 
 addListBtn.addEventListener('click', async (e) => {
   e.preventDefault();
@@ -382,7 +451,7 @@ addTaskBtn.addEventListener('click', async (e) => {
   const completed = taskStatusInput.checked;
   const listId = parseInt(tasksForm.dataset.listId);
   if (taskDescription.length >= 3 && taskDescription.length <= 250) {
-    await addTask(listId, { title: taskDescription, completed });
+    await addTask(listId, { task: taskDescription, completed });
     renderTaskLists();
     tasksModal.close();
   }
@@ -431,22 +500,22 @@ function showNotification() {
 }
 
 function showAskPermissionButton() {
-  askPermissionButton.style.opacity = 1;
+  askPermissionButton.style.opacity = '1';
   askPermissionButton.style.visibility = 'visible';
 }
 
 function hideAskPermissionButton() {
-  askPermissionButton.style.opacity = 0;
+  askPermissionButton.style.opacity = '0';
   askPermissionButton.style.visibility = 'hidden';
 }
 
 function showCountdownTimer() {
-  countdownTimer.style.opacity = 1;
+  countdownTimer.style.opacity = '1';
   countdownTimer.style.visibility = 'visible';
 }
 
 function hideCountdownTimer() {
-  countdownTimer.style.opacity = 0;
+  countdownTimer.style.opacity = '0';
   countdownTimer.style.visibility = 'hidden';
 }
 
@@ -544,7 +613,7 @@ function setNextNotificationInterval(intervalHours) {
   const now = new Date();
   const nextHour = new Date(now);
   nextHour.setHours(nextHour.getHours() + intervalHours, 0, 0, 0);
-  return nextHour - now;
+  return nextHour.getTime() - now.getTime();
 }
 
 // Schedule hourly notifications
@@ -614,18 +683,6 @@ function handleOnlineStatus() {
     showOfflineToast();
   }
 }
-
-// Function to show the toast notification
-function showAppToast(message) {
-  const toastNotification = document.getElementById('toastNotification');
-  toastNotification.innerText = message;
-  toastNotification.classList.add('show');
-  setTimeout(() => {
-    toastNotification.innerText = '';
-    toastNotification.classList.remove('show');
-  }, 5000); // Hide the toast after 5 seconds
-}
-
 // Function to set CSS properties for an element with fade-in animation
 function setElementPropertiesWithFadeIn(element, displayValue) {
   element.style.display = displayValue;
@@ -650,7 +707,9 @@ function initializeSettingsForm(settingsArg) {
 
   // Set the selected option based on the loaded setting
   if (settingsArg.notificationSound) {
-    document.querySelector(`#${settingsArg.notificationSound}`).checked = true;
+    /** @type {HTMLInputElement} */ (
+      document.querySelector(`#${settingsArg.notificationSound}`)
+    ).checked = true;
   }
 
   // Set the selected option based on the loaded setting
@@ -731,12 +790,12 @@ function loadContent(url) {
 }
 
 // Function to set active destination in nav-rail
-function setActiveDestination(route){
-  const navDestinations =  document.querySelectorAll('nav-destination');
+function setActiveDestination(route) {
+  const navDestinations = document.querySelectorAll('nav-destination');
   navDestinations.forEach((d) => d.classList.remove('active'));
   navDestinations.forEach((destination) => {
     const href = destination.getAttribute('href');
-    if(href===route){
+    if (href === route) {
       destination.classList.add('active');
     }
   });
@@ -788,58 +847,76 @@ function openTab(evt, tabName) {
 
 sound1Audio.addEventListener('ended', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound1').parentElement.querySelector(
-    '.secondary-action'
+  /** @type {HTMLInputElement} */ (
+    document
+      .querySelector('input#sound1')
+      .parentElement.querySelector('.secondary-action')
   ).style.display = 'none';
 });
 sound2Audio.addEventListener('ended', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound2').parentElement.querySelector(
-    '.secondary-action'
+  /** @type {HTMLInputElement} */ (
+    document
+      .querySelector('input#sound2')
+      .parentElement.querySelector('.secondary-action')
   ).style.display = 'none';
 });
 sound3Audio.addEventListener('ended', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound3').parentElement.querySelector(
-    '.secondary-action'
+  /** @type {HTMLInputElement} */ (
+    document
+      .querySelector('input#sound3')
+      .parentElement.querySelector('.secondary-action')
   ).style.display = 'none';
 });
 
 sound1Audio.addEventListener('pause', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound1').parentElement.querySelector(
-    '.secondary-action'
+  /** @type {HTMLInputElement} */ (
+    document
+      .querySelector('input#sound1')
+      .parentElement.querySelector('.secondary-action')
   ).style.display = 'none';
 });
 sound2Audio.addEventListener('pause', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound2').parentElement.querySelector(
-    '.secondary-action'
+  /** @type {HTMLInputElement} */ (
+    document
+      .querySelector('input#sound2')
+      .parentElement.querySelector('.secondary-action')
   ).style.display = 'none';
 });
 sound3Audio.addEventListener('pause', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound3').parentElement.querySelector(
-    '.secondary-action'
+  /** @type {HTMLInputElement} */ (
+    document
+      .querySelector('input#sound3')
+      .parentElement.querySelector('.secondary-action')
   ).style.display = 'none';
 });
 
 sound1Audio.addEventListener('play', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound1').parentElement.querySelector(
-    '.secondary-action'
+  /** @type {HTMLInputElement} */ (
+    document
+      .querySelector('input#sound1')
+      .parentElement.querySelector('.secondary-action')
   ).style.display = 'block';
 });
 sound2Audio.addEventListener('play', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound2').parentElement.querySelector(
-    '.secondary-action'
+  /** @type {HTMLInputElement} */ (
+    document
+      .querySelector('input#sound2')
+      .parentElement.querySelector('.secondary-action')
   ).style.display = 'block';
 });
 sound3Audio.addEventListener('play', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound3').parentElement.querySelector(
-    '.secondary-action'
+  /** @type {HTMLInputElement} */ (
+    document
+      .querySelector('input#sound3')
+      .parentElement.querySelector('.secondary-action')
   ).style.display = 'block';
 });
 
@@ -872,7 +949,7 @@ function playAudio(target) {
 notificationSoundOptions.forEach((option) => {
   option.addEventListener('change', (e) => {
     e.preventDefault();
-    const target = e.target;
+    const target = /** @type {HTMLInputElement} */ (e.target);
     const selectedSound = target.value;
 
     settings.notificationSound = selectedSound;
@@ -880,12 +957,12 @@ notificationSoundOptions.forEach((option) => {
     playAudio(selectedSound);
   });
   option.addEventListener('click', (e) => {
-    const target = e.target;
+    const target = /** @type {HTMLInputElement} */ (e.target);
     const selectedSound = target.value;
-    if (
-      e.target.checked &&
-      document.querySelector(`audio#${selectedSound}Audio`).paused
-    ) {
+    const selectedAudio = /** @type {HTMLAudioElement} */ (
+      document.querySelector(`audio#${selectedSound}Audio`)
+    );
+    if (target.checked && selectedAudio.paused) {
       playAudio(selectedSound);
     }
   });
@@ -913,7 +990,7 @@ previewNotificationBtn.addEventListener('click', (e) => {
     if (Notification.permission === 'granted') {
       showNotification();
     } else if (
-      Notification.permission !== 'granted' &&
+      Notification.permission !== 'default' &&
       Notification.permission !== 'denied'
     ) {
       Notification.requestPermission()
@@ -942,30 +1019,6 @@ resetSettingsButton.addEventListener('click', (e) => {
   initializeSettingsForm(settings);
 });
 
-function toggleButtonPosition() {
-  const isOpen = appDrawer.classList.contains('drawer-open');
-  if (isOpen) {
-    // Calculate the button's position relative to the drawer when it's open
-    const drawerRect = appDrawer.getBoundingClientRect();
-    const buttonRect = toggleButton.getBoundingClientRect();
-    const leftOffset = buttonRect.left - drawerRect.left;
-
-    toggleButton.style.left = leftOffset + 'px';
-  } else {
-    // Bring the button back to its original position when the drawer is closed
-    toggleButton.style.left = '15px'; // Adjust as needed
-  }
-}
-
-// Add a click event listener to the toggle button
-// toggleButton.addEventListener('click', () => {
-//   // Toggle the app drawer by adjusting its right property
-//   appDrawer.classList.toggle('drawer-open');
-
-//   // Reposition the toggle button
-//   toggleButtonPosition();
-// });
-
 // Allow notification permission
 askPermissionButton.addEventListener('click', () => {
   settings.isOff = false;
@@ -975,14 +1028,16 @@ askPermissionButton.addEventListener('click', () => {
 
 allowNotificationCheckbox.addEventListener('change', (e) => {
   e.preventDefault();
-  settings.isOff = !e.currentTarget.checked;
+  const target = /** @type {HTMLInputElement} */ (e.currentTarget);
+  settings.isOff = !target.checked;
   saveSettingsToLocalStorage(settings);
   scheduleNotifications();
 });
 
 autoLaunchCheckbox.addEventListener('change', (e) => {
   e.preventDefault();
-  settings.autoLaunch = e.currentTarget.checked;
+  const target = /** @type {HTMLInputElement} */ (e.currentTarget);
+  settings.autoLaunch = target.checked;
   saveSettingsToLocalStorage(settings);
   scheduleNotifications();
 });
@@ -1010,7 +1065,7 @@ window.addEventListener('online', handleOnlineStatus);
 window.addEventListener('offline', handleOnlineStatus);
 
 // Prevent navigation behaviour of links
-navigation.addEventListener('navigate', (navigationEvent) => {
+window.navigation.addEventListener('navigate', (navigationEvent) => {
   navigationEvent.preventDefault();
   const url = new URL(navigationEvent.destination.url);
   __electronLog.log(
