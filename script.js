@@ -22,6 +22,9 @@ let countdownTimeRemaining = 0; // Global variable to store the countdown time i
 let nextHourTimeout; // Store the timeout ID of the next hour timeout
 
 const intervalSelect = document.getElementById('interval');
+const focusIntervalSelect = document.getElementById('focusInterval');
+const focusShortBreakSelect = document.getElementById('focusShortBreak');
+const focusLongBreakSelect = document.getElementById('focusLongBreak');
 const notificationTitleText = document.getElementById('notificationTitle');
 const notificationContentText = document.getElementById('notificationContent');
 const previewNotificationBtn = document.getElementById('previewNotification');
@@ -51,7 +54,10 @@ const defaultSettings = {
   interval: '1', // Default interval, e.g., '1' for 1 hour
   notificationSound: 'sound1', // Default sound, e.g., 'sound1',
   notificationTitle: 'Time Keeper Extraordinaire',
-  notificationContent: 'This is a personalized notification from ChronoChime!', // Default content
+  notificationContent: 'This is a personalized notification from ChronoChime!', // Default content,
+  focusInterval: '25', // Default '25' minutes
+  focusShortBreak: '5', // Default '5' minutes
+  focusLongBreak: '15', // Default '15' minutes
 };
 
 //#endregion
@@ -656,6 +662,18 @@ function initializeSettingsForm(settingsArg) {
   // Set the selected option based on the loaded setting
   if (settingsArg.interval) {
     intervalSelect.value = settingsArg.interval;
+  }
+
+  if (settingsArg.focusInterval) {
+    focusIntervalSelect.value = settingsArg.focusInterval;
+  }
+
+  if (settingsArg.focusShortBreak) {
+    focusShortBreakSelect.value = settingsArg.focusShortBreak;
+  }
+
+  if (settingsArg.focusLongBreak) {
+    focusLongBreakSelect.value = settingsArg.focusLongBreak;
   }
 
   // Set the state of the allow notification setting
