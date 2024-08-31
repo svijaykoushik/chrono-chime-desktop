@@ -14,18 +14,94 @@ import createDBConnection from '../utils/indexed-db-utils.js';
  * @throws {Error} An error if the database fails to open.
  */
 async function dbPromise() {
-    const connection = await createDBConnection('todo_list', 1, (db) => {
-        const listStore = db.createObjectStore('lists', { keyPath: 'id', autoIncrement: true });
+    const connection = await createDBConnection('todoList', 1, (db) => {
+      const listStore = db.createObjectStore('lists', {
+        keyPath: 'id',
+      });
 
-        listStore.createIndex('name', 'name', { unique: true });
+        listStore.createIndex('listName', 'name', { unique: true });
+        listStore.createIndex('ListCreatedAt', 'createdAt', { unique: false });
+        listStore.createIndex('isListPrebuilt', 'isPrebuilt', { unique: false });
 
-        const tasksStore = db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true });
+      const tasksStore = db.createObjectStore('tasks', {
+        keyPath: 'id'
+      });
 
-        tasksStore.createIndex('description', 'description', { unique: false });
-        tasksStore.createIndex('status', 'status', { unique: false });
+      tasksStore.createIndex('taskDescription', 'description', { unique: false });
+      tasksStore.createIndex('taskStatus', 'status', { unique: false });
     });
     return connection;
 };
+
+/**
+ * @typedef {Object} List
+ * @property {string} id - The unique id.
+ * @property {string} icon - Icon chosen for identify list.
+ * @property {string} name - Name of the list.
+ * @property {Date} createdAt - Timestamp of the list when it was created.
+ * @property {boolean} isPrebuilt - A flag to to show if the list was prebuilt.
+ */
+
+
+
+async function initDatabase(){
+  const conn = await dbPromise();
+  const store = conn.createTransaction('lists', 'readwrite');
+
+  /**
+   * @type List[]
+   */
+  const prebuiltLists = [
+    {
+      id: crypto.randomUUID(),
+      name: 'Daily Agenda',
+      icon: '☀️',
+      isPrebuilt: true,
+      createdAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'High Priority',
+      icon: '⭐',
+      isPrebuilt: true,
+      createdAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'Scheduled Tasks',
+      icon: '📅',
+      isPrebuilt: true,
+      createdAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'Delegated Tasks',
+      icon: '👤',
+      isPrebuilt: true,
+      createdAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'Task Inbox',
+      icon: '🏠',
+      isPrebuilt: true,
+      createdAt: new Date(),
+    },
+  ];
+
+  /**
+   * @type List[]
+   */
+  const lists = await conn.handleRequest(store.getAll());
+  if (lists.length) {
+    return;
+  }
+  for (const list of prebuiltLists) {
+    await conn.handleRequest(store.add(list));
+  }
+}
+
+initDatabase();
 
 // To-Do List Functions
 /**
@@ -38,7 +114,15 @@ async function dbPromise() {
 export async function createList(name) {
     const conn = await dbPromise();
     const store = conn.createTransaction('lists', 'readwrite');
-    return await conn.handleRequest(store.add({ name }));
+    return await conn.handleRequest(
+      store.add({
+        name,
+        createdAt: new Date(),
+        icon: '📜',
+        isPreBuilt: false,
+        id: crypto.randomUUID(),
+      })
+    );
 };
 
 /**
@@ -102,7 +186,7 @@ export async function updateTask(id, updatedTask) {
 /**
  * @function getLists
  * @description Retrieves all to-do lists stored in IndexedDB.
- * @returns {Promise<Array<object>>} A Promise that resolves to an array of list objects.
+ * @returns {Promise<Array<List>>} A Promise that resolves to an array of list objects.
  * @property {number} list.id The ID of the list.
  * @property {string} list.name The name of the list.
  * @throws {Error} An error if retrieving lists fails.

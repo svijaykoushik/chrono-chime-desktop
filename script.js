@@ -3,7 +3,7 @@ import {
   createList,
   addTask,
   getLists,
-  getTasks,
+  // getTasks,
 } from './renderer/to-do-lists/to-do-lists.js';
 
 import {
@@ -342,9 +342,6 @@ const listsModal = /** @type {HTMLDialogElement} */ (
 const tasksModal = /** @type {HTMLDialogElement} */ (
   document.getElementById('tasksModal')
 );
-const newListBtn = /** @type {HTMLButtonElement} */ (
-  document.getElementById('newListBtn')
-);
 const addListBtn = /** @type {HTMLButtonElement} */ (
   document.getElementById('addListBtn')
 );
@@ -372,8 +369,11 @@ const tasksForm = /** @type {HTMLFormElement} */ (
 // const listsForm = document.getElementById('listsForm');
 const taskListContainer = document.getElementById('taskListContainer');
 
-newListBtn.addEventListener('click', () => listsModal.showModal());
-cancelAddListBtn.addEventListener('click', () => listsModal.close());
+cancelAddListBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  listTitleInput.value = '';
+  listsModal.close();
+});
 cancelAddTaskBtn.addEventListener('click', () => tasksModal.close());
 
 // eslint-disable-next-line no-unused-vars
@@ -381,57 +381,104 @@ function openAddTaskModal(listId) {
   tasksModal.showModal();
 }
 
+/**
+ * Handler for loading the corresponding tasks
+ * in the list
+ * @param {MouseEvent} e
+ */
+function taskListItemClickHandler(e) {
+  e.preventDefault();
+  const listItem = /** @type {HTMLLIElement} */ (e.currentTarget);
+  const taskList = document.getElementById('taskList');
+  for (const item of taskList.children) {
+    item.classList.remove('active');
+  }
+  listItem.classList.add('active');
+  const taskListName = document.getElementById('taskListName');
+  taskListName.innerText = listItem.dataset.listName;
+  console.log('Selected list is ', listItem.id, listItem.dataset.listName);
+}
+
 // Example task list rendering
 async function renderTaskLists() {
   const lists = await getLists();
   taskListContainer.innerHTML = '';
   const taskList = document.createElement('ul');
-  taskList.className = 'list';
-  // let taskListItems = '';
-  for (const list of lists) {
-    // taskListItems += `<li data-list-id="${list.id}">
-    //         <div class="flex-grow">
-    //           <span class="heading subtitle1">${list.name}</h2>
-    //         </div>
-    //         <div class="list-secondary-action">
-    //           <button type="button">
-    //             <span class="emoji">❌</span>
-    //           </button>
-    //         </div>
-    //         <div class="clear-float"></div>
-    //       </li>`;
-    const tasks = await getTasks(list.id);
-    const listElement = document.createElement('li');
-    listElement.setAttribute('data-list-id', list.id);
-    listElement.innerHTML = `<li data-list-id="${list.id}">
-         <div class="flex-grow">
-           <span class="heading subtitle1">${list.name}</h2>
-           <button class="cta-button" onclick="openAddTaskModal(${
-             list.id
-           })"><span class="emoji">➕</span>Add Task</button>
-          <ul class="list">
-              ${tasks
-                .map(
-                  (task) => `
-                  <li>
-                      <span>${task.task.title}</span>
-                      <span>${task.task.completed ? '✅' : '❌'}</span>
-                      <button onclick="deleteTask(${task.id})">Delete</button>
-                  </li>`
-                )
-                .join('')}
-          </ul>
-         </div>
-         <div class="list-secondary-action">
-           <button type="button">
-             <span class="emoji">❌</span>
-           </button>
-         </div>
-         <div class="clear-float"></div>
-       </li>`;
-    taskList.appendChild(listElement);
+  taskList.id = 'taskList';
+  taskList.className = 'list-view-list';
+  const listTitleItem = document.createElement('li');
+  listTitleItem.className = 'list-view-title';
+  listTitleItem.innerText = 'Tasks';
+  taskList.append(listTitleItem);
+  const sortedLists = lists.sort(
+    (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+  );
+  for (const list of sortedLists) {
+    const listItem = document.createElement('li');
+    listItem.id = list.id;
+    listItem.classList.add('list-item');
+    listItem.addEventListener('click', taskListItemClickHandler);
+    listItem.setAttribute('data-list-name', list.name);
+    const iconSpan = document.createElement('span');
+    iconSpan.classList.add('icon');
+    iconSpan.innerText = list.icon;
+    const bodySpan = document.createElement('span');
+    bodySpan.classList.add('body2');
+    bodySpan.innerText = list.name;
+    listItem.appendChild(iconSpan);
+    listItem.appendChild(bodySpan);
+    taskList.appendChild(listItem);
+    // taskListItems += `
+    //   <li class="list-item" id="${list.id} click="taskListItemHandler(event)">
+    //     <span class="icon">${list.icon}</span>
+    //     <span class="body2">${list.name}</span>
+    //   </li>
+    // `;
+    // const tasks = await getTasks(list.id);
+    // const listElement = document.createElement('li');
+    // listElement.setAttribute('data-list-id', list.id);
+    // listElement.innerHTML = `<li data-list-id="${list.id}">
+    //      <div class="flex-grow">
+    //        <span class="heading subtitle1">${list.name}</h2>
+    //        <button class="cta-button" onclick="openAddTaskModal(${
+    //          list.id
+    //        })"><span class="emoji">➕</span>Add Task</button>
+    //       <ul class="list">
+    //           ${tasks
+    //             .map(
+    //               (task) => `
+    //               <li>
+    //                   <span>${task.task.title}</span>
+    //                   <span>${task.task.completed ? '✅' : '❌'}</span>
+    //                   <button onclick="deleteTask(${task.id})">Delete</button>
+    //               </li>`
+    //             )
+    //             .join('')}
+    //       </ul>
+    //      </div>
+    //      <div class="list-secondary-action">
+    //        <button type="button">
+    //          <span class="emoji">❌</span>
+    //        </button>
+    //      </div>
+    //      <div class="clear-float"></div>
+    //    </li>`;
+    // taskList.appendChild(listElement);
   }
-  // taskListContainer.innerHTML = `<ul class="list">${taskListItems}</ul>`;
+  const addListButtonItem = document.createElement('li');
+  const addListButton = document.createElement('button');
+  addListButton.id = 'newListBtn';
+  addListButton.className = 'cta-button';
+  const btnEmojiSpan = document.createElement('span');
+  btnEmojiSpan.className = 'emoji';
+  btnEmojiSpan.innerText = '➕';
+  addListButton.appendChild(btnEmojiSpan);
+  const addListButtonText = document.createTextNode('Add List');
+  addListButton.appendChild(addListButtonText);
+  addListButton.addEventListener('click', () => listsModal.showModal());
+  addListButtonItem.appendChild(addListButton);
+  taskList.appendChild(addListButtonItem);
+
   taskListContainer.appendChild(taskList);
 }
 
