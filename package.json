@@ -5,7 +5,7 @@
   "description": "ChronoChime - Hourly Notification Desktop Application  with background sounds and notifications.",
   "main": "main.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "electron-forge start -- -- --enable-dev-tools",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
