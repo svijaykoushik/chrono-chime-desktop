@@ -399,6 +399,15 @@ function taskListItemClickHandler(e) {
   console.log('Selected list is ', listItem.id, listItem.dataset.listName);
 }
 
+async function setDefaultTaskList() {
+  const lists = await getLists();
+  const defaultList = lists.find((list) => list.name === 'Daily Agenda');
+  const defaultTaskListItem = document.getElementById(defaultList.id);
+  defaultTaskListItem.classList.add('active');
+  const taskListName = document.getElementById('taskListName');
+  taskListName.innerText = defaultTaskListItem.dataset.listName;
+}
+
 // Example task list rendering
 async function renderTaskLists() {
   const lists = await getLists();
@@ -478,8 +487,10 @@ async function renderTaskLists() {
   addListButton.addEventListener('click', () => listsModal.showModal());
   addListButtonItem.appendChild(addListButton);
   taskList.appendChild(addListButtonItem);
-
   taskListContainer.appendChild(taskList);
+  if (taskList.getElementsByClassName('active').length === 0) {
+    await setDefaultTaskList();
+  }
 }
 
 addListBtn.addEventListener('click', async (e) => {
