@@ -61,6 +61,8 @@ const generalTabLink = document.getElementById('generalTabLink');
 const soundTabLink = document.getElementById('soundTabLink');
 const contentTabLink = document.getElementById('contentTabLink');
 const resetTabLink = document.getElementById('resetTabLink');
+const taskListOverflowMenu = document.getElementById('taskListOverflowMenu');
+const tasklistOverflowMenuToggle = document.getElementById('tasklistOverflowMenuToggle');
 /**
  * @type {NodeListOf<HTMLInputElement>}
  */
@@ -382,6 +384,16 @@ function openAddTaskModal(listId) {
 }
 
 /**
+ * Handler for toggling the overflow menu
+ * in the list
+ * @param {MouseEvent} e
+ */
+function taskListOverflowMenuToggleHandler(e){  
+  e.preventDefault();
+  taskListOverflowMenu.classList.toggle('active');
+}
+
+/**
  * Handler for loading the corresponding tasks
  * in the list
  * @param {MouseEvent} e
@@ -491,6 +503,10 @@ async function renderTaskLists() {
   if (taskList.getElementsByClassName('active').length === 0) {
     await setDefaultTaskList();
   }
+  tasklistOverflowMenuToggle.addEventListener(
+    'click',
+    taskListOverflowMenuToggleHandler
+  );
 }
 
 addListBtn.addEventListener('click', async (e) => {

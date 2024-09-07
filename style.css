@@ -201,6 +201,7 @@ small a:hover {
 }
 
 @keyframes pulse {
+
     0%,
     100% {
         transform: scale(1);
@@ -486,7 +487,7 @@ small a:hover {
     text-align: start;
 }
 
-.toggle-switch > input {
+.toggle-switch>input {
     appearance: none;
     -moz-appearance: none;
     -webkit-appearance: none;
@@ -507,13 +508,13 @@ small a:hover {
     transition: opacity 0.3s 0.1s, transform 0.2s 0.1s;
 }
 
-.toggle-switch > span {
+.toggle-switch>span {
     display: inline-block;
     width: 100%;
     cursor: pointer;
 }
 
-.toggle-switch > span::before {
+.toggle-switch>span::before {
     content: '';
     float: right;
     display: inline-block;
@@ -526,7 +527,7 @@ small a:hover {
     transition: background-color 0.2s, opacity 0.2s;
 }
 
-.toggle-switch > span::after {
+.toggle-switch>span::after {
     content: '';
     position: absolute;
     top: 2px;
@@ -540,64 +541,64 @@ small a:hover {
     transition: background-color 0.2s, transform 0.2s;
 }
 
-.toggle-switch > input:checked {
+.toggle-switch>input:checked {
     right: -10px;
     background-color: rgb(var(--accent-color-rgb-string, 33, 150, 243));
 }
 
-.toggle-switch > input:checked + span::before {
+.toggle-switch>input:checked+span::before {
     background-color: rgba(var(--accent-color-rgb-string, 33, 150, 243), 0.6);
 }
 
-.toggle-switch > input:checked + span::after {
+.toggle-switch>input:checked+span::after {
     background-color: rgb(var(--accent-color-rgb-string, 33, 150, 243));
     transform: translateX(16px);
 }
 
 /* Hover, Focus */
-.toggle-switch:hover > input {
+.toggle-switch:hover>input {
     opacity: 0.04;
 }
 
-.toggle-switch > input:focus {
+.toggle-switch>input:focus {
     opacity: 0.12;
 }
 
-.toggle-switch:hover > input:focus {
+.toggle-switch:hover>input:focus {
     opacity: 0.16;
 }
 
 /* Active */
-.toggle-switch > input:active {
+.toggle-switch>input:active {
     opacity: 1;
     transform: scale(0);
     transition: transform 0s, opacity 0s;
 }
 
-.toggle-switch > input:active + span::before {
+.toggle-switch>input:active+span::before {
     background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
 }
 
-.toggle-switch > input:checked:active + span::before {
+.toggle-switch>input:checked:active+span::before {
     background-color: rgba(0, 0, 0, 0.38);
 }
 
 /* Disabled */
-.toggle-switch > input:disabled {
+.toggle-switch>input:disabled {
     opacity: 0;
 }
 
-.toggle-switch > input:disabled + span {
+.toggle-switch>input:disabled+span {
     color: rgb(0, 0, 0);
     opacity: 0.38;
     cursor: default;
 }
 
-.toggle-switch > input:disabled + span::before {
+.toggle-switch>input:disabled+span::before {
     background-color: rgba(0, 0, 0, 0.38);
 }
 
-.toggle-switch > input:checked:disabled + span::before {
+.toggle-switch>input:checked:disabled+span::before {
     background-color: rgba(var(--pure-material-primary-rgb, 33, 150, 243), 0.6);
 }
 
@@ -633,7 +634,7 @@ dialog.basic-dialog .dialog-content {
     font-size: 16px;
 }
 
-dialog.basic-dialog .dialog-content > * {
+dialog.basic-dialog .dialog-content>* {
     margin-bottom: 16px;
 }
 
@@ -658,7 +659,7 @@ dialog.basic-dialog .action-container {
     text-align: right;
 }
 
-dialog.basic-dialog .action-container > *:not(:last-child) {
+dialog.basic-dialog .action-container>*:not(:last-child) {
     margin-right: 8px;
 }
 
@@ -727,7 +728,7 @@ ul.list li .list-secondary-action button {
     background: none;
 }
 
-.clear-float{
+.clear-float {
     float: none !important;
 }
 
@@ -757,7 +758,7 @@ form .field label {
     background: #fff;
 }
 
-form .field input, form .field textarea,form .field select {
+form .field input, form .field textarea, form .field select {
     font-size: 16px;
     font-weight: 400;
     letter-spacing: 1.5px;
@@ -772,7 +773,7 @@ form .field input, form .field textarea,form .field select {
     line-height: 20px;
 }
 
-form .field textarea{
+form .field textarea {
     height: 144px !important;
     padding-top: 15px !important;
     padding-bottom: 15px !important;
@@ -783,16 +784,16 @@ form .field input:focus, form .field textarea:focus, form .field select {
     border-color: var(--accent-color-hex);
 }
 
-form .field input:focus + label, form .field textarea:focus + label, form .field select:focus + label {
+form .field input:focus+label, form .field textarea:focus+label, form .field select:focus+label {
     color: var(--accent-color-hex);
 }
 
-form .field input[type='text']:focus + label, form .field textarea:focus + label {
+form .field input[type='text']:focus+label, form .field textarea:focus+label {
     transform: translate3d(12px, -9px, 0);
     font-size: 12px;
 }
 
-form .field input[type='time'] + label, form .field select + label {
+form .field input[type='time']+label, form .field select+label {
     transform: translate3d(12px, -9px, 0) !important;
     font-size: 12px !important;
 }
@@ -812,15 +813,15 @@ form .field input.validation-error, form .field textarea.validation-error, form 
     border-color: var(--form-field-error) !important;
 }
 
-form .field input.validation-error:focus + label, form .field textarea.validation-error:focus + label {
+form .field input.validation-error:focus+label, form .field textarea.validation-error:focus+label {
     color: var(--form-field-error);
 }
 
-form .field input[type='time'].validation-error + label, form .field select.validation-error:focus + label {
+form .field input[type='time'].validation-error+label, form .field select.validation-error:focus+label {
     color: var(--form-field-error);
 }
 
-.field input[type='text']:not(:placeholder-shown) + label, form .field textarea:not(:placeholder-shown) +label {
+.field input[type='text']:not(:placeholder-shown)+label, form .field textarea:not(:placeholder-shown)+label {
     transform: translate3d(12px, -9px, 0) !important;
 }
 
@@ -829,7 +830,7 @@ form .field input::placeholder, form .field textarea::placeholder {
     user-select: none !important;
 }
 
-form .field input[type="radio"] +label {
+form .field input[type="radio"]+label {
     display: inline-block;
     min-height: 20px;
     position: relative;
@@ -844,22 +845,23 @@ form .field input[type="radio"] +label {
     text-align: left;
 }
 
-form .field input[type="radio"] +label:before,form .field input[type="radio"] +label:after{
-  position: absolute;
-  content: "";
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  transition-property: transform, border-color;
-}
-form .field input[type="radio"] +label:before{
-  left: 0;
-  top: 0;
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--text-color-hex);
+form .field input[type="radio"]+label:before, form .field input[type="radio"]+label:after {
+    position: absolute;
+    content: "";
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    transition-property: transform, border-color;
 }
 
-form .field input[type="radio"] +label:after{
+form .field input[type="radio"]+label:before {
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--text-color-hex);
+}
+
+form .field input[type="radio"]+label:after {
     top: 6px;
     left: 6px;
     width: 10px;
@@ -871,17 +873,17 @@ form .field input[type="radio"] +label:after{
 }
 
 form .field input[type="radio"] {
-   display: none;
+    display: none;
 }
 
-form .field input[type=radio]:checked + label:before {
-  border-color: var(--accent-color-hex);
-  animation: ripple 0.2s linear forwards;
-  margin-right: 16px;
+form .field input[type=radio]:checked+label:before {
+    border-color: var(--accent-color-hex);
+    animation: ripple 0.2s linear forwards;
+    margin-right: 16px;
 }
 
-form .field input[type=radio]:checked + label:after {
-  transform: scale(1);
+form .field input[type=radio]:checked+label:after {
+    transform: scale(1);
 }
 
 form fieldset.radio-group legend {
@@ -890,7 +892,7 @@ form fieldset.radio-group legend {
     font-size: 16px;
 }
 
-form fieldset.radio-group {    
+form fieldset.radio-group {
     border: none;
     margin: 0 auto;
     padding: 0;
@@ -898,17 +900,17 @@ form fieldset.radio-group {
     text-align: start;
 }
 
-form fieldset.radio-group .field .secondary-action{
+form fieldset.radio-group .field .secondary-action {
     float: right;
     display: none;
 }
 
-form fieldset.radio-group .field input[type="radio"]:checked ~ .secondary-action{
+form fieldset.radio-group .field input[type="radio"]:checked~.secondary-action {
     display: block;
 }
 
 .d-block {
-  display: block !important;
+    display: block !important;
 }
 
 .d-none {
@@ -953,11 +955,11 @@ ul.list-view-list {
     align-items: center;
 }
 
-.list-view-list li.list-item{
+.list-view-list li.list-item {
     cursor: pointer;
 }
 
-.list-view-list li.active{
+.list-view-list li.active {
     color: rgb(var(--accent-color-rgb-string, 33, 150, 243));
 }
 
@@ -973,16 +975,16 @@ ul.list-view-list {
     flex-direction: row;
 }
 
-.list-view-list li:last-child .cta-button .emoji{
+.list-view-list li:last-child .cta-button .emoji {
     margin-right: 8px;
     font-size: 24px;
 }
 
-.list-view-list li:first-child{
+.list-view-list li:first-child {
     height: 64px;
 }
 
-.list-view-list li .icon{
+.list-view-list li .icon {
     font-family: var(--app-emoji-font-family);
     font-size: 24px;
     display: inline-block;
@@ -995,16 +997,67 @@ ul.list-view-list {
     width: 100%;
 }
 
-.list-view-list li.list-action .cta-button{
- padding: 10px 20px 10px 16 px;
+.list-view-list li.list-action .cta-button {
+    padding: 10px 20px 10px 16 px;
 }
 
-.list-view-list li.list-action .emoji{
+.list-view-list li.list-action .emoji {
     margin-right: 8px;
 }
 
-#taskListName{
+#taskListName {
     text-align: start;
+}
+
+.task-list-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-left: 16px;
+    margin-right: 16px;
+}
+
+.task-list-header-overflow-menu {
+    height: 24px;
+    font-weight: 900;
+    cursor: pointer;
+    width: 24px;
+}
+
+div#taskListOverflowMenu {
+    position: absolute;
+    top: 20%;
+    right: 20px;
+    z-index: 1000;
+    transform-origin: right top 0px;
+    transform: scale(0);
+    box-shadow: rgba(0, 0, 0, 0.20) 0px 4px 15px 0px,
+    rgba(0, 0, 0, 0.12) 0px 3px 14px 3px,
+    rgba(0, 0, 0, 0.14) 0px 8px 10px 1px;
+}
+
+div#taskListOverflowMenu.active {
+    transform: scale(1);
+}
+
+#taskListOverflowMenu ul {
+    list-style: none;
+    text-align: start;
+    margin: 8px 24px 8px 24px;
+    padding: 0;
+    width: 280px;
+}
+
+#taskListOverflowMenu ul>li {
+    height: 48px;
+    padding: 10px 0;
+    font-size: 16px;
+}
+
+#taskListOverflowMenu ul>li span.emoji {
+    font-size: 24px;
+    margin-right: 20px;
 }
 
 @supports selector(::-webkit-scrollbar) {
@@ -1025,9 +1078,9 @@ ul.list-view-list {
 
 @supports(scrollbar-gutter: stable) {
     .drawer {
-       scrollbar-gutter: stable;
+        scrollbar-gutter: stable;
     }
-  }
+}
 
 @media (min-width: 768px) {
     .container {

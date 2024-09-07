@@ -60,8 +60,18 @@
              <div class="tasks-container">
                 <div class="list-view" id="taskListContainer">
                 </div>
-                <div class="task-view">                
-                <h1 id="taskListName">Tasks</h1>
+                <div class="task-view">
+                <div class="task-list-header">            
+                    <h1 id="taskListName">Tasks</h1>
+                    <h2 id="tasklistOverflowMenuToggle" class="task-list-header-overflow-menu"><span class="emoji">⫶</span></h2>
+                    <div id="taskListOverflowMenu">
+                        <ul>
+                            <li><span class="emoji">✏️</span> Edit</li>
+                            <li><span class="emoji">🗑️</span> Delete</li>
+                        </ul>                        
+                    </div>
+                </div>
+                </div>
                 <div id="taskContainer"></div>
                 <dialog id="listsModal" role="dialog" class="basic-dialog">
                     <div class="dialog-header">
