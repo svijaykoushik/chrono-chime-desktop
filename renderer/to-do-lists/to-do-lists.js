@@ -119,23 +119,65 @@ export async function createList(name) {
         name,
         createdAt: new Date(),
         icon: '📜',
-        isPreBuilt: false,
+        isPrebuilt: false,
         id: crypto.randomUUID(),
       })
     );
 };
 
+
+/**
+ * @function getList
+ * @description Gets a to-do list from IndexedDB.
+ * @param {string} id id of the to-do list to fetch.
+ * @returns {Promise<List|null>} A Promise that resolves when the list is fetched.
+ */
+export async function getList(id){
+  const conn = await dbPromise();
+  const store = conn.createTransaction('lists','readonly');
+  return await conn.handleRequest(store.get(id));
+}
+
 /**
  * @function deleteList
  * @description Deletes a to-do list from IndexedDB.
- * @param {number} id The ID of the list to delete.
+ * @param {string} id The ID of the list to delete.
  * @returns {Promise<void>} A Promise that resolves when the list is deleted.
  * @throws {Error} An error if deleting the list fails.
  */
 export async function deleteList(id) {
     const conn = await dbPromise();
+    const list = await getList(id);
     const store = conn.createTransaction('lists', 'readwrite');
-    return await conn.handleRequest(store.delete(id));
+    if (list && list.isPrebuilt === false) {
+      return await conn.handleRequest(store.delete(id));
+    } else if (list && list.isPrebuilt === true) {
+      throw new Error("Cannot delete list because it's a prebuilt list");
+    }else{
+      throw new Error("Cannot delete list because it doesn't exist");
+    }
+};
+
+/**
+ * @function updateList
+ * @description Updates a to-do list in IndexedDB.
+ * @param {string} id id of the list.
+ * @param {Pick<List,'name'>} updatedList Updated list to be stored
+ * @returns {Promise<void>} A Promise that resolves when the list is updated.
+ */
+export async function updateList(id, updatedList) {
+  const conn = await dbPromise();
+  const list = await getList(id);
+  const store = conn.createTransaction('lists', 'readwrite');
+  if (list && list.isPrebuilt === false) {
+    return await conn.handleRequest(store.put({ ...updatedList, id }));
+  } else if (list && list.isPrebuilt === true) {
+    throw new Error("Cannot update list because it's a prebuilt list");
+  }else if(!list){
+    throw new Error("Cannot update list because it doesn't exist");
+  }else{
+    throw new Error('Cannot find the list expected');
+  }
 };
 
 /**

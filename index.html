@@ -66,8 +66,8 @@
                     <h2 id="tasklistOverflowMenuToggle" class="task-list-header-overflow-menu"><span class="emoji">⫶</span></h2>
                     <div id="taskListOverflowMenu">
                         <ul>
-                            <li><span class="emoji">✏️</span> Edit</li>
-                            <li><span class="emoji">🗑️</span> Delete</li>
+                            <li id="taskListEdit"><span class="emoji">✏️</span> Edit</li>
+                            <li id="taskListDelete"><span class="emoji">🗑️</span> Delete</li>
                         </ul>                        
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                 <div id="taskContainer"></div>
                 <dialog id="listsModal" role="dialog" class="basic-dialog">
                     <div class="dialog-header">
-                        <h6>New List</h6>
+                        <h6 id="listModalTitle">New List</h6>
                     </div>
                     <form id="listsForm" method="dialog" name="listsForm">
                         <div class="dialog-content">
@@ -89,7 +89,7 @@
                         </div>
                         <div class="action-container">
                             <button id="cancelAddListBtn" class="dialog-action">Cancel</button>
-                            <button id="addListBtn" type="submit" class="dialog-action">Add List</button>
+                            <button id="addListBtn" type="submit" class="dialog-action" data-mode="add">Add List</button>
                         </div>
                     </form>
                 </dialog>

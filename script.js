@@ -3,6 +3,9 @@ import {
   createList,
   addTask,
   getLists,
+  getList,
+  updateList,
+  deleteList,
   // getTasks,
 } from './renderer/to-do-lists/to-do-lists.js';
 
@@ -61,8 +64,6 @@ const generalTabLink = document.getElementById('generalTabLink');
 const soundTabLink = document.getElementById('soundTabLink');
 const contentTabLink = document.getElementById('contentTabLink');
 const resetTabLink = document.getElementById('resetTabLink');
-const taskListOverflowMenu = document.getElementById('taskListOverflowMenu');
-const tasklistOverflowMenuToggle = document.getElementById('tasklistOverflowMenuToggle');
 /**
  * @type {NodeListOf<HTMLInputElement>}
  */
@@ -105,6 +106,10 @@ function getSettingsFromLocalStorage() {
 }
 
 // Function to show the toast notification
+/**
+ * Show a toast notification
+ * @param {string} message The message to be showed
+ */
 function showAppToast(message) {
   const toastNotification = document.getElementById('toastNotification');
   toastNotification.innerText = message;
@@ -370,6 +375,19 @@ const tasksForm = /** @type {HTMLFormElement} */ (
 );
 // const listsForm = document.getElementById('listsForm');
 const taskListContainer = document.getElementById('taskListContainer');
+const taskListOverflowMenu = document.getElementById('taskListOverflowMenu');
+const tasklistOverflowMenuToggle = document.getElementById(
+  'tasklistOverflowMenuToggle'
+);
+const taskListEdit = /** @type {HTMLLIElement} */ (
+  document.getElementById('taskListEdit')
+);
+const taskListDelete = /** @type {HTMLLIElement} */ (
+  document.getElementById('taskListDelete')
+);
+const listModalTitle = /** @type {HTMLHeadingElement} */ (
+  document.getElementById('listModalTitle')
+);
 
 cancelAddListBtn.addEventListener('click', (e) => {
   e.preventDefault();
@@ -377,6 +395,10 @@ cancelAddListBtn.addEventListener('click', (e) => {
   listsModal.close();
 });
 cancelAddTaskBtn.addEventListener('click', () => tasksModal.close());
+
+function toggleTaskListOverFlowMenu(){
+  taskListOverflowMenu.classList.toggle('active');
+}
 
 // eslint-disable-next-line no-unused-vars
 function openAddTaskModal(listId) {
@@ -390,7 +412,7 @@ function openAddTaskModal(listId) {
  */
 function taskListOverflowMenuToggleHandler(e){  
   e.preventDefault();
-  taskListOverflowMenu.classList.toggle('active');
+  toggleTaskListOverFlowMenu();
 }
 
 /**
@@ -398,7 +420,7 @@ function taskListOverflowMenuToggleHandler(e){
  * in the list
  * @param {MouseEvent} e
  */
-function taskListItemClickHandler(e) {
+async function taskListItemClickHandler(e) {
   e.preventDefault();
   const listItem = /** @type {HTMLLIElement} */ (e.currentTarget);
   const taskList = document.getElementById('taskList');
@@ -407,17 +429,50 @@ function taskListItemClickHandler(e) {
   }
   listItem.classList.add('active');
   const taskListName = document.getElementById('taskListName');
+  const list = await getList(listItem.id);
   taskListName.innerText = listItem.dataset.listName;
-  console.log('Selected list is ', listItem.id, listItem.dataset.listName);
+  taskListEdit.dataset.listId = list.id;
+  taskListDelete.dataset.listId = list.id;
+  if(list.isPrebuilt){
+    tasklistOverflowMenuToggle.classList.add('d-none');
+    tasklistOverflowMenuToggle.classList.remove('d-block');
+  }else{
+    tasklistOverflowMenuToggle.classList.add('d-block');
+    tasklistOverflowMenuToggle.classList.remove('d-none');
+  }
+  console.log('Selected list is ', list.id, list.name);
 }
 
 async function setDefaultTaskList() {
   const lists = await getLists();
   const defaultList = lists.find((list) => list.name === 'Daily Agenda');
   const defaultTaskListItem = document.getElementById(defaultList.id);
+  const list = await getList(defaultList.id);
   defaultTaskListItem.classList.add('active');
   const taskListName = document.getElementById('taskListName');
   taskListName.innerText = defaultTaskListItem.dataset.listName;
+  taskListEdit.dataset.listId = list.id;
+  taskListDelete.dataset.listId = list.id;
+  if(list.isPrebuilt){
+    tasklistOverflowMenuToggle.classList.add('d-none');
+    tasklistOverflowMenuToggle.classList.remove('d-block');
+  }else{
+    tasklistOverflowMenuToggle.classList.add('d-block');
+    tasklistOverflowMenuToggle.classList.remove('d-none');
+  }
+}
+
+/**
+ * Handler for Clicking add list button
+ * @param {MouseEvent} e
+ */
+function addListButtonClick(e){
+  e.preventDefault();
+  listModalTitle.innerText = 'New List';
+  addListBtn.innerText = 'Add List';
+  addListBtn.dataset.mode = 'add';
+  addListBtn.dataset.listId = null;
+  listsModal.showModal();
 }
 
 // Example task list rendering
@@ -496,7 +551,7 @@ async function renderTaskLists() {
   addListButton.appendChild(btnEmojiSpan);
   const addListButtonText = document.createTextNode('Add List');
   addListButton.appendChild(addListButtonText);
-  addListButton.addEventListener('click', () => listsModal.showModal());
+  addListButton.addEventListener('click',addListButtonClick);
   addListButtonItem.appendChild(addListButton);
   taskList.appendChild(addListButtonItem);
   taskListContainer.appendChild(taskList);
@@ -509,13 +564,64 @@ async function renderTaskLists() {
   );
 }
 
+
+taskListEdit.addEventListener('click',async (e)=>{
+  e.preventDefault();
+  const target = /** @type {HTMLLIElement} */(e.currentTarget);
+  console.log('selected list id', target.dataset.listId);
+  const list = await getList( target.dataset.listId);
+  listTitleInput.value = list.name;
+  listModalTitle.innerText = 'Edit List';
+  addListBtn.innerText = 'Save List';
+  addListBtn.dataset.mode = 'edit';
+  addListBtn.dataset.listId = list.id;
+  listsModal.showModal();
+  toggleTaskListOverFlowMenu();
+});
+
+taskListDelete.addEventListener('click',async (e)=>{
+  e.preventDefault();
+  const target = /** @type {HTMLLIElement} */(e.currentTarget);
+  try{
+    console.log('selected list id to delete is', target.dataset.listId);
+    toggleTaskListOverFlowMenu();
+    await deleteList(target.dataset.listId);
+    renderTaskLists();
+  }catch(e){
+    showAppToast('❌ ' + e.message);
+    console.error('Failed to delete list',e);
+  }
+});
+
 addListBtn.addEventListener('click', async (e) => {
   e.preventDefault();
   const listName = listTitleInput.value.trim();
-  if (listName.length >= 3 && listName.length <= 250) {
+  if (
+    listName.length >= 3 &&
+    listName.length <= 250 &&
+    addListBtn.dataset.mode === 'add'
+  ) {
     await createList(listName);
     renderTaskLists();
+    listTitleInput.value = '';
     listsModal.close();
+  }
+
+  if (
+    listName.length >= 3 &&
+    listName.length <= 250 &&
+    addListBtn.dataset.mode === 'edit'
+  ) {
+    try {
+      const list = await getList(addListBtn.dataset.listId);
+      await updateList(addListBtn.dataset.listId, { ...list, name: listName });
+      listTitleInput.value = '';
+      renderTaskLists();
+      listsModal.close();
+      console.log('Data updated, %s', addListBtn.dataset.listId);
+    } catch (e) {
+      showAppToast('❌ ' + e.message);
+    }
   }
 });
 

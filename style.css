@@ -683,6 +683,11 @@ dialog.basic-dialog::backdrop {
     overflow-y: overlay;
 }
 
+#taskListContainer{    
+    min-height: 500px;
+    max-height: unset;
+}
+
 ul.list {
     max-width: 550px;
     list-style-type: none;
@@ -1030,6 +1035,7 @@ div#taskListOverflowMenu {
     top: 20%;
     right: 20px;
     z-index: 1000;
+    transition: transform 0.2s ease-in-out;
     transform-origin: right top 0px;
     transform: scale(0);
     box-shadow: rgba(0, 0, 0, 0.20) 0px 4px 15px 0px,
@@ -1053,6 +1059,7 @@ div#taskListOverflowMenu.active {
     height: 48px;
     padding: 10px 0;
     font-size: 16px;
+    cursor: pointer;
 }
 
 #taskListOverflowMenu ul>li span.emoji {
