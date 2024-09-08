@@ -113,7 +113,7 @@ describe('Navigation testing', () => {
   });
 
   it('should navigate to Tasks', async () => {
-    await testNavigation(navDestinations, '/tasks', '#tasks', 'Tasks');
+    await testNavigation(navDestinations, '/tasks', '#tasks', 'Daily Agenda');
   });
 
   it('should navigate to Alerts', async () => {
