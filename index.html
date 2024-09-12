@@ -61,18 +61,25 @@
                 <div class="list-view" id="taskListContainer">
                 </div>
                 <div class="task-view">
-                <div class="task-list-header">            
-                    <h1 id="taskListName">Tasks</h1>
-                    <h2 id="tasklistOverflowMenuToggle" class="task-list-header-overflow-menu"><span class="emoji">⫶</span></h2>
-                    <div id="taskListOverflowMenu">
-                        <ul>
-                            <li id="taskListEdit"><span class="emoji">✏️</span> Edit</li>
-                            <li id="taskListDelete"><span class="emoji">🗑️</span> Delete</li>
-                        </ul>                        
+                    <div id="taskContainer">                    
+                        <div class="task-list-header">
+                            <h1 id="taskListName">Tasks</h1>
+                            <h2 id="tasklistOverflowMenuToggle" class="task-list-header-overflow-menu"><span class="emoji">⫶</span></h2>
+                            <div id="taskListOverflowMenu">
+                                <ul>
+                                    <li id="taskListEdit"><span class="emoji">✏️</span> Edit</li>
+                                    <li id="taskListDelete"><span class="emoji">🗑️</span> Delete</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="task-view-body"></div>
+                        <div class="task-view-footer">
+                            <button class="cta-button" id="openTaskModalBtn">
+                                <span class="emoji">➕</span>Add Task
+                            </button>
+                        </div>
                     </div>
                 </div>
-                </div>
-                <div id="taskContainer"></div>
                 <dialog id="listsModal" role="dialog" class="basic-dialog">
                     <div class="dialog-header">
                         <h6 id="listModalTitle">New List</h6>

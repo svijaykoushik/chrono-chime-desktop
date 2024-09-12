@@ -28,7 +28,7 @@ async function dbPromise() {
       });
 
       tasksStore.createIndex('taskDescription', 'description', { unique: false });
-      tasksStore.createIndex('taskStatus', 'status', { unique: false });
+      tasksStore.createIndex('taskStatus', 'completed', { unique: false });
     });
     return connection;
 };
@@ -42,7 +42,13 @@ async function dbPromise() {
  * @property {boolean} isPrebuilt - A flag to to show if the list was prebuilt.
  */
 
-
+/**
+ * @typedef {Object} Task
+ * @property {string} id - The unique id.
+ * @property {string} description - Task description.
+ * @property {boolean} completed - Is the task completed.
+ * @property {string} listId - List id to which the task belongs to
+ */
 
 async function initDatabase(){
   const conn = await dbPromise();
@@ -183,17 +189,17 @@ export async function updateList(id, updatedList) {
 /**
  * @function addTask
  * @description Adds a new task to a specific to-do list in IndexedDB.
- * @param {number} listId The ID of the list to add the task to.
- * @param {object} task The description of the new task.
- * @param {string} task.task
- * @param {boolean} task.completed
+ * @param {string} listId The ID of the list to add the task to.
+ * @param {Pick<Task,'description'|'completed'>} task The description of the new task.
  * @returns {Promise<number>} A Promise that resolves to the ID of the newly created task.
  * @throws {Error} An error if adding the task fails.
  */
 export async function addTask(listId, task) {
     const conn = await dbPromise();
     const store = conn.createTransaction('tasks', 'readwrite');
-    return await conn.handleRequest(store.add({ listId, task }));
+    return await conn.handleRequest(
+      store.add({ listId, ...task, id: crypto.randomUUID() })
+    );
 };
 
 /**
@@ -213,9 +219,7 @@ export async function removeTask(id) {
  * @function updateTask
  * @description Updates an existing task in a to-do list in IndexedDB.
  * @param {number} id The ID of the task to update.
- * @param {Object} updatedTask An object containing the updated properties for the task.
- * @param {string} updatedTask.task The updated task description (optional).
- * @param {boolean} updatedTask.completed The updated completion status of the task (optional).
+ * @param {Task} updatedTask An object containing the updated properties for the task.
  * @returns {Promise<void>} A Promise that resolves when the task is updated.
  * @throws {Error} An error if updating the task fails.
  */
@@ -242,17 +246,17 @@ export async function getLists() {
 /**
  * @function getTasks
  * @description Retrieves all tasks for a specific to-do list stored in IndexedDB.
- * @param {number} listId The ID of the list to retrieve tasks for.
- * @returns {Promise<Array<object>>} A Promise that resolves to an array of task objects for the specified list.
- * @property {number} task.id The ID of the task.
- * @property {number} task.listId The ID of the list the task belongs to.
- * @property {string} task.task The description of the task.
- * @property {boolean} [task.completed=false] The completion status of the task (defaults to false).
+ * @param {string} listId The ID of the list to retrieve tasks for.
+ * @returns {Promise<Array<Task>>} A Promise that resolves to an array of task objects for the specified list.
  * @throws {Error} An error if retrieving tasks fails.
  */
 export async function getTasks(listId) {
     const conn = await dbPromise();
     const store = conn.createTransaction('tasks', 'readonly');
+
+    /**
+     * @type {Array<Task>}
+     */
     const tasks = await conn.handleRequest(store.getAll());
     return tasks.filter((task) => task.listId === listId);
 };

@@ -1067,6 +1067,16 @@ div#taskListOverflowMenu.active {
     margin-right: 20px;
 }
 
+#taskContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.task-view-body {
+    flex-grow: 1;
+}
+
 @supports selector(::-webkit-scrollbar) {
     ::-webkit-scrollbar-thumb {
         background: var(--scrollbar-color-thumb);

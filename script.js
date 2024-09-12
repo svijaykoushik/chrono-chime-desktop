@@ -6,6 +6,7 @@ import {
   getList,
   updateList,
   deleteList,
+  getTasks,
   // getTasks,
 } from './renderer/to-do-lists/to-do-lists.js';
 
@@ -373,6 +374,9 @@ const taskStatusInput = /** @type {HTMLInputElement} */ (
 const tasksForm = /** @type {HTMLFormElement} */ (
   document.getElementById('tasksForm')
 );
+const openTaskModalBtn = /** @type {HTMLButtonElement} */ (
+  document.getElementById('openTaskModalBtn')
+);
 // const listsForm = document.getElementById('listsForm');
 const taskListContainer = document.getElementById('taskListContainer');
 const taskListOverflowMenu = document.getElementById('taskListOverflowMenu');
@@ -396,13 +400,51 @@ cancelAddListBtn.addEventListener('click', (e) => {
 });
 cancelAddTaskBtn.addEventListener('click', () => tasksModal.close());
 
-function toggleTaskListOverFlowMenu(){
+function toggleTaskListOverFlowMenu() {
   taskListOverflowMenu.classList.toggle('active');
 }
 
-// eslint-disable-next-line no-unused-vars
 function openAddTaskModal(listId) {
+  tasksModal.dataset.listId = listId;
   tasksModal.showModal();
+}
+
+/**
+ * Handles click of open task modal button
+ * @param {MouseEvent} e
+ */
+function openTaskModalBtnClick(e) {
+  e.preventDefault();
+  const btn = /** @type {HTMLButtonElement} */ (e.target);
+  const listId = btn.dataset.listId;
+  openAddTaskModal(listId);
+}
+
+openTaskModalBtn.addEventListener('click', openTaskModalBtnClick);
+
+
+async function renderTasks(listId) {
+  const tasksViewBody = /** @type {HTMLDivElement} */ (
+    document.querySelector('#taskContainer .task-view-body')
+  );
+
+  // remove existing tasks
+  while(tasksViewBody.firstChild){
+    tasksViewBody.removeChild(tasksViewBody.firstChild);
+  }
+
+  const tasks = await getTasks(listId);
+
+  const listContainer = document.createElement('ul');
+  listContainer.classList.add('list');
+
+  for(const task of tasks){
+    const listItem = document.createElement('li');
+    listItem.id = task.id;
+    listItem.textContent = task.description;
+
+    listContainer.appendChild(listItem);
+  }
 }
 
 /**
@@ -410,7 +452,7 @@ function openAddTaskModal(listId) {
  * in the list
  * @param {MouseEvent} e
  */
-function taskListOverflowMenuToggleHandler(e){  
+function taskListOverflowMenuToggleHandler(e) {
   e.preventDefault();
   toggleTaskListOverFlowMenu();
 }
@@ -433,14 +475,17 @@ async function taskListItemClickHandler(e) {
   taskListName.innerText = listItem.dataset.listName;
   taskListEdit.dataset.listId = list.id;
   taskListDelete.dataset.listId = list.id;
-  if(list.isPrebuilt){
+  openTaskModalBtn.dataset.listId = list.id;
+  if (list.isPrebuilt) {
     tasklistOverflowMenuToggle.classList.add('d-none');
     tasklistOverflowMenuToggle.classList.remove('d-block');
-  }else{
+  } else {
     tasklistOverflowMenuToggle.classList.add('d-block');
     tasklistOverflowMenuToggle.classList.remove('d-none');
   }
   console.log('Selected list is ', list.id, list.name);
+
+  renderTasks(list.id);
 }
 
 async function setDefaultTaskList() {
@@ -453,20 +498,22 @@ async function setDefaultTaskList() {
   taskListName.innerText = defaultTaskListItem.dataset.listName;
   taskListEdit.dataset.listId = list.id;
   taskListDelete.dataset.listId = list.id;
-  if(list.isPrebuilt){
+  openTaskModalBtn.dataset.listId = list.id;
+  if (list.isPrebuilt) {
     tasklistOverflowMenuToggle.classList.add('d-none');
     tasklistOverflowMenuToggle.classList.remove('d-block');
-  }else{
+  } else {
     tasklistOverflowMenuToggle.classList.add('d-block');
     tasklistOverflowMenuToggle.classList.remove('d-none');
   }
+  renderTasks(list.id);
 }
 
 /**
  * Handler for Clicking add list button
  * @param {MouseEvent} e
  */
-function addListButtonClick(e){
+function addListButtonClick(e) {
   e.preventDefault();
   listModalTitle.innerText = 'New List';
   addListBtn.innerText = 'Add List';
@@ -551,7 +598,7 @@ async function renderTaskLists() {
   addListButton.appendChild(btnEmojiSpan);
   const addListButtonText = document.createTextNode('Add List');
   addListButton.appendChild(addListButtonText);
-  addListButton.addEventListener('click',addListButtonClick);
+  addListButton.addEventListener('click', addListButtonClick);
   addListButtonItem.appendChild(addListButton);
   taskList.appendChild(addListButtonItem);
   taskListContainer.appendChild(taskList);
@@ -564,12 +611,11 @@ async function renderTaskLists() {
   );
 }
 
-
-taskListEdit.addEventListener('click',async (e)=>{
+taskListEdit.addEventListener('click', async (e) => {
   e.preventDefault();
-  const target = /** @type {HTMLLIElement} */(e.currentTarget);
+  const target = /** @type {HTMLLIElement} */ (e.currentTarget);
   console.log('selected list id', target.dataset.listId);
-  const list = await getList( target.dataset.listId);
+  const list = await getList(target.dataset.listId);
   listTitleInput.value = list.name;
   listModalTitle.innerText = 'Edit List';
   addListBtn.innerText = 'Save List';
@@ -579,17 +625,17 @@ taskListEdit.addEventListener('click',async (e)=>{
   toggleTaskListOverFlowMenu();
 });
 
-taskListDelete.addEventListener('click',async (e)=>{
+taskListDelete.addEventListener('click', async (e) => {
   e.preventDefault();
-  const target = /** @type {HTMLLIElement} */(e.currentTarget);
-  try{
+  const target = /** @type {HTMLLIElement} */ (e.currentTarget);
+  try {
     console.log('selected list id to delete is', target.dataset.listId);
     toggleTaskListOverFlowMenu();
     await deleteList(target.dataset.listId);
     renderTaskLists();
-  }catch(e){
+  } catch (e) {
     showAppToast('❌ ' + e.message);
-    console.error('Failed to delete list',e);
+    console.error('Failed to delete list', e);
   }
 });
 
@@ -629,10 +675,11 @@ addTaskBtn.addEventListener('click', async (e) => {
   e.preventDefault();
   const taskDescription = taskTitleInput.value.trim();
   const completed = taskStatusInput.checked;
-  const listId = parseInt(tasksForm.dataset.listId);
+  const listId = tasksForm.dataset.listId;
   if (taskDescription.length >= 3 && taskDescription.length <= 250) {
-    await addTask(listId, { task: taskDescription, completed });
+    await addTask(listId, { description: taskDescription, completed });
     renderTaskLists();
+    renderTasks();
     tasksModal.close();
   }
 });
