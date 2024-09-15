@@ -7,6 +7,7 @@ import {
   updateList,
   deleteList,
   getTasks,
+  removeTask,
   // getTasks,
 } from './renderer/to-do-lists/to-do-lists.js';
 
@@ -405,7 +406,7 @@ function toggleTaskListOverFlowMenu() {
 }
 
 function openAddTaskModal(listId) {
-  tasksModal.dataset.listId = listId;
+  tasksForm.dataset.listId = listId;
   tasksModal.showModal();
 }
 
@@ -422,6 +423,18 @@ function openTaskModalBtnClick(e) {
 
 openTaskModalBtn.addEventListener('click', openTaskModalBtnClick);
 
+function createSecondaryActionBtn(emojiIcon, cb){
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.addEventListener('click',cb);
+  const emojiSpan = document.createElement('span');
+  emojiSpan.classList.add('emoji');
+  emojiSpan.textContent = emojiIcon;
+  button.appendChild(emojiSpan);
+
+  return button;
+}
 
 async function renderTasks(listId) {
   const tasksViewBody = /** @type {HTMLDivElement} */ (
@@ -429,22 +442,48 @@ async function renderTasks(listId) {
   );
 
   // remove existing tasks
-  while(tasksViewBody.firstChild){
+  while (tasksViewBody.firstChild) {
     tasksViewBody.removeChild(tasksViewBody.firstChild);
   }
 
   const tasks = await getTasks(listId);
 
-  const listContainer = document.createElement('ul');
-  listContainer.classList.add('list');
+  console.log('Tasks saved', tasks);
 
-  for(const task of tasks){
+  const listContainer = document.createElement('ul');
+  listContainer.classList.add('list-tasks');
+
+  for (const task of tasks) {
     const listItem = document.createElement('li');
     listItem.id = task.id;
-    listItem.textContent = task.description;
+    const listItemContainer = document.createElement('div');
+    listItemContainer.classList.add('subtitle1');
+    listItemContainer.textContent = task.description;
+
+    const listSecondaryAction = document.createElement('div');
+    listSecondaryAction.classList.add('list-secondary-action');
+    const startBtn = createSecondaryActionBtn('▶️',(e)=>{      
+      e.preventDefault();
+    });
+    const deleteBtn = createSecondaryActionBtn('❌', (e)=>{
+      e.preventDefault();
+      removeTask(task.id).then(()=>{
+        showAppToast('✔️ Task Removed');
+      }).catch((e)=>{
+        __electronLog.error('Failed to remove task',JSON.stringify(e));
+        showAppToast('❌ Failed to remove task');
+      });
+    });
+
+    listSecondaryAction.appendChild(startBtn);
+    listSecondaryAction.appendChild(deleteBtn);
+
+    listItem.append(listItemContainer,listSecondaryAction);
 
     listContainer.appendChild(listItem);
   }
+
+  tasksViewBody.appendChild(listContainer);
 }
 
 /**
@@ -680,6 +719,9 @@ addTaskBtn.addEventListener('click', async (e) => {
     await addTask(listId, { description: taskDescription, completed });
     renderTaskLists();
     renderTasks();
+    // console.log({taskDescription,completed,listId, completed});
+    taskTitleInput.value = '';
+    taskStatusInput.checked = false;
     tasksModal.close();
   }
 });

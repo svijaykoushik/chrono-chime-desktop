@@ -205,7 +205,7 @@ export async function addTask(listId, task) {
 /**
  * @function removeTask
  * @description Deletes a task from a to-do list in IndexedDB.
- * @param {number} id The ID of the task to delete.
+ * @param {string} id The ID of the task to delete.
  * @returns {Promise<void>} A Promise that resolves when the task is deleted.
  * @throws {Error} An error if deleting the task fails.
  */

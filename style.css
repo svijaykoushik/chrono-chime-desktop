@@ -688,7 +688,7 @@ dialog.basic-dialog::backdrop {
     max-height: unset;
 }
 
-ul.list {
+ul.list, ul.list-tasks {
     max-width: 550px;
     list-style-type: none;
     text-align: start;
@@ -698,7 +698,7 @@ ul.list {
     max-height: 100%;
 }
 
-ul.list li {
+ul.list li, ul.list-tasks li {
     height: 72px;
     padding-left: 16px;
     padding-right: 16px;
@@ -720,7 +720,8 @@ ul.list li span.caption {
     color: #454545;
 }
 
-ul.list li .list-secondary-action {
+ul.list li .list-secondary-action,
+ul.list-tasks .list-secondary-action {
     margin: 0 0 0 16px;
     height: 100%;
     display: flex;
@@ -728,9 +729,14 @@ ul.list li .list-secondary-action {
     float: right
 }
 
-ul.list li .list-secondary-action button {
+ul.list li .list-secondary-action button,
+ul.list-tasks .list-secondary-action button {
     border: none;
     background: none;
+}
+
+ul.list-tasks li{
+    align-items: center;
 }
 
 .clear-float {
