@@ -721,18 +721,34 @@ ul.list li span.caption {
 }
 
 ul.list li .list-secondary-action,
-ul.list-tasks .list-secondary-action {
+ul.list-tasks .list-secondary-action,
+ul.list-tasks .list-primary-action {
     margin: 0 0 0 16px;
     height: 100%;
     display: flex;
     align-items: center;
-    float: right
+}
+
+ul.list-tasks .list-secondary-action {
+    margin-left: auto;
 }
 
 ul.list li .list-secondary-action button,
-ul.list-tasks .list-secondary-action button {
+ul.list-tasks .list-secondary-action button,
+ul.list-tasks li .list-primary-action button {
     border: none;
     background: none;
+}
+
+ul.list-tasks .list-primary-action {
+    margin: 16px 32px 16px 16px !important;
+}
+
+ul.list-tasks li .list-primary-action button {
+    height: 32px;
+    width: 32px;
+    padding: 0;
+    margin: 0;
 }
 
 ul.list-tasks li{

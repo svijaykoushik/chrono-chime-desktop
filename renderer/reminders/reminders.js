@@ -12,8 +12,8 @@ import createDBConnection from '../utils/indexed-db-utils.js';
  * @throws {Error} An error if the database fails to open.
  */
 async function remindersDb() {
-  const connection = await createDBConnection('Reminders', 1, (db) => {
-
+  const connection = await createDBConnection('Reminders', 1, (target) => {
+    const db = target.result;
     // Create an object store (table) with the specified schema
     const objectStore = db.createObjectStore('reminders', { keyPath: 'id' });
 

@@ -5,6 +5,38 @@
 
 import createDBConnection from '../utils/indexed-db-utils.js';
 
+/**
+ * create tasks schema
+ * @param {IDBDatabase} db
+ */
+function createTasksStore(db) {
+  const tasksStore = db.createObjectStore('tasks', {
+    keyPath: 'id',
+  });
+
+  tasksStore.createIndex('taskDescription', 'description', { unique: false });
+  tasksStore.createIndex('taskStatus', 'status', { unique: false });
+  tasksStore.createIndex('totalTimeSpent', 'totalTimeSpent', { unique: false });
+  tasksStore.createIndex('listId', 'listId', { unique: false }); // Foreign key-like index
+
+  return tasksStore;
+}
+
+/**
+ * create task sessions schema
+ * @param {IDBDatabase} db
+ */
+function createTaskSessions(db) {
+  const taskSessionStore = db.createObjectStore('taskSessions', {
+    keyPath: 'id',
+  });
+
+  taskSessionStore.createIndex('taskStartTime', 'startTime', { unique: false });
+  taskSessionStore.createIndex('taskStopTime', 'stopTime', { unique: false });
+  taskSessionStore.createIndex('taskId', 'taskId', { unique: false }); // Foreign key-like index
+  return taskSessionStore;
+}
+
 // IndexedDB Utilities
 
 /**
@@ -14,24 +46,65 @@ import createDBConnection from '../utils/indexed-db-utils.js';
  * @throws {Error} An error if the database fails to open.
  */
 async function dbPromise() {
-    const connection = await createDBConnection('todoList', 1, (db) => {
+  const connection = await createDBConnection('todoList', 3, (target) => {
+    const db = target.result;
+    if (!db.objectStoreNames.contains('lists')) {
       const listStore = db.createObjectStore('lists', {
         keyPath: 'id',
       });
 
-        listStore.createIndex('listName', 'name', { unique: true });
-        listStore.createIndex('ListCreatedAt', 'createdAt', { unique: false });
-        listStore.createIndex('isListPrebuilt', 'isPrebuilt', { unique: false });
-
-      const tasksStore = db.createObjectStore('tasks', {
-        keyPath: 'id'
+      listStore.createIndex('listName', 'name', { unique: true });
+      listStore.createIndex('ListCreatedAt', 'createdAt', { unique: false });
+      listStore.createIndex('isListPrebuilt', 'isPrebuilt', {
+        unique: false,
       });
+    }
 
-      tasksStore.createIndex('taskDescription', 'description', { unique: false });
-      tasksStore.createIndex('taskStatus', 'completed', { unique: false });
-    });
-    return connection;
-};
+    if (db.objectStoreNames.contains('tasks')) {
+      const tx = target.transaction;
+      const oldTasksStore = tx.objectStore('tasks');
+      const oldTasksData = [];
+
+      // Read all old data into memory
+      oldTasksStore.openCursor().onsuccess = (event) => {
+        /** @type {IDBCursorWithValue} */
+        const cursor = /** @type {IDBRequest<IDBCursorWithValue>} */ (
+          event.target
+        ).result;
+        if (cursor) {
+          oldTasksData.push(cursor.value);
+          cursor.continue();
+        } else {
+          // After reading all data delete the store
+          db.deleteObjectStore('tasks');
+
+          const tasksStore = createTasksStore(db);
+
+          const taskSessions = createTaskSessions(db);
+
+          oldTasksData.forEach((task) => {
+            // Assign default values for new fields if they don't exist
+            task.startTime = task.startTime || null;
+            task.stopTime = task.stopTime || null;
+            task.completeTime = task.completeTime || null;
+            tasksStore.add(task); // Add modified task to new store
+
+            taskSessions.add({
+              id: crypto.randomUUID(),
+              startTime: task.startTime || null,
+              stopTime: task.stopTime || null,
+              taskId: task.id,
+            });
+          });
+        }
+      };
+    } else {
+      createTasksStore(db);
+      createTaskSessions(db);
+    }
+  });
+  return connection;
+}
 
 /**
  * @typedef {Object} List
@@ -48,9 +121,18 @@ async function dbPromise() {
  * @property {string} description - Task description.
  * @property {boolean} completed - Is the task completed.
  * @property {string} listId - List id to which the task belongs to
+ * @property {number} totalTimeSpent - Task complete time
  */
 
-async function initDatabase(){
+/**
+ * @typedef {Object} TaskSession
+ * @property {string} id - The unique id.
+ * @property {Date} startTime - Task start time
+ * @property {Date} stopTime - Task stop time
+ * @property {string} taskId - Id of the task the session belongs to
+ */
+
+async function initDatabase() {
   const conn = await dbPromise();
   const store = conn.createTransaction('lists', 'readwrite');
 
@@ -118,19 +200,18 @@ initDatabase();
  * @throws {Error} An error if creating the list fails.
  */
 export async function createList(name) {
-    const conn = await dbPromise();
-    const store = conn.createTransaction('lists', 'readwrite');
-    return await conn.handleRequest(
-      store.add({
-        name,
-        createdAt: new Date(),
-        icon: '📜',
-        isPrebuilt: false,
-        id: crypto.randomUUID(),
-      })
-    );
-};
-
+  const conn = await dbPromise();
+  const store = conn.createTransaction('lists', 'readwrite');
+  return await conn.handleRequest(
+    store.add({
+      name,
+      createdAt: new Date(),
+      icon: '📜',
+      isPrebuilt: false,
+      id: crypto.randomUUID(),
+    })
+  );
+}
 
 /**
  * @function getList
@@ -138,9 +219,9 @@ export async function createList(name) {
  * @param {string} id id of the to-do list to fetch.
  * @returns {Promise<List|null>} A Promise that resolves when the list is fetched.
  */
-export async function getList(id){
+export async function getList(id) {
   const conn = await dbPromise();
-  const store = conn.createTransaction('lists','readonly');
+  const store = conn.createTransaction('lists', 'readonly');
   return await conn.handleRequest(store.get(id));
 }
 
@@ -152,17 +233,17 @@ export async function getList(id){
  * @throws {Error} An error if deleting the list fails.
  */
 export async function deleteList(id) {
-    const conn = await dbPromise();
-    const list = await getList(id);
-    const store = conn.createTransaction('lists', 'readwrite');
-    if (list && list.isPrebuilt === false) {
-      return await conn.handleRequest(store.delete(id));
-    } else if (list && list.isPrebuilt === true) {
-      throw new Error("Cannot delete list because it's a prebuilt list");
-    }else{
-      throw new Error("Cannot delete list because it doesn't exist");
-    }
-};
+  const conn = await dbPromise();
+  const list = await getList(id);
+  const store = conn.createTransaction('lists', 'readwrite');
+  if (list && list.isPrebuilt === false) {
+    return await conn.handleRequest(store.delete(id));
+  } else if (list && list.isPrebuilt === true) {
+    throw new Error("Cannot delete list because it's a prebuilt list");
+  } else {
+    throw new Error("Cannot delete list because it doesn't exist");
+  }
+}
 
 /**
  * @function updateList
@@ -179,12 +260,12 @@ export async function updateList(id, updatedList) {
     return await conn.handleRequest(store.put({ ...updatedList, id }));
   } else if (list && list.isPrebuilt === true) {
     throw new Error("Cannot update list because it's a prebuilt list");
-  }else if(!list){
+  } else if (!list) {
     throw new Error("Cannot update list because it doesn't exist");
-  }else{
+  } else {
     throw new Error('Cannot find the list expected');
   }
-};
+}
 
 /**
  * @function addTask
@@ -195,12 +276,12 @@ export async function updateList(id, updatedList) {
  * @throws {Error} An error if adding the task fails.
  */
 export async function addTask(listId, task) {
-    const conn = await dbPromise();
-    const store = conn.createTransaction('tasks', 'readwrite');
-    return await conn.handleRequest(
-      store.add({ listId, ...task, id: crypto.randomUUID() })
-    );
-};
+  const conn = await dbPromise();
+  const store = conn.createTransaction('tasks', 'readwrite');
+  return await conn.handleRequest(
+    store.add({ listId, ...task, id: crypto.randomUUID() })
+  );
+}
 
 /**
  * @function removeTask
@@ -210,24 +291,24 @@ export async function addTask(listId, task) {
  * @throws {Error} An error if deleting the task fails.
  */
 export async function removeTask(id) {
-    const conn = await dbPromise();
-    const store = conn.createTransaction('tasks', 'readwrite');
-    return await conn.handleRequest(store.delete(id));
-};
+  const conn = await dbPromise();
+  const store = conn.createTransaction('tasks', 'readwrite');
+  return await conn.handleRequest(store.delete(id));
+}
 
 /**
  * @function updateTask
  * @description Updates an existing task in a to-do list in IndexedDB.
- * @param {number} id The ID of the task to update.
+ * @param {string} id The ID of the task to update.
  * @param {Task} updatedTask An object containing the updated properties for the task.
  * @returns {Promise<void>} A Promise that resolves when the task is updated.
  * @throws {Error} An error if updating the task fails.
  */
 export async function updateTask(id, updatedTask) {
-    const conn = await dbPromise();
-    const store = conn.createTransaction('tasks', 'readwrite');
-    return await conn.handleRequest(store.put({ ...updatedTask, id }));
-};
+  const conn = await dbPromise();
+  const store = conn.createTransaction('tasks', 'readwrite');
+  return await conn.handleRequest(store.put({ ...updatedTask, id }));
+}
 
 /**
  * @function getLists
@@ -238,10 +319,10 @@ export async function updateTask(id, updatedTask) {
  * @throws {Error} An error if retrieving lists fails.
  */
 export async function getLists() {
-    const conn = await dbPromise();
-    const store = conn.createTransaction('lists', 'readonly');
-    return await conn.handleRequest(store.getAll());
-};
+  const conn = await dbPromise();
+  const store = conn.createTransaction('lists', 'readonly');
+  return await conn.handleRequest(store.getAll());
+}
 
 /**
  * @function getTasks
@@ -251,12 +332,55 @@ export async function getLists() {
  * @throws {Error} An error if retrieving tasks fails.
  */
 export async function getTasks(listId) {
-    const conn = await dbPromise();
-    const store = conn.createTransaction('tasks', 'readonly');
+  const conn = await dbPromise();
+  const store = conn.createTransaction('tasks', 'readonly');
 
-    /**
-     * @type {Array<Task>}
-     */
-    const tasks = await conn.handleRequest(store.getAll());
-    return tasks.filter((task) => task.listId === listId);
-};
+  /**
+   * @type {Array<Task>}
+   */
+  const tasks = await conn.handleRequest(store.getAll());
+  return tasks.filter((task) => task.listId === listId);
+}
+
+/**
+ * @function startTask
+ * @description Starts a new session for the task.
+ * @param {string} taskId Id of the task
+ * @param {Date} startTime Time at which the task was started
+ * @throws {Error} An error if the session is failed to be created.
+ * @returns {Promise<string>}
+ */
+export async function startTask(taskId, startTime) {
+  const conn = await dbPromise();
+  const store = conn.createTransaction('taskSessions', 'readwrite');
+
+  /**
+   * @type {TaskSession}
+   */
+  const session = {
+    id: crypto.randomUUID(),
+    startTime: startTime,
+    stopTime: null,
+    taskId: taskId,
+  };
+  return await conn.handleRequest(store.add(session));
+}
+
+/**
+ * @function stopTask
+ * @description Stops the session for the task.
+ * @param {string} sessionId Id of the session to be stopped
+ * @param {Date} stopTime Time at which the task was stopped
+ * @throws {Error} An error if the session could not be stopped
+ */
+export async function stopTask(sessionId, stopTime){
+  const conn = await dbPromise();
+  const store = conn.createTransaction('taskSessions', 'readwrite');
+
+  /**
+   * @type {TaskSession}
+   */
+  const session = await conn.handleRequest(store.get(sessionId));
+  session.stopTime = stopTime;
+  return await conn.handleRequest(store.put({ ...session }));
+}

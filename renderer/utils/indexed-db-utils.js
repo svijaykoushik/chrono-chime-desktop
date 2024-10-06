@@ -7,7 +7,7 @@
  * Opens a connection to the IndexedDB database.
  * @param {string} dbName - The name of the database.
  * @param {number} dbVersion - The version of the database.
- * @param {function(IDBDatabase): void} [upgradeCallback] - Optional callback for database upgrade handling.
+ * @param {function(IDBOpenDBRequest): void} [upgradeCallback] - Optional callback for database upgrade handling.
  * @returns {Promise<IDBDatabase>} A Promise that resolves to the IDBDatabase object.
  * @throws {Error} An error if the database fails to open.
  */
@@ -15,11 +15,11 @@ function openDB(dbName, dbVersion, upgradeCallback) {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName, dbVersion);
 
-        request.onupgradeneeded = (event) => {
-            // @ts-ignore
-            const db = event.target.result;
+        request.onupgradeneeded = (event) =>{ 
+            /** @type {IDBOpenDBRequest} */
+            const target = /** @type {IDBOpenDBRequest} */ (event.target);
             if (typeof upgradeCallback === 'function') {
-                upgradeCallback(db);
+                upgradeCallback(target);
             }
         };
 
@@ -66,7 +66,7 @@ function handleRequest(request) {
  * Provides an object for interacting with an IndexedDB database.
  * @param {string} dbName - The name of the database.
  * @param {number} dbVersion - The version of the database.
- * @param {function(IDBDatabase): void} [upgradeCallback] - Optional callback for database upgrade handling.
+ * @param {function(IDBOpenDBRequest): void} [upgradeCallback] - Optional callback for database upgrade handling.
  * @returns {Promise<DBConnection>} A Promise that resolves to a DB connection object
  */
 async function createDBConnection(dbName, dbVersion, upgradeCallback) {

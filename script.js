@@ -8,6 +8,8 @@ import {
   deleteList,
   getTasks,
   removeTask,
+  stopTask,
+  startTask,
   // getTasks,
 } from './renderer/to-do-lists/to-do-lists.js';
 
@@ -423,16 +425,23 @@ function openTaskModalBtnClick(e) {
 
 openTaskModalBtn.addEventListener('click', openTaskModalBtnClick);
 
-function createSecondaryActionBtn(emojiIcon, cb){
-
+/**
+ * Creates a button secondary action theme
+ * @param {string} emojiIcon Emoji icon for the icon button
+ * @param {(this: HTMLButtonElement, ev: MouseEvent) => any} cb Event handler callback
+ * @param {DOMStringMap=} dataset Dataset to be attached to the button
+ */
+function createSecondaryActionBtn(emojiIcon, cb, dataset) {
   const button = document.createElement('button');
   button.type = 'button';
-  button.addEventListener('click',cb);
+  button.addEventListener('click', cb);
   const emojiSpan = document.createElement('span');
   emojiSpan.classList.add('emoji');
   emojiSpan.textContent = emojiIcon;
   button.appendChild(emojiSpan);
-
+  if (dataset) {
+    button.dataset === button.dataset;
+  }
   return button;
 }
 
@@ -450,35 +459,82 @@ async function renderTasks(listId) {
 
   console.log('Tasks saved', tasks);
 
+  /**
+   * @typedef {Object} TaskViewType
+   * @property {boolean} isRunning Represents if task is running actively
+   * @property {number} timeElapsed The time elapsed in milliseconds
+   * @property {string | null} sessionId Current session of the task
+   * 
+   * @typedef { import('./renderer/to-do-lists/to-do-lists.js').Task & TaskViewType} TaskView
+   */
+
+  /**
+   * @type {TaskView[]}
+   */
+  const taskViews = tasks.map((task) => ({
+    ...task,
+    isRunning: false,
+    timeElapsed: 0,
+    sessionId: null,
+  }));
+
   const listContainer = document.createElement('ul');
   listContainer.classList.add('list-tasks');
 
-  for (const task of tasks) {
+  for (const taskView of taskViews) {
     const listItem = document.createElement('li');
-    listItem.id = task.id;
+    listItem.id = taskView.id;
     const listItemContainer = document.createElement('div');
+
+    const listPrimaryAction = document.createElement('div');
+    listPrimaryAction.classList.add('list-primary-action');
+    const startBtn = createSecondaryActionBtn(
+      taskView.isRunning ? '⏹️' : '▶️',
+      async (e) => {
+        e.preventDefault();
+        const target = /** @type {HTMLButtonElement} */ (e.target);
+
+        if(taskView.isRunning){
+          await stopTask(taskView.sessionId, new Date());
+          taskView.isRunning = false;
+          taskView.sessionId = null;
+        }else{
+          const sessionId = await startTask(taskView.id, new Date());
+          taskView.sessionId = sessionId;
+          taskView.isRunning = true;
+        }
+
+        // Simplify button text toggle
+        const buttonText = taskView.isRunning ? '⏹️' : '▶️';
+        if (target.tagName === 'BUTTON') {
+          target.firstChild.textContent = buttonText;
+        } else if (target.tagName === 'SPAN') {
+          target.textContent = buttonText;
+        }
+      }
+    );
+    listPrimaryAction.appendChild(startBtn);
+
     listItemContainer.classList.add('subtitle1');
-    listItemContainer.textContent = task.description;
+    listItemContainer.textContent = taskView.description;
 
     const listSecondaryAction = document.createElement('div');
     listSecondaryAction.classList.add('list-secondary-action');
-    const startBtn = createSecondaryActionBtn('▶️',(e)=>{      
+    const deleteBtn = createSecondaryActionBtn('❌', (e) => {
       e.preventDefault();
-    });
-    const deleteBtn = createSecondaryActionBtn('❌', (e)=>{
-      e.preventDefault();
-      removeTask(task.id).then(()=>{
-        showAppToast('✔️ Task Removed');
-      }).catch((e)=>{
-        __electronLog.error('Failed to remove task',JSON.stringify(e));
-        showAppToast('❌ Failed to remove task');
-      });
+      removeTask(taskView.id)
+        .then(() => {
+          showAppToast('✔️ Task Removed');
+        })
+        .catch((e) => {
+          __electronLog.error('Failed to remove task', JSON.stringify(e));
+          showAppToast('❌ Failed to remove task');
+        });
     });
 
-    listSecondaryAction.appendChild(startBtn);
     listSecondaryAction.appendChild(deleteBtn);
 
-    listItem.append(listItemContainer,listSecondaryAction);
+    listItem.append(listPrimaryAction, listItemContainer, listSecondaryAction);
 
     listContainer.appendChild(listItem);
   }
