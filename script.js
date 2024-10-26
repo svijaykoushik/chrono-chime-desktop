@@ -21,6 +21,7 @@ import {
   scheduleReminders,
   updateReminder,
 } from './renderer/reminders/reminders.js';
+import EventEmitter from './renderer/lib/event-emitter.js';
 
 //#region declarations
 // const DAY_IN_MS = 8.64e+7;
@@ -445,7 +446,26 @@ function createSecondaryActionBtn(emojiIcon, cb, dataset) {
   return button;
 }
 
-async function renderTasks(listId) {
+/**
+ * @typedef {Object} TaskViewType
+ * @property {boolean} isRunning Represents if task is running actively
+ * @property {number} timeElapsed The time elapsed in milliseconds
+ * @property {string | null} sessionId Current session of the task
+ * 
+ * @typedef { import('./renderer/to-do-lists/to-do-lists.js').Task & TaskViewType} TaskView
+ */
+
+/**
+* @type {TaskView[]}
+*/
+let taskViews = [];
+
+
+/**
+ * Renders the tasks to the interface
+ * @param {TaskView[]} taskViews Task views to render
+ */
+async function renderTasks(taskViews) {
   const tasksViewBody = /** @type {HTMLDivElement} */ (
     document.querySelector('#taskContainer .task-view-body')
   );
@@ -454,29 +474,6 @@ async function renderTasks(listId) {
   while (tasksViewBody.firstChild) {
     tasksViewBody.removeChild(tasksViewBody.firstChild);
   }
-
-  const tasks = await getTasks(listId);
-
-  console.log('Tasks saved', tasks);
-
-  /**
-   * @typedef {Object} TaskViewType
-   * @property {boolean} isRunning Represents if task is running actively
-   * @property {number} timeElapsed The time elapsed in milliseconds
-   * @property {string | null} sessionId Current session of the task
-   * 
-   * @typedef { import('./renderer/to-do-lists/to-do-lists.js').Task & TaskViewType} TaskView
-   */
-
-  /**
-   * @type {TaskView[]}
-   */
-  const taskViews = tasks.map((task) => ({
-    ...task,
-    isRunning: false,
-    timeElapsed: 0,
-    sessionId: null,
-  }));
 
   const listContainer = document.createElement('ul');
   listContainer.classList.add('list-tasks');
@@ -542,6 +539,46 @@ async function renderTasks(listId) {
   tasksViewBody.appendChild(listContainer);
 }
 
+
+const tvBus = new EventEmitter();
+
+tvBus.on('render-tasks',async (/** @type {string} */ listId)=>{
+
+   // Fetch tasks from some external function
+   const fetchedTasks = await getTasks(listId);
+
+   console.log('Fetched Tasks', fetchedTasks);
+ 
+   // Create a map for easier lookup by task id
+   const taskViewMap = new Map(taskViews.map((tv) => [tv.id, tv]));
+ 
+   // Update taskViews: either update existing or add new ones
+   taskViews = fetchedTasks.map((task) => {
+     const existingTaskView = taskViewMap.get(task.id);
+ 
+     // If taskView exists, update it while preserving the view state
+     if (existingTaskView) {
+       return {
+         ...existingTaskView,
+         ...task, // update task properties
+       };
+     }
+ 
+     // If no existing taskView, create a new one
+     return {
+       ...task,
+       isRunning: false,
+       timeElapsed: 0,
+       sessionId: null,
+     };
+   });
+ 
+   // Optionally, you could log the updated task views to see the result
+   console.log('Updated TaskViews', taskViews);
+
+   renderTasks(taskViews);
+});
+
 /**
  * Handler for toggling the overflow menu
  * in the list
@@ -580,7 +617,7 @@ async function taskListItemClickHandler(e) {
   }
   console.log('Selected list is ', list.id, list.name);
 
-  renderTasks(list.id);
+  tvBus.emit('render-tasks',list.id);
 }
 
 async function setDefaultTaskList() {
@@ -601,7 +638,7 @@ async function setDefaultTaskList() {
     tasklistOverflowMenuToggle.classList.add('d-block');
     tasklistOverflowMenuToggle.classList.remove('d-none');
   }
-  renderTasks(list.id);
+  tvBus.emit('render-tasks',list.id);
 }
 
 /**
@@ -774,7 +811,7 @@ addTaskBtn.addEventListener('click', async (e) => {
   if (taskDescription.length >= 3 && taskDescription.length <= 250) {
     await addTask(listId, { description: taskDescription, completed });
     renderTaskLists();
-    renderTasks();
+    tvBus.emit('render-tasks',listId);
     // console.log({taskDescription,completed,listId, completed});
     taskTitleInput.value = '';
     taskStatusInput.checked = false;
