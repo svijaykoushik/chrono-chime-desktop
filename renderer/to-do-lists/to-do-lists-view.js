@@ -3,51 +3,26 @@
 import { showAppToast } from '../app-toast/app-toast.js';
 import EventEmitter from '../lib/event-emitter.js';
 import {
-  addTask,
   createList,
   deleteList,
   getList,
   getLists,
-  getTasks,
-  removeTask,
-  startTask,
-  stopTask,
   updateList,
 } from './to-do-lists.js';
+import { tvBus } from './to-do-tasks-view.js';
 //#region Tasks
 // Initialize modals and buttons
 const listsModal = /** @type {HTMLDialogElement} */ (
   document.getElementById('listsModal')
 );
-const tasksModal = /** @type {HTMLDialogElement} */ (
-  document.getElementById('tasksModal')
-);
 const addListBtn = /** @type {HTMLButtonElement} */ (
   document.getElementById('addListBtn')
-);
-const addTaskBtn = /** @type {HTMLButtonElement} */ (
-  document.getElementById('addTaskBtn')
 );
 const cancelAddListBtn = /** @type {HTMLButtonElement} */ (
   document.getElementById('cancelAddListBtn')
 );
-const cancelAddTaskBtn = /** @type {HTMLButtonElement} */ (
-  document.getElementById('cancelAddTaskBtn')
-);
 const listTitleInput = /** @type {HTMLInputElement} */ (
   document.getElementById('listTitleInput')
-);
-const taskTitleInput = /** @type {HTMLInputElement} */ (
-  document.getElementById('taskTitleInput')
-);
-const taskStatusInput = /** @type {HTMLInputElement} */ (
-  document.getElementById('taskStatusInput')
-);
-const tasksForm = /** @type {HTMLFormElement} */ (
-  document.getElementById('tasksForm')
-);
-const openTaskModalBtn = /** @type {HTMLButtonElement} */ (
-  document.getElementById('openTaskModalBtn')
 );
 // const listsForm = document.getElementById('listsForm');
 const taskListContainer = document.getElementById('taskListContainer');
@@ -65,184 +40,11 @@ const listModalTitle = /** @type {HTMLHeadingElement} */ (
   document.getElementById('listModalTitle')
 );
 
-cancelAddListBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  listTitleInput.value = '';
-  listsModal.close();
-});
-cancelAddTaskBtn.addEventListener('click', () => tasksModal.close());
+export const tListBus = new EventEmitter();
 
 function toggleTaskListOverFlowMenu() {
   taskListOverflowMenu.classList.toggle('active');
 }
-
-function openAddTaskModal(listId) {
-  tasksForm.dataset.listId = listId;
-  tasksModal.showModal();
-}
-
-/**
- * Handles click of open task modal button
- * @param {MouseEvent} e
- */
-function openTaskModalBtnClick(e) {
-  e.preventDefault();
-  const btn = /** @type {HTMLButtonElement} */ (e.target);
-  const listId = btn.dataset.listId;
-  openAddTaskModal(listId);
-}
-
-openTaskModalBtn.addEventListener('click', openTaskModalBtnClick);
-
-/**
- * Creates a button secondary action theme
- * @param {string} emojiIcon Emoji icon for the icon button
- * @param {(this: HTMLButtonElement, ev: MouseEvent) => any} cb Event handler callback
- * @param {DOMStringMap=} dataset Dataset to be attached to the button
- */
-function createSecondaryActionBtn(emojiIcon, cb, dataset) {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.addEventListener('click', cb);
-  const emojiSpan = document.createElement('span');
-  emojiSpan.classList.add('emoji');
-  emojiSpan.textContent = emojiIcon;
-  button.appendChild(emojiSpan);
-  if (dataset) {
-    button.dataset === button.dataset;
-  }
-  return button;
-}
-
-/**
- * @typedef {Object} TaskViewType
- * @property {boolean} isRunning Represents if task is running actively
- * @property {number} timeElapsed The time elapsed in milliseconds
- * @property {string | null} sessionId Current session of the task
- *
- * @typedef { import('./to-do-lists.js').Task & TaskViewType} TaskView
- */
-
-/**
- * @type {TaskView[]}
- */
-let taskViews = [];
-
-/**
- * Renders the tasks to the interface
- * @param {TaskView[]} taskViews Task views to render
- */
-async function renderTasks(taskViews) {
-  const tasksViewBody = /** @type {HTMLDivElement} */ (
-    document.querySelector('#taskContainer .task-view-body')
-  );
-
-  // remove existing tasks
-  while (tasksViewBody.firstChild) {
-    tasksViewBody.removeChild(tasksViewBody.firstChild);
-  }
-
-  const listContainer = document.createElement('ul');
-  listContainer.classList.add('list-tasks');
-
-  for (const taskView of taskViews) {
-    const listItem = document.createElement('li');
-    listItem.id = taskView.id;
-    const listItemContainer = document.createElement('div');
-
-    const listPrimaryAction = document.createElement('div');
-    listPrimaryAction.classList.add('list-primary-action');
-    const startBtn = createSecondaryActionBtn(
-      taskView.isRunning ? '⏹️' : '▶️',
-      async (e) => {
-        e.preventDefault();
-        const target = /** @type {HTMLButtonElement} */ (e.target);
-
-        if (taskView.isRunning) {
-          await stopTask(taskView.sessionId, new Date());
-          taskView.isRunning = false;
-          taskView.sessionId = null;
-        } else {
-          const sessionId = await startTask(taskView.id, new Date());
-          taskView.sessionId = sessionId;
-          taskView.isRunning = true;
-        }
-
-        // Simplify button text toggle
-        const buttonText = taskView.isRunning ? '⏹️' : '▶️';
-        if (target.tagName === 'BUTTON') {
-          target.firstChild.textContent = buttonText;
-        } else if (target.tagName === 'SPAN') {
-          target.textContent = buttonText;
-        }
-      }
-    );
-    listPrimaryAction.appendChild(startBtn);
-
-    listItemContainer.classList.add('subtitle1');
-    listItemContainer.textContent = taskView.description;
-
-    const listSecondaryAction = document.createElement('div');
-    listSecondaryAction.classList.add('list-secondary-action');
-    const deleteBtn = createSecondaryActionBtn('❌', (e) => {
-      e.preventDefault();
-      removeTask(taskView.id)
-        .then(() => {
-          showAppToast('✔️ Task Removed');
-        })
-        .catch((e) => {
-          __electronLog.error('Failed to remove task', JSON.stringify(e));
-          showAppToast('❌ Failed to remove task');
-        });
-    });
-
-    listSecondaryAction.appendChild(deleteBtn);
-
-    listItem.append(listPrimaryAction, listItemContainer, listSecondaryAction);
-
-    listContainer.appendChild(listItem);
-  }
-
-  tasksViewBody.appendChild(listContainer);
-}
-
-const tvBus = new EventEmitter();
-
-tvBus.on('render-tasks', async (/** @type {string} */ listId) => {
-  // Fetch tasks from some external function
-  const fetchedTasks = await getTasks(listId);
-
-  console.log('Fetched Tasks', fetchedTasks);
-
-  // Create a map for easier lookup by task id
-  const taskViewMap = new Map(taskViews.map((tv) => [tv.id, tv]));
-
-  // Update taskViews: either update existing or add new ones
-  taskViews = fetchedTasks.map((task) => {
-    const existingTaskView = taskViewMap.get(task.id);
-
-    // If taskView exists, update it while preserving the view state
-    if (existingTaskView) {
-      return {
-        ...existingTaskView,
-        ...task, // update task properties
-      };
-    }
-
-    // If no existing taskView, create a new one
-    return {
-      ...task,
-      isRunning: false,
-      timeElapsed: 0,
-      sessionId: null,
-    };
-  });
-
-  // Optionally, you could log the updated task views to see the result
-  console.log('Updated TaskViews', taskViews);
-
-  renderTasks(taskViews);
-});
 
 /**
  * Handler for toggling the overflow menu
@@ -269,10 +71,10 @@ async function taskListItemClickHandler(e) {
   listItem.classList.add('active');
   const taskListName = document.getElementById('taskListName');
   const list = await getList(listItem.id);
+  tListBus.emit('list-selected', list.id);
   taskListName.innerText = listItem.dataset.listName;
   taskListEdit.dataset.listId = list.id;
   taskListDelete.dataset.listId = list.id;
-  openTaskModalBtn.dataset.listId = list.id;
   if (list.isPrebuilt) {
     tasklistOverflowMenuToggle.classList.add('d-none');
     tasklistOverflowMenuToggle.classList.remove('d-block');
@@ -281,21 +83,21 @@ async function taskListItemClickHandler(e) {
     tasklistOverflowMenuToggle.classList.remove('d-none');
   }
   console.log('Selected list is ', list.id, list.name);
-
-  tvBus.emit('render-tasks', list.id);
 }
 
 async function setDefaultTaskList() {
   const lists = await getLists();
+  console.log('All available lists', lists);
   const defaultList = lists.find((list) => list.name === 'Daily Agenda');
   const defaultTaskListItem = document.getElementById(defaultList.id);
   const list = await getList(defaultList.id);
+  console.log('Selected default list is ', list.id, list.name);
   defaultTaskListItem.classList.add('active');
   const taskListName = document.getElementById('taskListName');
   taskListName.innerText = defaultTaskListItem.dataset.listName;
   taskListEdit.dataset.listId = list.id;
   taskListDelete.dataset.listId = list.id;
-  openTaskModalBtn.dataset.listId = list.id;
+  tListBus.emit('list-selected', list.id);
   if (list.isPrebuilt) {
     tasklistOverflowMenuToggle.classList.add('d-none');
     tasklistOverflowMenuToggle.classList.remove('d-block');
@@ -303,7 +105,6 @@ async function setDefaultTaskList() {
     tasklistOverflowMenuToggle.classList.add('d-block');
     tasklistOverflowMenuToggle.classList.remove('d-none');
   }
-  tvBus.emit('render-tasks', list.id);
 }
 
 /**
@@ -408,6 +209,11 @@ export async function renderTaskLists() {
   );
 }
 
+tListBus.on('list-selected', (/** @type {string} */ listId) => {
+  console.log('Id of selected list', listId);
+  tvBus.emit('render-tasks', listId);
+});
+
 taskListEdit.addEventListener('click', async (e) => {
   e.preventDefault();
   const target = /** @type {HTMLLIElement} */ (e.currentTarget);
@@ -468,19 +274,9 @@ addListBtn.addEventListener('click', async (e) => {
   }
 });
 
-addTaskBtn.addEventListener('click', async (e) => {
+cancelAddListBtn.addEventListener('click', (e) => {
   e.preventDefault();
-  const taskDescription = taskTitleInput.value.trim();
-  const completed = taskStatusInput.checked;
-  const listId = tasksForm.dataset.listId;
-  if (taskDescription.length >= 3 && taskDescription.length <= 250) {
-    await addTask(listId, { description: taskDescription, completed });
-    renderTaskLists();
-    tvBus.emit('render-tasks', listId);
-    // console.log({taskDescription,completed,listId, completed});
-    taskTitleInput.value = '';
-    taskStatusInput.checked = false;
-    tasksModal.close();
-  }
+  listTitleInput.value = '';
+  listsModal.close();
 });
 //#endregion
