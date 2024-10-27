@@ -49,8 +49,8 @@ let taskViews = [];
 export const tvBus = new EventEmitter();
 
 /**
- * 
- * @param {string} listId 
+ *
+ * @param {string} listId
  */
 function openAddTaskModal(listId) {
   tasksForm.dataset.listId = listId;
@@ -148,6 +148,7 @@ async function renderTasks(taskViews) {
       e.preventDefault();
       removeTask(taskView.id)
         .then(() => {
+          tvBus.emit('render-tasks', taskView.listId);
           showAppToast('✔️ Task Removed');
         })
         .catch((e) => {
@@ -194,7 +195,7 @@ tvBus.on('render-tasks', async (/** @type {string} */ listId) => {
       isRunning: false,
       timeElapsed: 0,
       sessionId: null,
-      listId: listId
+      listId: listId,
     };
   });
 
