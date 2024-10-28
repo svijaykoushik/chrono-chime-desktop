@@ -7,6 +7,9 @@ import { getDefaultSettings, getSettings, setSettings } from './app-settings.js'
 const intervalSelect = /** @type {HTMLSelectElement} */ (
   document.getElementById('interval')
 );
+const focusIntervalSelect = /** @type {HTMLInputElement} */ (document.getElementById('focusInterval'));
+const focusShortBreakSelect = /** @type {HTMLInputElement} */ (document.getElementById('focusShortBreak'));
+const focusLongBreakSelect = /** @type {HTMLInputElement} */ (document.getElementById('focusLongBreak'));
 const notificationTitleText = /** @type {HTMLInputElement} */ (
   document.getElementById('notificationTitle')
 );
@@ -70,6 +73,18 @@ export function initializeSettingsForm(settingsArg) {
   // Set the selected option based on the loaded setting
   if (settingsArg.interval) {
     intervalSelect.value = settingsArg.interval;
+  }
+
+  if (settingsArg.focusInterval) {
+    focusIntervalSelect.value = settingsArg.focusInterval;
+  }
+
+  if (settingsArg.focusShortBreak) {
+    focusShortBreakSelect.value = settingsArg.focusShortBreak;
+  }
+
+  if (settingsArg.focusLongBreak) {
+    focusLongBreakSelect.value = settingsArg.focusLongBreak;
   }
 
   // Set the state of the allow notification setting

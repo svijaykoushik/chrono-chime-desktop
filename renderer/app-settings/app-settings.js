@@ -10,6 +10,9 @@ import { showAppToast } from '../app-toast/app-toast.js';
  * @property {string} notificationSound
  * @property {string} notificationTitle
  * @property {string} notificationContent
+ * @property {string} focusInterval
+ * @property {string} focusShortBreak
+ * @property {string} focusLongBreak
  */
 
 /**
@@ -22,6 +25,9 @@ const defaultSettings = {
   notificationSound: 'sound1', // Default sound, e.g., 'sound1',
   notificationTitle: 'Time Keeper Extraordinaire',
   notificationContent: 'This is a personalized notification from ChronoChime!', // Default content
+  focusInterval: '25', // Default '25' minutes
+  focusShortBreak: '5', // Default '5' minutes
+  focusLongBreak: '15', // Default '15' minutes
 };
 
 /**
