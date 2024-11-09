@@ -4,6 +4,7 @@ import { showAppToast } from '../app-toast/app-toast.js';
 import EventEmitter from '../lib/event-emitter.js';
 import {
   addTask,
+  getLastSession,
   getTasks,
   removeTask,
   startTask,
@@ -178,26 +179,42 @@ tvBus.on('render-tasks', async (/** @type {string} */ listId) => {
   const taskViewMap = new Map(taskViews.map((tv) => [tv.id, tv]));
 
   // Update taskViews: either update existing or add new ones
-  taskViews = fetchedTasks.map((task) => {
-    const existingTaskView = taskViewMap.get(task.id);
+  taskViews = await Promise.all(
+    fetchedTasks.map(async (task) => {
+      const existingTaskView = taskViewMap.get(task.id);
 
-    // If taskView exists, update it while preserving the view state
-    if (existingTaskView) {
+      // If taskView exists, update it while preserving the view state
+      if (existingTaskView) {
+        return {
+          ...existingTaskView,
+          ...task, // update task properties
+        };
+      }
+
+      
+      const session = await getLastSession(task.id);
+
+      /**
+       * @type {string}
+       */
+      let sessionId = '';
+
+      // Start new session for task if the task is not
+      // stopped yet
+      if(session && !session.stopTime){
+        await stopTask(session.id, new Date());
+        sessionId = await startTask(task.id,new Date());
+      }
+      // If no existing taskView, create a new one
       return {
-        ...existingTaskView,
-        ...task, // update task properties
+        ...task,
+        isRunning: sessionId? true : false,
+        timeElapsed: 0,
+        sessionId: sessionId || null,
+        listId: listId,
       };
-    }
-
-    // If no existing taskView, create a new one
-    return {
-      ...task,
-      isRunning: false,
-      timeElapsed: 0,
-      sessionId: null,
-      listId: listId,
-    };
-  });
+    })
+  );
 
   // Optionally, you could log the updated task views to see the result
   console.log('Updated TaskViews', taskViews);

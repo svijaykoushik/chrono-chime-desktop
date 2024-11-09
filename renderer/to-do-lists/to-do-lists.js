@@ -384,3 +384,27 @@ export async function stopTask(sessionId, stopTime){
   session.stopTime = stopTime;
   return await conn.handleRequest(store.put({ ...session }));
 }
+
+/**
+ * Get Last session of the task
+ * @param {string} taskId Id of the task.
+ * @returns {Promise<TaskSession>}
+ */
+export async function getLastSession(taskId){
+  const conn = await dbPromise();
+  const store = conn.createTransaction('taskSessions', 'readonly');
+     /**
+   * @type {TaskSession[]}
+   */
+  const sessions = await conn.handleRequest(store.getAll());
+
+  const taskSessions = sessions.filter(
+    (session) => session.taskId === taskId
+  );
+
+  const lastSession = taskSessions.sort(
+    (a, b) => b.startTime.getTime() - a.startTime.getTime()
+  );
+
+  return lastSession[0];
+}
