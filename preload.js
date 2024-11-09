@@ -30,3 +30,9 @@ contextBridge.exposeInMainWorld('autoLauncher', {
     sendResponse: (status) =>
         ipcRenderer.send('auto-launch-status', status),
 });
+
+contextBridge.exposeInMainWorld('systemState', {
+    onStateChanged: (listener)=>{
+        ipcRenderer.on('system-status', listener);
+    }
+});

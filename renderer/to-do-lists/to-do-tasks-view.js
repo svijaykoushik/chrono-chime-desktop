@@ -16,6 +16,7 @@ import {
  * @property {boolean} isRunning Represents if task is running actively
  * @property {number} timeElapsed The time elapsed in milliseconds
  * @property {string} listId The list which the task belongs to
+ * @property {boolean} isSuspended Represents if the task is suspended by the app.
  * @property {string | null} sessionId Current session of the task
  *
  * @typedef { import('./to-do-lists.js').Task & TaskViewType} TaskView
@@ -212,6 +213,7 @@ tvBus.on('render-tasks', async (/** @type {string} */ listId) => {
         timeElapsed: 0,
         sessionId: sessionId || null,
         listId: listId,
+        isSuspended: false
       };
     })
   );
@@ -239,5 +241,33 @@ addTaskBtn.addEventListener('click', async (e) => {
     taskTitleInput.value = '';
     taskStatusInput.checked = false;
     tasksModal.close();
+  }
+});
+
+window.systemState.onStateChanged((e, data)=>{
+  if (data === 'idle') {
+    __electronLog.log('System going into idle');
+    taskViews.forEach((taskView) => {
+      if (taskView.isRunning) {
+        stopTask(taskView.sessionId, new Date()).then(() => {
+          taskView.isRunning = false;
+          taskView.sessionId = null;
+          taskView.isSuspended = true;
+          tvBus.emit('render-tasks', taskView.listId);
+        });
+      }
+    });
+  } else if (data === 'active') {
+    __electronLog.log('System resumed from idle');
+    taskViews.forEach((taskView) => {
+      if (taskView.isRunning === false && taskView.isSuspended === true) {
+        startTask(taskView.id, new Date()).then((sessionId) => {
+          taskView.isRunning = true;
+          taskView.sessionId = sessionId;
+          taskView.isSuspended = false;
+          tvBus.emit('render-tasks', taskView.listId);
+        });
+      }
+    });
   }
 });

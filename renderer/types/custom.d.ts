@@ -58,6 +58,13 @@ interface NavigateEventInit extends EventInit {
   interface AutoLauncher {
     onStatusChanged: (callback: (e: Event, data: boolean) => void) => void;
   }
+
+  
+  interface SystemState {
+    onStateChanged: (
+      callback: (e: Event, data: 'active' | 'idle' | 'unknown') => void
+    ) => void;
+  }
   
   /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/Window/navigator) */
   declare var navigation: Navigation;
@@ -69,4 +76,6 @@ interface NavigateEventInit extends EventInit {
   declare var toggleNotification: ToggleNotification;
 
   declare var autoLauncher: AutoLauncher;
+
+  declare var systemState: SystemState;
   

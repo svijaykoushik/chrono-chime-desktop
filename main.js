@@ -26,6 +26,7 @@
     nativeImage,
     ipcMain,
     shell,
+    powerMonitor,
   } = require('electron');
   const { join } = require('path');
   const AutoLaunch = require('auto-launch');
@@ -263,6 +264,18 @@
         })();
       }
     });
+
+    const idleThreshold = 300;
+    const idleMonitorInterval = 30000;
+    let prevState = '';
+    setInterval(()=>{
+        const state = powerMonitor.getSystemIdleState(idleThreshold);
+        if(prevState !== state){          
+          log.debug('State changed from ', prevState, 'to ', state);
+          mainWindow.webContents.send('system-status',state);
+        }
+        prevState = state;
+    },idleMonitorInterval);
   });
 
   // Quit when all windows are closed, except on macOS. There, it's common
