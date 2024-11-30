@@ -154,7 +154,7 @@ export async function scheduleReminders(afterDispatch) {
       timeRemaining >= 60000 ? Math.floor(timeRemaining / 60000) % 60 : 0;
     const seconds =
       timeRemaining >= 1000 ? Math.floor(timeRemaining / 1000) % 60 : 0;
-    console.log(
+    __electronLog.log(
       'Remaining time for reminder %s between %s and %s is %d days %d hours %d minutes %d seconds',
       reminder.title,
       reminder.time.toTimeString(),

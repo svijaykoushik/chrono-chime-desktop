@@ -277,7 +277,6 @@ previewNotificationBtn.addEventListener('click', (e) => {
       Notification.requestPermission()
         .then((permission) => {
           if (permission === 'granted') {
-            console.log('Notification permission granted.');
             previewNotificationBtn.disabled = false;
             previewNotificationBtn.innerText = 'Preview Notification 🔔';
             scheduleNotifications(settings);

@@ -82,16 +82,13 @@ async function taskListItemClickHandler(e) {
     tasklistOverflowMenuToggle.classList.add('d-block');
     tasklistOverflowMenuToggle.classList.remove('d-none');
   }
-  console.log('Selected list is ', list.id, list.name);
 }
 
 async function setDefaultTaskList() {
   const lists = await getLists();
-  console.log('All available lists', lists);
   const defaultList = lists.find((list) => list.name === 'Daily Agenda');
   const defaultTaskListItem = document.getElementById(defaultList.id);
   const list = await getList(defaultList.id);
-  console.log('Selected default list is ', list.id, list.name);
   defaultTaskListItem.classList.add('active');
   const taskListName = document.getElementById('taskListName');
   taskListName.innerText = defaultTaskListItem.dataset.listName;
@@ -210,14 +207,12 @@ export async function renderTaskLists() {
 }
 
 tListBus.on('list-selected', (/** @type {string} */ listId) => {
-  console.log('Id of selected list', listId);
   tvBus.emit('render-tasks', listId);
 });
 
 taskListEdit.addEventListener('click', async (e) => {
   e.preventDefault();
   const target = /** @type {HTMLLIElement} */ (e.currentTarget);
-  console.log('selected list id', target.dataset.listId);
   const list = await getList(target.dataset.listId);
   listTitleInput.value = list.name;
   listModalTitle.innerText = 'Edit List';
@@ -232,7 +227,6 @@ taskListDelete.addEventListener('click', async (e) => {
   e.preventDefault();
   const target = /** @type {HTMLLIElement} */ (e.currentTarget);
   try {
-    console.log('selected list id to delete is', target.dataset.listId);
     toggleTaskListOverFlowMenu();
     await deleteList(target.dataset.listId);
     renderTaskLists();
@@ -267,7 +261,6 @@ addListBtn.addEventListener('click', async (e) => {
       listTitleInput.value = '';
       renderTaskLists();
       listsModal.close();
-      console.log('Data updated, %s', addListBtn.dataset.listId);
     } catch (e) {
       showAppToast('❌ ' + e.message);
     }

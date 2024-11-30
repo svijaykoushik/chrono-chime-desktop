@@ -174,7 +174,6 @@ tvBus.on('render-tasks', async (/** @type {string} */ listId) => {
   // Fetch tasks from some external function
   const fetchedTasks = await getTasks(listId);
 
-  console.log('Fetched Tasks', fetchedTasks);
 
   // Create a map for easier lookup by task id
   const taskViewMap = new Map(taskViews.map((tv) => [tv.id, tv]));
@@ -219,7 +218,6 @@ tvBus.on('render-tasks', async (/** @type {string} */ listId) => {
   );
 
   // Optionally, you could log the updated task views to see the result
-  console.log('Updated TaskViews', taskViews);
 
   renderTasks(taskViews);
 });
@@ -232,12 +230,10 @@ addTaskBtn.addEventListener('click', async (e) => {
   const taskDescription = taskTitleInput.value.trim();
   const completed = taskStatusInput.checked;
   const listId = tasksForm.dataset.listId;
-  console.log('Adding task for list', listId);
   if (taskDescription.length >= 3 && taskDescription.length <= 250 && listId) {
     await addTask(listId, { description: taskDescription, completed });
     // renderTaskLists();
     tvBus.emit('render-tasks', listId);
-    // console.log({taskDescription,completed,listId, completed});
     taskTitleInput.value = '';
     taskStatusInput.checked = false;
     tasksModal.close();
