@@ -120,7 +120,7 @@ function scheduleNextNotification(intervalHours, timeUntilNextHour) {
       nextHourTimeout,
       'and dispatched notification'
     );
-    showNotification();
+    showNotification(getSettings());
     __electronLog.info('Resetting countdown timer');
     resetCountdownTime(intervalHours * 60 * 60 * 1000);
     updateCountdownTimer(intervalHours);
@@ -137,7 +137,7 @@ function scheduleNextNotification(intervalHours, timeUntilNextHour) {
         ' hour(s) with Id ',
         notificationInterval
       );
-      showNotification();
+      showNotification(getSettings());
       __electronLog.info(
         'Resetting countdown timer after ',
         intervalHours,

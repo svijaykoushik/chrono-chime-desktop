@@ -2,7 +2,7 @@
 
 /**
  * Show push notification and play sound
- * @param {object} settings AppSettings
+ * @param {import("../app-settings/app-settings.js").AppSettings} settings AppSettings
  */
 export function showNotification(settings) {
   const options = {
