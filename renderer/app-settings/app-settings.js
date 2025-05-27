@@ -13,6 +13,7 @@ import { showAppToast } from '../app-toast/app-toast.js';
  * @property {string} focusInterval
  * @property {string} focusShortBreak
  * @property {string} focusLongBreak
+ * @property {string} maxFocusSessions
  */
 
 /**
@@ -28,6 +29,7 @@ const defaultSettings = {
   focusInterval: '25', // Default '25' minutes
   focusShortBreak: '5', // Default '5' minutes
   focusLongBreak: '15', // Default '15' minutes
+  maxFocusSessions: '4' // Default '4' sessions
 };
 
 /**

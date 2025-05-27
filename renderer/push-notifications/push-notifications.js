@@ -2,7 +2,7 @@
 
 /**
  * Show push notification and play sound
- * @param {object} settings AppSettings
+ * @param {import("../app-settings/app-settings.js").AppSettings} settings AppSettings
  */
 export function showNotification(settings) {
   const options = {
@@ -42,4 +42,16 @@ export function showNotification(settings) {
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification(settings.notificationTitle, options);
   }
+}
+
+/**
+ * Show push notification for focus timer
+ * @param {string} message The message to show for focus timer
+ */
+export function showFocusNotification(message) {
+  new Notification('Focus Timer', {
+    body: message,
+    icon: 'chrono-chime-icon-192.png', // Replace with your icon path
+  });
+  __electronLog.log('Dispatched notification:', message);
 }

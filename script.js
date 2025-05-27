@@ -5,6 +5,7 @@ import {
   setSettings,
 } from './renderer/app-settings/app-settings.js';
 import { initializeSettingsForm } from './renderer/app-settings/settings-view.js';
+import { scheduleFocusCycle } from './renderer/focus-interval/focus-interval.js';
 import { scheduleNotifications } from './renderer/interval-alerts/interval-alerts.js';
 import { renderReminder } from './renderer/reminders/reminder-view.js';
 import { renderTaskLists } from './renderer/to-do-lists/to-do-lists-view.js';
@@ -68,18 +69,22 @@ function loadContent(url) {
     // load settings from local storage and populate the form
     settings = getSettings();
     scheduleNotifications(settings);
+    scheduleFocusCycle(settings);
     initializeSettingsForm(settings);
   } else if (url === '/config') {
     settings = getSettings();
     scheduleNotifications(settings);
+    scheduleFocusCycle(settings);
     renderReminder();
   } else if (url === '/tasks') {
     settings = getSettings();
     scheduleNotifications(settings);
+    scheduleFocusCycle(settings);
     renderTaskLists();
   } else {
     settings = getSettings();
     scheduleNotifications(settings);
+    scheduleFocusCycle(settings);
   }
 }
 

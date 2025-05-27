@@ -2,14 +2,28 @@
 
 import { showNotification } from '../push-notifications/push-notifications.js';
 import { scheduleNotifications } from '../interval-alerts/interval-alerts.js';
-import { getDefaultSettings, getSettings, setSettings } from './app-settings.js';
+import {
+  getDefaultSettings,
+  getSettings,
+  setSettings,
+} from './app-settings.js';
+import { scheduleFocusCycle } from '../focus-interval/focus-interval.js';
 
 const intervalSelect = /** @type {HTMLSelectElement} */ (
   document.getElementById('interval')
 );
-const focusIntervalSelect = /** @type {HTMLInputElement} */ (document.getElementById('focusInterval'));
-const focusShortBreakSelect = /** @type {HTMLInputElement} */ (document.getElementById('focusShortBreak'));
-const focusLongBreakSelect = /** @type {HTMLInputElement} */ (document.getElementById('focusLongBreak'));
+const focusIntervalSelect = /** @type {HTMLInputElement} */ (
+  document.getElementById('focusInterval')
+);
+const focusShortBreakSelect = /** @type {HTMLInputElement} */ (
+  document.getElementById('focusShortBreak')
+);
+const focusLongBreakSelect = /** @type {HTMLInputElement} */ (
+  document.getElementById('focusLongBreak')
+);
+const maxFocusSessionsSelect = /** @type {HTMLSelectElement} */ (
+  document.getElementById('maxFocusSessions')
+);
 const notificationTitleText = /** @type {HTMLInputElement} */ (
   document.getElementById('notificationTitle')
 );
@@ -85,6 +99,10 @@ export function initializeSettingsForm(settingsArg) {
 
   if (settingsArg.focusLongBreak) {
     focusLongBreakSelect.value = settingsArg.focusLongBreak;
+  }
+
+  if (settingsArg.maxFocusSessions) {
+    maxFocusSessionsSelect.value = settingsArg.maxFocusSessions;
   }
 
   // Set the state of the allow notification setting
@@ -265,6 +283,34 @@ intervalSelect.addEventListener('change', () => {
   settings.interval = intervalSelect.value;
   setSettings(settings);
   scheduleNotifications(settings);
+});
+
+focusIntervalSelect.addEventListener('change', () => {
+  const settings = getSettings();
+  settings.focusInterval = focusIntervalSelect.value;
+  setSettings(settings);
+  scheduleFocusCycle(settings);
+});
+
+focusLongBreakSelect.addEventListener('change', () => {
+  const settings = getSettings();
+  settings.focusLongBreak = focusLongBreakSelect.value;
+  setSettings(settings);
+  scheduleFocusCycle(settings);
+});
+
+focusShortBreakSelect.addEventListener('change', () => {
+  const settings = getSettings();
+  settings.focusShortBreak = focusShortBreakSelect.value;
+  setSettings(settings);
+  scheduleFocusCycle(settings);
+});
+
+maxFocusSessionsSelect.addEventListener('change', () => {
+  const settings = getSettings();
+  settings.maxFocusSessions = maxFocusSessionsSelect.value;
+  setSettings(settings);
+  scheduleFocusCycle(settings);
 });
 
 notificationTitleText.addEventListener('change', () => {
