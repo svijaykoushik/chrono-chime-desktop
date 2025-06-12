@@ -1,25 +1,37 @@
 //#region declarations
-const DAY_IN_MS = 8.64e+7;
+const DAY_IN_MS = 8.64e7;
 
-let notificationInterval; // Store the interval ID for the notification timer
-let countdownInterval; // Store the interval ID for the countdown timer
+let notificationInterval: NodeJS.Timeout; // Store the interval ID for the notification timer
+let countdownInterval: NodeJS.Timeout; // Store the interval ID for the countdown timer
 let countdownTimeRemaining = 0; // Global variable to store the countdown time in milliseconds
-let nextHourTimeout; // Store the timeout ID of the next hour timeout
+let nextHourTimeout: NodeJS.Timeout; // Store the timeout ID of the next hour timeout
 
-const intervalSelect = document.getElementById('interval');
-const notificationTitleText = document.getElementById('notificationTitle');
-const notificationContentText = document.getElementById('notificationContent');
-const previewNotificationBtn = document.getElementById('previewNotification');
-const resetSettingsButton = document.getElementById('resetSettings');
-const sound1Audio = document.getElementById('sound1Audio');
-const sound2Audio = document.getElementById('sound2Audio');
-const sound3Audio = document.getElementById('sound3Audio');
-const askPermissionButton = document.getElementById('askPermissionButton');
+const intervalSelect = document.getElementById('interval') as HTMLSelectElement;
+const notificationTitleText = document.getElementById(
+  'notificationTitle'
+) as HTMLInputElement;
+const notificationContentText = document.getElementById(
+  'notificationContent'
+) as HTMLTextAreaElement;
+const previewNotificationBtn = document.getElementById(
+  'previewNotification'
+) as HTMLButtonElement;
+const resetSettingsButton = document.getElementById(
+  'resetSettings'
+) as HTMLButtonElement;
+const sound1Audio = document.getElementById('sound1Audio') as HTMLAudioElement;
+const sound2Audio = document.getElementById('sound2Audio') as HTMLAudioElement;
+const sound3Audio = document.getElementById('sound3Audio') as HTMLAudioElement;
+const askPermissionButton = document.getElementById(
+  'askPermissionButton'
+) as HTMLButtonElement;
 const countdownTimer = document.getElementById('countdownTimer');
 const allowNotificationCheckbox = document.getElementById(
   'allowNotificationCheckbox'
-);
-const autoLaunchCheckbox = document.getElementById('autoLaunchCheckbox');
+) as HTMLInputElement;
+const autoLaunchCheckbox = document.getElementById(
+  'autoLaunchCheckbox'
+) as HTMLInputElement;
 const generalTabLink = document.getElementById('generalTabLink');
 const soundTabLink = document.getElementById('soundTabLink');
 const contentTabLink = document.getElementById('contentTabLink');
@@ -28,9 +40,30 @@ const resetTabLink = document.getElementById('resetTabLink');
 // Get references to the app drawer and toggle button
 const appDrawer = document.getElementById('appDrawer');
 const toggleButton = document.getElementById('toggleDrawerButton');
-const notificationSoundOptions = document.querySelectorAll('input[name="sound"]');
+const notificationSoundOptions = document.querySelectorAll(
+  'input[name="sound"]'
+);
 
-const defaultSettings = {
+interface Settings {
+  autoLaunch: boolean;
+  isOff: boolean;
+  interval: string;
+  notificationSound: string;
+  notificationTitle: string;
+  notificationContent: string;
+}
+
+type ReminderId = `${string}-${string}-${string}-${string}-${string}`;
+
+interface Reminder {
+  id: ReminderId;
+  title: string;
+  time: Date;
+  description: string;
+  status: string;
+}
+
+const defaultSettings: Settings = {
   autoLaunch: false,
   isOff: false,
   interval: '1', // Default interval, e.g., '1' for 1 hour
@@ -46,38 +79,31 @@ function getSettingsFromLocalStorage() {
   const settingsJSON = localStorage.getItem('settings');
 
   // Parse the JSON string to get the settings object
-  const settings = JSON.parse(settingsJSON);
+  let settings: Settings = JSON.parse(settingsJSON);
 
   if (settings) {
     // Add new settings options if missing in
     // stored settings
-    const settingsOptions = Object.keys(settings);
-    const defaultSettingsOptions = Object.keys(defaultSettings);
+    const mergedSettings: Settings = Object.assign(
+      {},
+      defaultSettings,
+      settings
+    );
 
-    defaultSettingsOptions.forEach((option) => {
-      if (settingsOptions.indexOf(option) === -1) {
-        settings[option] = defaultSettings[option];
-      }
-    });
+    return mergedSettings;
   }
 
   return settings;
 }
 
-function saveSettingsToLocalStorage(settings) {
+function saveSettingsToLocalStorage(settings: Settings) {
   // Add new settings options if missing in
   // stored settings
-  const settingsOptions = Object.keys(settings);
-  const defaultSettingsOptions = Object.keys(defaultSettings);
 
-  defaultSettingsOptions.forEach((option) => {
-    if (settingsOptions.indexOf(option) === -1) {
-      settings[option] = defaultSettings[option];
-    }
-  });
+  const mergedSettings: Settings = Object.assign({}, defaultSettings, settings);
 
   // Convert the settings object to a JSON string
-  const settingsJSON = JSON.stringify(settings);
+  const settingsJSON = JSON.stringify(mergedSettings);
 
   // Save the JSON string to localStorage under the key 'settings'
   localStorage.setItem('settings', settingsJSON);
@@ -92,7 +118,6 @@ function saveSettingsToLocalStorage(settings) {
   showAppToast('✅ Settings saved.');
 }
 
-
 // Store the settings object in localStorage
 if (!getSettingsFromLocalStorage()) {
   saveSettingsToLocalStorage(defaultSettings);
@@ -103,14 +128,14 @@ let settings = getSettingsFromLocalStorage() || defaultSettings;
 //#region Reminders
 const reminderScheduler = new Map();
 
-let remindersDb;
+let remindersDb: IDBDatabase;
 
 // Open (or create) the IndexedDB database
 const request = window.indexedDB.open('Reminders', 1);
 
 // Handle database upgrade (creation or schema change)
 request.onupgradeneeded = function (event) {
-  const db = event.target.result;
+  const db = (event.target as IDBOpenDBRequest).result;
 
   // Create an object store (table) with the specified schema
   const objectStore = db.createObjectStore('reminders', { keyPath: 'id' });
@@ -131,11 +156,11 @@ function renderReminder() {
   const objectStore = transaction.objectStore('reminders');
 
   let reminderListItems = '';
-  const reminders = [];
+  const reminders: Reminder[] = [];
 
   // Open a cursor to iterate over all reminders
   objectStore.openCursor().onsuccess = function (event) {
-    const cursor = event.target.result;
+    const cursor = (event.target as IDBRequest).result;
     if (cursor) {
       // Push each reminder into the array
       reminders.push(cursor.value);
@@ -171,7 +196,11 @@ function renderReminder() {
             <div class="flex-grow">
               <span class="heading subtitle1">${reminder.title}</h2>
               <span class="caption"><span class="emoji">⏲️</span> ${timeOnly}</span>
-              ${reminder.status === 'recurring' ? '<span class="caption">Everyday</span>' : ''}
+              ${
+                reminder.status === 'recurring'
+                  ? '<span class="caption">Everyday</span>'
+                  : ''
+              }
             </div>
             <div class="list-secondary-action">
               <button type="button" onclick="deleteReminder('${reminder.id}')">
@@ -188,7 +217,7 @@ function renderReminder() {
   };
 }
 
-function clearCompletedReminders() {
+function clearCompletedReminders(remindersDb: IDBDatabase) {
   setInterval(() => {
     // Start a database transaction
     const transaction = remindersDb.transaction(['reminders'], 'readwrite');
@@ -198,7 +227,7 @@ function clearCompletedReminders() {
 
     // Open a cursor to iterate over all reminders
     objectStore.openCursor().onsuccess = function (event) {
-      const cursor = event.target.result;
+      const cursor = (event.target as IDBRequest).result;
       if (cursor) {
         const reminder = cursor.value;
         // Check if the reminder is completed
@@ -231,8 +260,7 @@ function clearCompletedReminders() {
   }, 30000);
 }
 
-function updateReminder(reminder){
-
+function updateReminder(reminder: Reminder) {
   // Start a transaction to read data
   const transaction = remindersDb.transaction(['reminders'], 'readwrite');
 
@@ -240,11 +268,9 @@ function updateReminder(reminder){
   const objectStore = transaction.objectStore('reminders');
 
   objectStore.put(reminder);
-
 }
 
 function scheduleReminders() {
-
   __electronLog.log('Scheduling reminders');
 
   // Start a transaction to read data
@@ -253,11 +279,11 @@ function scheduleReminders() {
   // Get the object store
   const objectStore = transaction.objectStore('reminders');
 
-  const reminders = [];
+  const reminders: Reminder[] = [];
 
   // Open a cursor to iterate over all reminders
   objectStore.openCursor().onsuccess = function (event) {
-    const cursor = event.target.result;
+    const cursor = (event.target as IDBRequest).result;
     if (cursor) {
       // Push each reminder into the array
       reminders.push(cursor.value);
@@ -311,7 +337,7 @@ function scheduleReminders() {
           new Notification(reminder.title, options);
           if (reminder.status === 'active') {
             reminder.status = 'completed';
-          }else if(reminder.status === 'recurring'){
+          } else if (reminder.status === 'recurring') {
             const nextOccurance = reminder.time.getTime() + 8.64e7; // update for next day
             reminder.time = new Date(nextOccurance);
           }
@@ -326,7 +352,7 @@ function scheduleReminders() {
 
 // Handle database opening success
 request.onsuccess = function (event) {
-  remindersDb = event.target.result;
+  remindersDb = (event.target as IDBOpenDBRequest).result;
 
   clearCompletedReminders(remindersDb);
 
@@ -336,11 +362,17 @@ request.onsuccess = function (event) {
 
 // Handle database opening error
 request.onerror = function (event) {
-  __electronLog.error('Error opening database:', event.target.error);
+  const error = (event.target as IDBOpenDBRequest).error;
+  __electronLog.error('Error opening database:', error);
   showAppToast('Error opening reminders database');
 };
 
-function addReminder(title, time, isRecurring, description = '') {
+function addReminder(
+  title: string,
+  time: Date,
+  isRecurring: boolean,
+  description = ''
+) {
   // Start a database transaction
   const transaction = remindersDb.transaction(['reminders'], 'readwrite');
 
@@ -366,13 +398,15 @@ function addReminder(title, time, isRecurring, description = '') {
 
   addRequest.onerror = function (event) {
     showAppToast('Failed to Add reminder');
-    __electronLog.error('Error adding reminder:', event.target.error);
+    __electronLog.error(
+      'Error adding reminder:',
+      (event.target as IDBOpenDBRequest).error
+    );
   };
 }
 
 // eslint-disable-next-line no-unused-vars
-function deleteReminder(reminderId) {
-
+function deleteReminder(reminderId: ReminderId) {
   // Start a transaction to read data
   const transaction = remindersDb.transaction(['reminders'], 'readwrite');
 
@@ -383,10 +417,9 @@ function deleteReminder(reminderId) {
   renderReminder();
 }
 
-/**
- * @type {HTMLDialogElement}
- */
-const remindersModal = document.getElementById('remindersModal');
+const remindersModal = document.getElementById(
+  'remindersModal'
+) as HTMLDialogElement;
 const newReminderBtn = document.getElementById('newReminderBtn');
 const cancelAddReminderBtn = document.getElementById('cancelAddReminderBtn');
 const addReminderBtn = document.getElementById('addReminderBtn');
@@ -398,15 +431,21 @@ function closeRemindersModal() {
 // Handle add reminders
 addReminderBtn.addEventListener('click', (ev) => {
   ev.preventDefault();
-  const reminderTitleInput = document.getElementById('reminderTitleInput');
-  const reminderTimeInput = document.getElementById('reminderTimeInput');
+  const reminderTitleInput = document.getElementById(
+    'reminderTitleInput'
+  ) as HTMLInputElement;
+  const reminderTimeInput = document.getElementById(
+    'reminderTimeInput'
+  ) as HTMLInputElement;
   const reminderTitleInputError = document.getElementById(
     'reminderTitleInputError'
   );
   const reminderTimeInputError = document.getElementById(
     'reminderTimeInputError'
   );
-  const isRecurringReminder = document.getElementById('isRecurringReminder');
+  const isRecurringReminder = document.getElementById(
+    'isRecurringReminder'
+  ) as HTMLInputElement;
   if (reminderTitleInput.checkValidity() === false) {
     reminderTitleInput.classList.contains('validation-error') === false
       ? reminderTitleInput.classList.add('validation-error')
@@ -514,22 +553,22 @@ function showNotification() {
 }
 
 function showAskPermissionButton() {
-  askPermissionButton.style.opacity = 1;
+  askPermissionButton.style.opacity = '1';
   askPermissionButton.style.visibility = 'visible';
 }
 
 function hideAskPermissionButton() {
-  askPermissionButton.style.opacity = 0;
+  askPermissionButton.style.opacity = '0';
   askPermissionButton.style.visibility = 'hidden';
 }
 
 function showCountdownTimer() {
-  countdownTimer.style.opacity = 1;
+  countdownTimer.style.opacity = '1';
   countdownTimer.style.visibility = 'visible';
 }
 
 function hideCountdownTimer() {
-  countdownTimer.style.opacity = 0;
+  countdownTimer.style.opacity = '0';
   countdownTimer.style.visibility = 'hidden';
 }
 
@@ -541,12 +580,12 @@ function clearIntervals() {
 }
 
 // Function to reset the countdown time
-function resetCountdownTime(time) {
+function resetCountdownTime(time: number) {
   countdownTimeRemaining = time;
 }
 
 // Function to update the countdown timer
-function updateCountdownTimer(intervalHours) {
+function updateCountdownTimer(intervalHours: number) {
   countdownTimeRemaining -= 1000; // Subtract 1 second (1000 milliseconds) from the remaining time
 
   if (countdownTimeRemaining <= 0) {
@@ -573,7 +612,7 @@ function updateCountdownTimer(intervalHours) {
   }
 }
 
-function startCountdown(intervalHours, timeUntilNextHour) {
+function startCountdown(intervalHours: number, timeUntilNextHour: number) {
   resetCountdownTime(timeUntilNextHour);
   updateCountdownTimer(intervalHours);
   countdownInterval = setInterval(
@@ -582,7 +621,10 @@ function startCountdown(intervalHours, timeUntilNextHour) {
   );
 }
 
-function scheduleNextNotification(intervalHours, timeUntilNextHour) {
+function scheduleNextNotification(
+  intervalHours: number,
+  timeUntilNextHour: number
+) {
   __electronLog.info(
     'Scheduling next notification after ',
     Math.round(timeUntilNextHour / (1000 * 60)),
@@ -618,16 +660,16 @@ function scheduleNextNotification(intervalHours, timeUntilNextHour) {
         ' hour(s)'
       );
       resetCountdownTime(intervalHours * 60 * 60 * 1000); // Reset the countdown to 1 hour
-      updateCountdownTimer();
+      updateCountdownTimer(intervalHours);
     }, intervalHours * 60 * 60 * 1000); // Repeat every hour
   }, timeUntilNextHour);
 }
 
-function setNextNotificationInterval(intervalHours) {
+function setNextNotificationInterval(intervalHours: number) {
   const now = new Date();
   const nextHour = new Date(now);
   nextHour.setHours(nextHour.getHours() + intervalHours, 0, 0, 0);
-  return nextHour - now;
+  return nextHour.getTime() - now.getTime();
 }
 
 // Schedule hourly notifications
@@ -698,8 +740,21 @@ function handleOnlineStatus() {
   }
 }
 
+// Function to show the toast notification
+function showAppToast(message: string) {
+    const toastNotification = document.getElementById('toastNotification');
+    toastNotification.innerText = message;
+    toastNotification.classList.add('show');
+    setTimeout(() => {
+        toastNotification.classList.remove('show');
+    }, 5000); // Hide the toast after 5 seconds
+}
+
 // Function to set CSS properties for an element with fade-in animation
-function setElementPropertiesWithFadeIn(element, displayValue) {
+function setElementPropertiesWithFadeIn(
+  element: HTMLElement,
+  displayValue: string
+) {
   element.style.display = displayValue;
   element.style.opacity = '0'; // Initially set opacity to 0
 
@@ -709,7 +764,7 @@ function setElementPropertiesWithFadeIn(element, displayValue) {
   }, 10);
 }
 
-function initializeSettingsForm(settingsArg) {
+function initializeSettingsForm(settingsArg: Settings) {
   // Set the notification status based on the loaded setting
   if (settingsArg.isOff !== undefined && settingsArg.isOff !== null) {
     allowNotificationCheckbox.checked = !settingsArg.isOff;
@@ -722,7 +777,9 @@ function initializeSettingsForm(settingsArg) {
 
   // Set the selected option based on the loaded setting
   if (settingsArg.notificationSound) {
-    document.querySelector(`#${settingsArg.notificationSound}`).checked = true;
+    document.querySelector<HTMLInputElement>(
+      `#${settingsArg.notificationSound}`
+    ).checked = true;
   }
 
   // Set the selected option based on the loaded setting
@@ -732,7 +789,7 @@ function initializeSettingsForm(settingsArg) {
 
   // Set the state of the allow notification setting
   if (settingsArg.interval) {
-    allowNotificationCheckbox.checked = settingsArg.interval;
+    allowNotificationCheckbox.checked = !!settingsArg.interval;
   }
 
   // Set the  title text
@@ -762,8 +819,10 @@ function initializeSettingsForm(settingsArg) {
 }
 
 // Function to load content based on the URL
-function loadContent(url) {
-  const containers = document.getElementsByClassName('container');
+function loadContent(url: string) {
+  const containers = document.getElementsByClassName(
+    'container'
+  ) as HTMLCollectionOf<HTMLDivElement>;
   settings = getSettingsFromLocalStorage();
 
   for (const container of containers) {
@@ -798,9 +857,9 @@ function loadContent(url) {
 }
 
 // Function to handle navigation
-function handleNavigation(event) {
+function handleNavigation(event: Event) {
   event.preventDefault();
-  const url = event.target.getAttribute('href');
+  const url = (event.target as HTMLElement).getAttribute('href');
   history.pushState(null, null, url); // Update the URL
   loadContent(url); // Load the content
 }
@@ -822,10 +881,10 @@ window.addEventListener('popstate', () => {
 loadContent('/');
 
 // JavaScript function to open a specific tab
-function openTab(evt, tabName) {
+function openTab(evt: Event, tabName: string) {
   // Hide all tab content
   const tabcontent = document.getElementsByClassName('tabcontent');
-  for (i = 0; i < tabcontent.length; i++) {
+  for (let i = 0; i < tabcontent.length; i++) {
     tabcontent[i].classList.remove('tabcontent-active');
   }
 
@@ -837,67 +896,85 @@ function openTab(evt, tabName) {
 
   // Show the selected tab content and mark the button as active
   document.getElementById(tabName).classList.add('tabcontent-active');
-  evt.currentTarget.classList.add('active');
+  (evt.currentTarget as HTMLElement).classList.add('active');
 }
 
 sound1Audio.addEventListener('ended', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound1').parentElement.querySelector(
-    '.secondary-action'
-  ).style.display = 'none';
+  document
+    .querySelector('input#sound1')
+    .parentElement.querySelector<HTMLDivElement>(
+      '.secondary-action'
+    ).style.display = 'none';
 });
 sound2Audio.addEventListener('ended', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound2').parentElement.querySelector(
-    '.secondary-action'
-  ).style.display = 'none';
+  document
+    .querySelector('input#sound2')
+    .parentElement.querySelector<HTMLDivElement>(
+      '.secondary-action'
+    ).style.display = 'none';
 });
 sound3Audio.addEventListener('ended', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound3').parentElement.querySelector(
-    '.secondary-action'
-  ).style.display = 'none';
+  document
+    .querySelector('input#sound3')
+    .parentElement.querySelector<HTMLDivElement>(
+      '.secondary-action'
+    ).style.display = 'none';
 });
 
 sound1Audio.addEventListener('pause', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound1').parentElement.querySelector(
-    '.secondary-action'
-  ).style.display = 'none';
+  document
+    .querySelector('input#sound1')
+    .parentElement.querySelector<HTMLDivElement>(
+      '.secondary-action'
+    ).style.display = 'none';
 });
 sound2Audio.addEventListener('pause', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound2').parentElement.querySelector(
-    '.secondary-action'
-  ).style.display = 'none';
+  document
+    .querySelector('input#sound2')
+    .parentElement.querySelector<HTMLDivElement>(
+      '.secondary-action'
+    ).style.display = 'none';
 });
 sound3Audio.addEventListener('pause', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound3').parentElement.querySelector(
-    '.secondary-action'
-  ).style.display = 'none';
+  document
+    .querySelector('input#sound3')
+    .parentElement.querySelector<HTMLDivElement>(
+      '.secondary-action'
+    ).style.display = 'none';
 });
 
 sound1Audio.addEventListener('play', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound1').parentElement.querySelector(
-    '.secondary-action'
-  ).style.display = 'block';
+  document
+    .querySelector('input#sound1')
+    .parentElement.querySelector<HTMLDivElement>(
+      '.secondary-action'
+    ).style.display = 'block';
 });
 sound2Audio.addEventListener('play', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound2').parentElement.querySelector(
-    '.secondary-action'
-  ).style.display = 'block';
+  document
+    .querySelector('input#sound2')
+    .parentElement.querySelector<HTMLDivElement>(
+      '.secondary-action'
+    ).style.display = 'block';
 });
 sound3Audio.addEventListener('play', (e) => {
   e.preventDefault();
-  document.querySelector('input#sound3').parentElement.querySelector(
-    '.secondary-action'
-  ).style.display = 'block';
+  document
+    .querySelector('input#sound3')
+    .parentElement.querySelector<HTMLDivElement>(
+      '.secondary-action'
+    ).style.display = 'block';
 });
 
-function playAudio(target) {
+function playAudio(target: string) {
   sound1Audio.pause();
   sound2Audio.pause();
   sound3Audio.pause();
@@ -926,7 +1003,7 @@ function playAudio(target) {
 notificationSoundOptions.forEach((option) => {
   option.addEventListener('change', (e) => {
     e.preventDefault();
-    const target = e.target;
+    const target = e.target as HTMLInputElement;
     const selectedSound = target.value;
 
     settings.notificationSound = selectedSound;
@@ -934,11 +1011,12 @@ notificationSoundOptions.forEach((option) => {
     playAudio(selectedSound);
   });
   option.addEventListener('click', (e) => {
-    const target = e.target;
+    const target = e.target as HTMLInputElement;
     const selectedSound = target.value;
     if (
-      e.target.checked &&
-      document.querySelector(`audio#${selectedSound}Audio`).paused
+      target.checked &&
+      document.querySelector<HTMLAudioElement>(`audio#${selectedSound}Audio`)
+        .paused
     ) {
       playAudio(selectedSound);
     }
@@ -967,7 +1045,7 @@ previewNotificationBtn.addEventListener('click', (e) => {
     if (Notification.permission === 'granted') {
       showNotification();
     } else if (
-      Notification.permission !== 'granted' &&
+      Notification.permission !== 'default' &&
       Notification.permission !== 'denied'
     ) {
       Notification.requestPermission()
@@ -1029,14 +1107,14 @@ askPermissionButton.addEventListener('click', () => {
 
 allowNotificationCheckbox.addEventListener('change', (e) => {
   e.preventDefault();
-  settings.isOff = !e.currentTarget.checked;
+  settings.isOff = !(e.currentTarget as HTMLInputElement).checked;
   saveSettingsToLocalStorage(settings);
   scheduleNotifications();
 });
 
 autoLaunchCheckbox.addEventListener('change', (e) => {
   e.preventDefault();
-  settings.autoLaunch = e.currentTarget.checked;
+  settings.autoLaunch = (e.currentTarget as HTMLInputElement).checked;
   saveSettingsToLocalStorage(settings);
   scheduleNotifications();
 });
