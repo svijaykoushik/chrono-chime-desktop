@@ -1,38 +1,49 @@
 {
-    "env": {
-        "browser": true
-    },
-    "rules": {
-        "semi": ["error", "always"],
-        "no-var": "error",
-        "no-unused-vars": [
-            "error",
-            {
-                "vars": "all",
-                "args": "after-used",
-                "ignoreRestSiblings": true
-            }
-        ],
-        "guard-for-in": "error",
-        "prefer-const": [
-            "warn",
-            {
-                "destructuring": "all"
-            }
-        ],
-        "quotes": ["error", "single", { "avoidEscape": true }],
-        "arrow-parens": ["error", "always"],
-        "no-use-before-define": [
-          "error",
-          {
-            "variables": true,
-            "functions": true
-          }
-        ],
-        "func-style": ["error", "declaration"]
-    },
-    "parserOptions": {
-        "ecmaVersion": 2020,
-        "sourceType": "module"
-    }
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended",
+    "plugin:import/electron",
+    "plugin:import/typescript"
+  ],
+  "rules": {
+    "semi": ["error", "always"],
+    "no-var": "error",
+    "no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "args": "after-used",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "guard-for-in": "error",
+    "prefer-const": [
+      "warn",
+      {
+        "destructuring": "all"
+      }
+    ],
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "arrow-parens": ["error", "always"],
+    "no-use-before-define": [
+      "error",
+      {
+        "variables": true,
+        "functions": true
+      }
+    ],
+    "func-style": ["error", "declaration"]
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  }
 }
