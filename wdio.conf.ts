@@ -20,16 +20,16 @@ exports.config = {
     // The path of the spec files will be resolved relative from the directory of
     // of the config file unless it's absolute.
     //
-    specs: ['./test/specs/**/*.js'],
+    specs: ['./test/specs/**/*.ts'],
     suites: {
-        app: ['./test/specs/app.e2e.js'],
-        appDrawer: ['./test/specs/app-drawer.e2e.js'],
-        navigation: ['./test/specs/navigation.e2e.js'],
+        app: ['./test/specs/app.e2e.ts'],
+        appDrawer: ['./test/specs/app-drawer.e2e.ts'],
+        navigation: ['./test/specs/navigation.e2e.ts'],
         settings: [
-            './test/specs/settings/navigation.e2e.js',
-            './test/specs/settings/general.e2e.js',
-            './test/specs/settings/sound.e2e.js',
-            './test/specs/settings/notification-content.e2e.js',
+            './test/specs/settings/navigation.e2e.ts',
+            './test/specs/settings/general.e2e.ts',
+            './test/specs/settings/sound.e2e.ts',
+            './test/specs/settings/notification-content.e2e.ts',
         ],
     },
     // Patterns to exclude.
