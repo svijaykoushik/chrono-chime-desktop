@@ -1,11 +1,6 @@
 //#region declarations
 const DAY_IN_MS = 8.64e7;
 
-let notificationInterval: NodeJS.Timeout; // Store the interval ID for the notification timer
-let countdownInterval: NodeJS.Timeout; // Store the interval ID for the countdown timer
-let countdownTimeRemaining = 0; // Global variable to store the countdown time in milliseconds
-let nextHourTimeout: NodeJS.Timeout; // Store the timeout ID of the next hour timeout
-
 const intervalSelect = document.getElementById('interval') as HTMLSelectElement;
 const notificationTitleText = document.getElementById(
   'notificationTitle'
@@ -75,45 +70,11 @@ const defaultSettings: Settings = {
 //#endregion
 
 function getSettingsFromLocalStorage() {
-  // Retrieve the JSON string from localStorage
-  const settingsJSON = localStorage.getItem('settings');
-
-  // Parse the JSON string to get the settings object
-  let settings: Settings = JSON.parse(settingsJSON);
-
-  if (settings) {
-    // Add new settings options if missing in
-    // stored settings
-    const mergedSettings: Settings = Object.assign(
-      {},
-      defaultSettings,
-      settings
-    );
-
-    return mergedSettings;
-  }
-
-  return settings;
+  return window.settings.getSettings();
 }
 
 function saveSettingsToLocalStorage(settings: Settings) {
-  // Add new settings options if missing in
-  // stored settings
-
-  const mergedSettings: Settings = Object.assign({}, defaultSettings, settings);
-
-  // Convert the settings object to a JSON string
-  const settingsJSON = JSON.stringify(mergedSettings);
-
-  // Save the JSON string to localStorage under the key 'settings'
-  localStorage.setItem('settings', settingsJSON);
-
-  // Send the notification status to main process
-  window.toggleNotification.sendResponse(!settings.isOff);
-
-  // Send the auto launch status to main process
-  window.autoLauncher.sendResponse(settings.autoLaunch);
-
+  window.settings.saveSettings(settings);
   // Show a toast message
   showAppToast('✅ Settings saved.');
 }
@@ -511,213 +472,7 @@ cancelAddReminderBtn.addEventListener('click', (ev) => {
 });
 //#endregion
 
-// Function to show the notification and play the sound
-function showNotification() {
-  const options = {
-    body: settings.notificationContent,
-    icon: 'chrono-chime-icon-192.png', // Replace with the path to your notification icon (192x192 pixels)
-    vibrate: [200, 100, 200], // Vibration pattern (optional)
-    // Add other notification options here if needed
-  };
-
-  // Play the notification sound
-  let sound = 'notification.mp3';
-  switch (settings.notificationSound) {
-    case 'sound1':
-      sound = 'notification.mp3';
-      break;
-    case 'sound2':
-      sound = 'notification2.wav';
-      break;
-    case 'sound3':
-      sound = 'notification3.wav';
-      break;
-    case 'mute':
-      sound = '';
-      break;
-    default:
-      sound = 'notification.mp3';
-  }
-  if (sound !== '') {
-    const notificationSound = new Audio(sound); // Replace with your notification sound file
-
-    // Set volume to 75 %
-    notificationSound.volume = 0.7;
-    notificationSound.play();
-  }
-
-  // Send the notification
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(settings.notificationTitle, options);
-  }
-}
-
-function showAskPermissionButton() {
-  askPermissionButton.style.opacity = '1';
-  askPermissionButton.style.visibility = 'visible';
-}
-
-function hideAskPermissionButton() {
-  askPermissionButton.style.opacity = '0';
-  askPermissionButton.style.visibility = 'hidden';
-}
-
-function showCountdownTimer() {
-  countdownTimer.style.opacity = '1';
-  countdownTimer.style.visibility = 'visible';
-}
-
-function hideCountdownTimer() {
-  countdownTimer.style.opacity = '0';
-  countdownTimer.style.visibility = 'hidden';
-}
-
-function clearIntervals() {
-  __electronLog.info('Clearing intervals');
-  clearTimeout(nextHourTimeout);
-  clearInterval(notificationInterval);
-  clearInterval(countdownInterval);
-}
-
-// Function to reset the countdown time
-function resetCountdownTime(time: number) {
-  countdownTimeRemaining = time;
-}
-
-// Function to update the countdown timer
-function updateCountdownTimer(intervalHours: number) {
-  countdownTimeRemaining -= 1000; // Subtract 1 second (1000 milliseconds) from the remaining time
-
-  if (countdownTimeRemaining <= 0) {
-    // Countdown reached zero or became negative, stop the interval
-    clearInterval(countdownInterval);
-
-    // Reset the countdown time to 1 hour and update the countdown timer accordingly
-    resetCountdownTime(intervalHours * 60 * 60 * 1000);
-    updateCountdownTimer(intervalHours);
-  } else {
-    // Calculate the countdown time (in hours, minutes and seconds)
-    const hours = Math.floor(countdownTimeRemaining / (1000 * 60 * 60));
-    const minutes = Math.floor(
-      (countdownTimeRemaining % (1000 * 60 * 60)) / (1000 * 60)
-    );
-    const seconds = Math.floor((countdownTimeRemaining % (1000 * 60)) / 1000);
-
-    // Update the countdown timer on the HTML element with ID 'countdownTimer'
-    let text = `Next notification in ${minutes}m ${seconds}s`;
-    if (hours > 0) {
-      text = `Next notification in ${hours}h ${minutes}m ${seconds}s`;
-    }
-    countdownTimer.textContent = text;
-  }
-}
-
-function startCountdown(intervalHours: number, timeUntilNextHour: number) {
-  resetCountdownTime(timeUntilNextHour);
-  updateCountdownTimer(intervalHours);
-  countdownInterval = setInterval(
-    () => updateCountdownTimer(intervalHours),
-    1000
-  );
-}
-
-function scheduleNextNotification(
-  intervalHours: number,
-  timeUntilNextHour: number
-) {
-  __electronLog.info(
-    'Scheduling next notification after ',
-    Math.round(timeUntilNextHour / (1000 * 60)),
-    ' minutes'
-  );
-  nextHourTimeout = setTimeout(() => {
-    __electronLog.info(
-      'Reached next hour with ID',
-      nextHourTimeout,
-      'and dispatched notification'
-    );
-    showNotification();
-    __electronLog.info('Resetting countdown timer');
-    resetCountdownTime(intervalHours * 60 * 60 * 1000);
-    updateCountdownTimer(intervalHours);
-
-    __electronLog.info(
-      'Scheduling next notification after ',
-      intervalHours,
-      ' hour(s)'
-    );
-    notificationInterval = setInterval(() => {
-      __electronLog.info(
-        'Dispatching notification after',
-        intervalHours,
-        ' hour(s) with Id ',
-        notificationInterval
-      );
-      showNotification();
-      __electronLog.info(
-        'Resetting countdown timer after ',
-        intervalHours,
-        ' hour(s)'
-      );
-      resetCountdownTime(intervalHours * 60 * 60 * 1000); // Reset the countdown to 1 hour
-      updateCountdownTimer(intervalHours);
-    }, intervalHours * 60 * 60 * 1000); // Repeat every hour
-  }, timeUntilNextHour);
-}
-
-function setNextNotificationInterval(intervalHours: number) {
-  const now = new Date();
-  const nextHour = new Date(now);
-  nextHour.setHours(nextHour.getHours() + intervalHours, 0, 0, 0);
-  return nextHour.getTime() - now.getTime();
-}
-
-// Schedule hourly notifications
-function scheduleNotifications() {
-  if (settings.isOff === true) {
-    showAskPermissionButton();
-    hideCountdownTimer();
-    allowNotificationCheckbox.checked = false;
-
-    // Clear the previous intervals if they exist
-    clearIntervals();
-    return;
-  }
-
-  hideAskPermissionButton();
-  showCountdownTimer();
-
-  allowNotificationCheckbox.checked = true;
-  autoLaunchCheckbox.checked = settings.autoLaunch;
-
-  let intervalHours = 1;
-  switch (settings.interval) {
-    case '1':
-      intervalHours = 1;
-      break;
-    case '2':
-      intervalHours = 2;
-      break;
-    case '3':
-      intervalHours = 3;
-      break;
-    default:
-      intervalHours = 1;
-      break;
-  }
-
-  // Clear the previous intervals if they exist
-  clearIntervals();
-
-  const timeUntilNextHour = setNextNotificationInterval(intervalHours);
-
-  // Start the countdown timer
-  startCountdown(intervalHours, timeUntilNextHour);
-
-  scheduleNextNotification(intervalHours, timeUntilNextHour);
-}
-
-// Show the offline toast notification
+// Function to show the offline toast notification
 function showOfflineToast() {
   const offlineToast = document.getElementById('offlineToast');
   offlineToast.style.opacity = '1';
@@ -750,6 +505,20 @@ function showAppToast(message: string) {
     }, 5000); // Hide the toast after 5 seconds
 }
 
+async function updateNotificationUI() {
+  const settings = await window.settings.getSettings();
+  const permission = await Notification.requestPermission();
+
+  if (permission === 'granted' && !settings.isOff) {
+    askPermissionButton.style.display = 'none';
+    countdownTimer.style.display = 'block';
+  } else {
+    askPermissionButton.style.display = 'block';
+    countdownTimer.style.display = 'none';
+  }
+}
+
+
 // Function to set CSS properties for an element with fade-in animation
 function setElementPropertiesWithFadeIn(
   element: HTMLElement,
@@ -764,7 +533,8 @@ function setElementPropertiesWithFadeIn(
   }, 10);
 }
 
-function initializeSettingsForm(settingsArg: Settings) {
+async function initializeSettingsForm() {
+  const settingsArg = await window.settings.getSettings();
   // Set the notification status based on the loaded setting
   if (settingsArg.isOff !== undefined && settingsArg.isOff !== null) {
     allowNotificationCheckbox.checked = !settingsArg.isOff;
@@ -818,12 +588,11 @@ function initializeSettingsForm(settingsArg: Settings) {
   }
 }
 
-// Function to load content based on the URL
-function loadContent(url: string) {
+async function loadContent(url: string) {
   const containers = document.getElementsByClassName(
     'container'
   ) as HTMLCollectionOf<HTMLDivElement>;
-  settings = getSettingsFromLocalStorage();
+  settings = await window.settings.getSettings();
 
   for (const container of containers) {
     if (
@@ -836,6 +605,9 @@ function loadContent(url: string) {
     }
   }
 
+  // Update the notification UI
+  updateNotificationUI();
+
   // Check if the URL matches the "/settings" route
   if (url === '/settings') {
     // Automatically open the 'General' tab when the page loads
@@ -843,15 +615,12 @@ function loadContent(url: string) {
     document.getElementById('generalTabLink').classList.add('active');
 
     // load settings from local storage and populate the form
-    settings = getSettingsFromLocalStorage();
+    await initializeSettingsForm();
     scheduleNotifications();
-    initializeSettingsForm(settings);
   } else if (url === '/reminders') {
-    settings = getSettingsFromLocalStorage();
     scheduleNotifications();
     renderReminder();
   } else {
-    settings = getSettingsFromLocalStorage();
     scheduleNotifications();
   }
 }
@@ -1043,7 +812,11 @@ previewNotificationBtn.addEventListener('click', (e) => {
   e.preventDefault();
   if ('Notification' in window) {
     if (Notification.permission === 'granted') {
-      showNotification();
+      new Notification(settings.notificationTitle, {
+        body: settings.notificationContent,
+        icon: 'chrono-chime-icon-192.png',
+        vibrate: [200, 100, 200],
+      });
     } else if (
       Notification.permission !== 'default' &&
       Notification.permission !== 'denied'
@@ -1067,11 +840,11 @@ previewNotificationBtn.addEventListener('click', (e) => {
   }
 });
 
-resetSettingsButton.addEventListener('click', (e) => {
+resetSettingsButton.addEventListener('click', async (e) => {
   e.preventDefault();
   saveSettingsToLocalStorage(defaultSettings);
-  settings = getSettingsFromLocalStorage();
-  initializeSettingsForm(settings);
+  settings = await window.settings.getSettings();
+  initializeSettingsForm();
 });
 
 function toggleButtonPosition() {
@@ -1099,17 +872,24 @@ toggleButton.addEventListener('click', () => {
 });
 
 // Allow notification permission
-askPermissionButton.addEventListener('click', () => {
-  settings.isOff = false;
-  saveSettingsToLocalStorage(settings);
-  scheduleNotifications();
+askPermissionButton.addEventListener('click', async () => {
+  const permission = await Notification.requestPermission();
+  if (permission === 'granted') {
+    const settings = await window.settings.getSettings();
+    settings.isOff = false;
+    saveSettingsToLocalStorage(settings);
+    scheduleNotifications();
+    updateNotificationUI();
+  }
 });
 
-allowNotificationCheckbox.addEventListener('change', (e) => {
+allowNotificationCheckbox.addEventListener('change', async (e) => {
   e.preventDefault();
+  const settings = await window.settings.getSettings();
   settings.isOff = !(e.currentTarget as HTMLInputElement).checked;
   saveSettingsToLocalStorage(settings);
   scheduleNotifications();
+  updateNotificationUI();
 });
 
 autoLaunchCheckbox.addEventListener('change', (e) => {
@@ -1161,19 +941,6 @@ window.versions.onAppVersionRecived((e, data) => {
 
 window.ipcNav.onLocationReceived((e, data) => {
   loadContent(data);
-});
-
-window.toggleNotification.onStatusChanged((e, data) => {
-  settings.isOff = !data;
-  saveSettingsToLocalStorage(settings);
-  scheduleNotifications();
-});
-
-// Subscribe to autolaunch settings changes
-window.autoLauncher.onStatusChanged((e, data) => {
-  settings.autoLaunch = data;
-  saveSettingsToLocalStorage(settings);
-  scheduleNotifications();
 });
 
 // Initialize the online status when the page loads

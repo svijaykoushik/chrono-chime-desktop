@@ -15,6 +15,9 @@ import started from 'electron-squirrel-startup';
 import * as log from 'electron-log/main';
 import { updateElectronApp } from 'update-electron-app';
 import AutoLaunch from 'auto-launch';
+import { clock } from './core/clock/clock';
+import { settingsManager } from './core/settings-manager';
+import { notificationScheduler } from './core/notification-scheduler';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -121,22 +124,14 @@ app.whenReady().then(() => {
   log.info('App launched');
   createWindow();
 
-  app.on('activate', () => {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
+  // Start the clock
+  clock.start();
 
-  // Hide the default menu bar
-  Menu.setApplicationMenu(null);
+  // Initialize the notification scheduler
+  notificationScheduler.scheduleNotifications();
 
-  // The tray icon
-  const icon = nativeImage.createFromPath(
-    join(__dirname, 'chrono-chime-icon-32.png')
-  );
-
-  // Create a tray icon with context menu
-  trayIcon = new Tray(icon);
+  // Set the context menu
+  const settings = settingsManager.getSettings();
   const contextMenu = Menu.buildFromTemplate([
     {
       id: 'open-main-window',
@@ -160,19 +155,25 @@ app.whenReady().then(() => {
       id: 'disable-notification',
       label: 'Disable Notification',
       click: () => {
-        mainWindow.webContents.send('toggle-notification', false);
+        const currentSettings = settingsManager.getSettings();
+        currentSettings.isOff = true;
+        settingsManager.saveSettings(currentSettings);
+        notificationScheduler.scheduleNotifications();
       },
       icon: join(__dirname, 'notification-disabled.png'),
-      visible: true,
+      visible: !settings.isOff,
     },
     {
       id: 'enable-notification',
       label: 'Enable notification',
       click: () => {
-        mainWindow.webContents.send('toggle-notification', true);
+        const currentSettings = settingsManager.getSettings();
+        currentSettings.isOff = false;
+        settingsManager.saveSettings(currentSettings);
+        notificationScheduler.scheduleNotifications();
       },
       icon: join(__dirname, 'notification-enabled.png'),
-      visible: false,
+      visible: settings.isOff,
     },
     {
       id: 'app-settings',
@@ -197,65 +198,13 @@ app.whenReady().then(() => {
     },
   ]);
   trayIcon.setContextMenu(contextMenu);
-  trayIcon.setTitle('ChronoChime');
-  trayIcon.setToolTip('ChronoChime - Time Keeper Extraordinaire');
 
-  // Toggle context menu item visibility based on main window visibility
-  mainWindow.on('show', () => {
-    log.info('Handling show event of main window');
-    contextMenu.getMenuItemById('open-main-window').visible = false;
-    contextMenu.getMenuItemById('minimize-main-window').visible = true;
-    trayIcon.setContextMenu(contextMenu);
-  });
-
-  mainWindow.on('hide', () => {
-    log.info('Handling hide event of main window');
-    contextMenu.getMenuItemById('open-main-window').visible = true;
-    contextMenu.getMenuItemById('minimize-main-window').visible = false;
-    trayIcon.setContextMenu(contextMenu);
-    const minimizedToTrayNotification = new Notification({
-      title: 'ChronoChime is Running in the Background',
-      body:
-        'ChronoChime is now running discreetly in the background.' +
-        ' Rest assured, it will continue to notify you promptly',
-      icon: join(__dirname, '.chrono-chime-icon-512.png'),
-    });
-    minimizedToTrayNotification.show();
-  });
-
-  ipcMain.on('notification-status', (_event, data) => {
-    if (data === true) {
-      contextMenu.getMenuItemById('disable-notification').visible = true;
-      contextMenu.getMenuItemById('enable-notification').visible = false;
-      trayIcon.setContextMenu(contextMenu);
-    } else {
-      contextMenu.getMenuItemById('disable-notification').visible = false;
-      contextMenu.getMenuItemById('enable-notification').visible = true;
-      trayIcon.setContextMenu(contextMenu);
-    }
-  });
-
-  ipcMain.on('auto-launch-status', (_event, data) => {
-    if (data === true) {
-      (async () => {
-        if ((await autoLauncher.isEnabled()) === false) {
-          await autoLauncher.enable().catch(() =>
-            // failed to enable auto launcher
-            // send message to reset the ui
-            mainWindow.webContents.send('auto-launch-status', false)
-          );
-        }
-      })();
-    } else {
-      (async () => {
-        if ((await autoLauncher.isEnabled()) === true) {
-          await autoLauncher.disable().catch(() =>
-            // failed to disable auto launcher
-            // send message to reset the ui
-            mainWindow.webContents.send('auto-launch-status', true)
-          );
-        }
-      })();
+  // Handle auto-launch
+  autoLauncher.isEnabled().then((isEnabled) => {
+    if (settings.autoLaunch && !isEnabled) {
+      autoLauncher.enable();
+    } else if (!settings.autoLaunch && isEnabled) {
+      autoLauncher.disable();
     }
   });
 });

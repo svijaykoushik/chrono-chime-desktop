@@ -10,7 +10,6 @@
     "baseUrl": ".",
     "outDir": "dist",
     "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "typeRoots": ["./types"]
+    "resolveJsonModule": true
   }
 }

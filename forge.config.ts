@@ -1,6 +1,6 @@
-const { join } = require('path');
+import { join } from 'path';
 
-module.exports = {
+export default {
   packagerConfig: {
     appCopyright: 'Copyright © 2023 Vijaykoushik, S. All rights reserved.',
     asar: true,

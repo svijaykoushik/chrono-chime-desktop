@@ -21,22 +21,12 @@ contextBridge.exposeInMainWorld('ipcNav', {
   },
 });
 
-contextBridge.exposeInMainWorld('toggleNotification', {
-  onStatusChanged: (
-    listener: (event: Electron.IpcRendererEvent, data: boolean) => void
+contextBridge.exposeInMainWorld('settings', {
+  getSettings: () => ipcRenderer.invoke('get-settings'),
+  saveSettings: (settings: unknown) => ipcRenderer.send('save-settings', settings),
+  onCountdownUpdate: (
+    listener: (event: Electron.IpcRendererEvent, data: string) => void
   ) => {
-    ipcRenderer.on('toggle-notification', listener);
+    ipcRenderer.on('countdown-update', listener);
   },
-  sendResponse: (notificationStatus: boolean) =>
-    ipcRenderer.send('notification-status', notificationStatus),
-});
-
-contextBridge.exposeInMainWorld('autoLauncher', {
-  onStatusChanged: (
-    listener: (event: Electron.IpcRendererEvent, data: boolean) => void
-  ) => {
-    ipcRenderer.on('auto-launch-status', listener);
-  },
-  sendResponse: (status: boolean) =>
-    ipcRenderer.send('auto-launch-status', status),
 });
