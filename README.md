@@ -41,8 +41,13 @@ npm install
 npm start        # launch the app with HMR (requires a desktop session)
 npm test         # run the Vitest suite (68 tests)
 npm run typecheck
-npm run package  # build a distributable package
+npm run package  # build the unpacked app folder (out/ChronoChime-<platform>-<arch>/)
+npm run make     # build installers: .deb (Linux) / Squirrel .exe (Windows)
 ```
+
+ChronoChime targets **Windows and Linux only**. See
+[`docs/README.md`](docs/README.md) for the full documentation index, including
+[Packaging & Distribution](docs/build/packaging-and-distribution.md).
 
 ## License
 

@@ -1,10 +1,14 @@
 const { VitePlugin } = require('@electron-forge/plugin-vite');
 const { AutoUnpackNativesPlugin } = require('@electron-forge/plugin-auto-unpack-natives');
-const { MakerZIP } = require('@electron-forge/maker-zip');
+const { MakerSquirrel } = require('@electron-forge/maker-squirrel');
+const { MakerDeb } = require('@electron-forge/maker-deb');
 
 module.exports = {
   packagerConfig: {
     asar: true,
+    // Lowercase binary name so the Linux .deb (package name "chronochime")
+    // finds its executable; also a conventional Linux binary name.
+    executableName: 'chronochime',
     icon: './assets/icons/chrono-chime-icon',
     // The Vite plugin bundles our code, but externalized native modules
     // (better-sqlite3) and runtime assets (icons, sounds) must still ship.
@@ -19,7 +23,29 @@ module.exports = {
     },
   },
   rebuildConfig: {},
-  makers: [new MakerZIP({}, ['darwin', 'linux', 'win32'])],
+  // ChronoChime targets Windows and Linux only.
+  makers: [
+    // Windows installer (.exe / .nupkg) — build on Windows, or on Linux with mono + wine.
+    new MakerSquirrel({
+      name: 'ChronoChime',
+      setupIcon: './assets/icons/chrono-chime-icon.ico',
+    }),
+    // Linux Debian package (.deb) — requires `dpkg` and `fakeroot` on the build host.
+    new MakerDeb(
+      {
+        options: {
+          name: 'chronochime',
+          productName: 'ChronoChime',
+          genericName: 'Reminder',
+          maintainer: 'Vijaykoushik, S',
+          homepage: 'https://github.com/svijaykoushik/chrono-chime-desktop',
+          categories: ['Utility'],
+          icon: './assets/icons/chrono-chime-icon-512.png',
+        },
+      },
+      ['linux'],
+    ),
+  ],
   plugins: [
     new AutoUnpackNativesPlugin({}),
     new VitePlugin({
