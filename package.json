@@ -1,0 +1,51 @@
+{
+  "name": "chronochime",
+  "productName": "ChronoChime",
+  "version": "2.0.0",
+  "description": "Reliably notify people when their chosen temporal conditions become true.",
+  "license": "MIT",
+  "main": ".vite/build/main.js",
+  "scripts": {
+    "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
+    "rebuild:node": "npm rebuild better-sqlite3",
+    "prestart": "npm run rebuild:electron",
+    "start": "electron-forge start",
+    "prepackage": "npm run rebuild:electron",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "pretest": "npm run rebuild:node",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^6.5.0",
+    "@mui/material": "^6.5.0",
+    "better-sqlite3": "^11.10.0",
+    "drizzle-orm": "^0.38.4",
+    "luxon": "^3.5.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-zip": "^7.11.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
+    "@electron-forge/plugin-vite": "^7.11.2",
+    "@electron/rebuild": "^3.7.2",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/luxon": "^3.4.2",
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "electron": "^33.4.11",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.8"
+  }
+}
