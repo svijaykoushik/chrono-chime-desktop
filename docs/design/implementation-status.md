@@ -7,7 +7,7 @@ implements it → the tests that prove it. All tests run with `npm test` (Vitest
 
 | Gate | Command | Result |
 | --- | --- | --- |
-| Unit + integration tests | `npm test` | **68 passing** across 8 files |
+| Unit + integration tests | `npm test` | **70 passing** across 8 files |
 | Type safety (strict) | `npm run typecheck` | clean |
 | Renderer bundle | Vite production build | builds (931 modules) |
 | Full app package | `npm run package` | packages for linux-x64; native `better_sqlite3.node` unpacked, assets bundled |
@@ -16,7 +16,7 @@ implements it → the tests that prove it. All tests run with `npm test` (Vitest
 
 | PRD feature | Implementation | Tests |
 | --- | --- | --- |
-| F1 Reminders (CRUD/search) | `main/app/reminder-service.ts`, `renderer/RemindersView.tsx` | `services.test.ts` |
+| F1 Reminders (CRUD/search) | `main/app/reminder-service.ts`, `renderer/RemindersView.tsx`, edit via `renderer/ReminderDialog.tsx` + `scheduleForm.ruleToForm` (preserves history & future executions) | `services.test.ts` |
 | F2 Specific-time | `main/recurrence/recurrence.ts` (`once`) | `recurrence.test.ts` |
 | F3 Relative interval (drift-free) | recurrence (`interval`, anchor lattice) | `recurrence.test.ts` |
 | F4 Calendar recurrence | recurrence (`calendar`) + Luxon | `recurrence.test.ts` |
@@ -28,7 +28,7 @@ implements it → the tests that prove it. All tests run with `npm test` (Vitest
 | F10 Quiet hours (overnight) | `shared/quiet-hours.ts`, `renderer/SettingsView.tsx` | `presentation.test.ts`, `notification.test.ts` |
 | F11 Routines | `shared/routine.ts`, `main/routine/expand.ts`, `main/app/routine-service.ts`, `renderer/RoutinesView.tsx` | `routine.test.ts`, `services.test.ts` |
 | F12 Search | `reminder-service.search`, repository title filter | `services.test.ts`, `sqlite-repository.test.ts` |
-| F13 Bulk management | `reminder-service.setEnabled/delete`, selection mode in `RemindersView.tsx` | `services.test.ts` |
+| F13 Bulk management | `reminder-service.setEnabled/delete`, selection mode + single & bulk delete confirmation in `RemindersView.tsx` | `services.test.ts` |
 | F14 Reliability & recovery | `main/scheduler/scheduler.ts`, `main/recurrence/recovery.ts`, boot + `powerMonitor` resume in `main.ts`, SQLite durability | `scheduler.test.ts`, `recovery.test.ts`, `sqlite-repository.test.ts` |
 
 ## Architecture realized

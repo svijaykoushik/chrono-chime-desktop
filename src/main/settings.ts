@@ -12,6 +12,8 @@ const systemTz = (): string => {
 const defaults = (): Settings => ({
   quietHours: { enabled: false, start: '22:00', end: '06:00' },
   timezone: systemTz(),
+  theme: 'system',
+  launchAtLogin: false,
 });
 
 /** Small durable settings store backed by a JSON file in userData. */

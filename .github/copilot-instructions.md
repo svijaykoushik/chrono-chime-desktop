@@ -40,6 +40,7 @@ Test commands will be added as features are implemented. Use TDD approach for ne
 - Persistence: SQLite via better-sqlite3 behind the `Repository` interface (`src/main/store`)
 - Use Material UI v5+ with Material 3 theming for renderer components
 - Follow 8dp spacing system, rounded corners, elevation-based hierarchy
+- Brand is **"Aesthetic Bubblegum Pink"** (from the app icon): rose `#EE5A8A`, bubblegum `#F589B2`. Use the `BRAND` constants / `theme.palette` in `src/renderer/theme.ts` — never hardcode off-brand hues. See `docs/design/branding-and-theme.md`.
 
 For detailed architecture, the schedule model, and the IPC contract, see
 `docs/design/technical-design-document.md`.

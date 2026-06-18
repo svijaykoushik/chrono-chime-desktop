@@ -249,6 +249,30 @@ Each reminder shall include:
 
 ---
 
+## Editing Reminders
+
+Users shall be able to edit an existing reminder at any time.
+
+An edit may change any of the reminder's details:
+
+* Title and notification message
+* Schedule definition, including recurrence settings (specific-time, relative
+  interval, or calendar recurrence)
+* Notification preferences (sound, message template, and notification schedule)
+
+Editing shall behave predictably:
+
+* The reminder shall keep its identity; an edit shall not create a new reminder.
+* The reminder's history (its record of past executions) shall be preserved
+  across an edit.
+* Future executions shall be preserved where applicable. When the schedule is
+  unchanged, the next scheduled occurrence shall not move. When the schedule
+  changes, future occurrences shall be recomputed from the new definition while
+  past executions remain unchanged.
+* The reminder's enabled state shall be preserved unless the user changes it.
+
+---
+
 # Feature 2: Specific-Time Scheduling
 
 Users shall be able to schedule notifications at explicit moments.
@@ -498,7 +522,18 @@ Long press shall initiate selection mode.
 
 Selection counts shall be displayed.
 
-Deletion shall require confirmation.
+## Bulk Deletion
+
+Users shall be able to delete multiple selected reminders in a single action.
+
+Bulk deletion shall:
+
+* Remove every selected reminder together as one action.
+* Require explicit confirmation before any reminder is removed.
+* State how many reminders will be deleted in the confirmation.
+* Remove the deleted reminders from all schedules so they no longer execute.
+
+Deletion — whether of a single reminder or in bulk — shall require confirmation.
 
 ---
 

@@ -38,6 +38,8 @@ export const quietHoursSchema = z.object({
 export const settingsSchema = z.object({
   quietHours: quietHoursSchema,
   timezone: z.string(),
+  theme: z.enum(['light', 'dark', 'system']).default('system'),
+  launchAtLogin: z.boolean().default(false),
 });
 
 /** Re-exported so renderer + main share one source of truth. */

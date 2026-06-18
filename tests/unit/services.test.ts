@@ -55,6 +55,32 @@ describe('ReminderService — F1 CRUD', () => {
     expect(s.reminders.delete([r.id])).toBe(1);
     expect(s.reminders.list()).toHaveLength(0);
   });
+
+  it('editing preserves identity and history, and keeps the future fire time when the schedule is unchanged', () => {
+    const r = s.reminders.create(dailyInput('Standup'));
+    const firedAt = NOW - 3_600_000;
+    s.repo.updateReminder(r.id, { lastFireAt: firedAt }); // pretend it already fired once
+
+    const updated = s.reminders.update(r.id, {
+      title: 'Standup (renamed)',
+      rule: r.rule, // unchanged schedule
+      enabled: r.enabled,
+    })!;
+
+    expect(updated.id).toBe(r.id); // same reminder, not a new one
+    expect(updated.title).toBe('Standup (renamed)');
+    expect(updated.lastFireAt).toBe(firedAt); // history preserved
+    expect(updated.nextFireAt).toBe(r.nextFireAt); // next occurrence not moved
+  });
+
+  it('recomputes future executions when the schedule changes', () => {
+    const r = s.reminders.create(dailyInput('Standup')); // daily 09:00
+    const updated = s.reminders.update(r.id, {
+      rule: { kind: 'calendar', freq: 'daily', interval: 1, atTime: '18:00' },
+    })!;
+    // NOW is 08:00, so the next 18:00 occurrence is today.
+    expect(updated.nextFireAt).toBe(ms('2026-06-16T18:00'));
+  });
 });
 
 describe('ReminderService — F12 search & F13 bulk ops', () => {

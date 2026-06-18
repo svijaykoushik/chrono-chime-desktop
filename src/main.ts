@@ -9,6 +9,7 @@ import { ReminderService } from './main/app/reminder-service';
 import { RoutineService } from './main/app/routine-service';
 import { NotificationManager } from './main/notification/manager';
 import { SettingsStore } from './main/settings';
+import { getAutoStart, setAutoStart } from './main/autostart';
 import {
   CH,
   reminderListReq,
@@ -86,8 +87,13 @@ function registerIpc(): void {
   });
   ipcMain.handle(CH.routineDelete, (_e, raw) => routineService.delete(routineDeleteReq.parse(raw).id));
 
-  ipcMain.handle(CH.settingsGet, () => settingsStore.get());
-  ipcMain.handle(CH.settingsUpdate, (_e, raw) => settingsStore.update(settingsSchema.partial().parse(raw)));
+  ipcMain.handle(CH.settingsGet, () => ({ ...settingsStore.get(), launchAtLogin: getAutoStart() }));
+  ipcMain.handle(CH.settingsUpdate, (_e, raw) => {
+    const patch = settingsSchema.partial().parse(raw);
+    if (patch.launchAtLogin !== undefined) setAutoStart(patch.launchAtLogin);
+    const updated = settingsStore.update(patch);
+    return { ...updated, launchAtLogin: getAutoStart() };
+  });
   ipcMain.handle(CH.soundPreview, () => {
     // Sound preview is played in the renderer; main acknowledges the request.
     return undefined;
@@ -156,6 +162,7 @@ if (!app.requestSingleInstanceLock()) {
       const file = join(app.getAppPath(), 'assets/sounds', id);
       return net.fetch(pathToFileURL(file).toString());
     });
+    Menu.setApplicationMenu(null); // hide the application menu bar (Win/Linux)
     registerIpc();
     scheduler.start(); // boot recovery + arm (F14)
     createWindow();

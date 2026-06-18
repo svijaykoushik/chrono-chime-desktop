@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, Card, CardContent, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
+import {
+  Box, Card, CardContent, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography,
+} from '@mui/material';
 import type { Settings } from '../shared/contract';
 
 interface Props {
@@ -14,6 +16,40 @@ export function SettingsView({ settings, onChange }: Props) {
   return (
     <Box>
       <Card variant="outlined">
+        <CardContent>
+          <Typography variant="h6" gutterBottom>Appearance</Typography>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              select label="Theme" value={settings.theme} sx={{ maxWidth: 240 }}
+              onChange={(e) => onChange({ theme: e.target.value as Settings['theme'] })}
+            >
+              <MenuItem value="system">Match system</MenuItem>
+              <MenuItem value="light">Light</MenuItem>
+              <MenuItem value="dark">Dark</MenuItem>
+            </TextField>
+          </Stack>
+        </CardContent>
+      </Card>
+
+      <Card variant="outlined" sx={{ mt: 2 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>Startup</Typography>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={settings.launchAtLogin}
+                onChange={(e) => onChange({ launchAtLogin: e.target.checked })}
+              />
+            }
+            label="Launch ChronoChime when I sign in"
+          />
+          <Typography variant="caption" color="text.secondary" display="block">
+            Starts the app automatically at login for your user account only.
+          </Typography>
+        </CardContent>
+      </Card>
+
+      <Card variant="outlined" sx={{ mt: 2 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>Quiet Hours</Typography>
           <Typography variant="body2" color="text.secondary" gutterBottom>

@@ -1,8 +1,16 @@
+import { DateTime } from 'luxon';
 import type { ScheduleRule } from '../shared/schedule';
 
 export type ScheduleKind = 'once' | 'interval' | 'hourly' | 'daily' | 'weekly' | 'monthly';
 
+/**
+ * "Starting now" (relative to the current time, drift-free interval) vs.
+ * "On the clock" (anchored to wall-clock calendar positions).
+ */
+export type ScheduleMode = 'relative' | 'clock';
+
 export interface ScheduleForm {
+  mode: ScheduleMode;
   kind: ScheduleKind;
   /** datetime-local string for 'once'. */
   at: string;
@@ -18,6 +26,7 @@ export interface ScheduleForm {
 }
 
 export const defaultScheduleForm = (): ScheduleForm => ({
+  mode: 'clock',
   kind: 'daily',
   at: '',
   intervalAmount: 25,
@@ -46,6 +55,69 @@ export function buildRule(form: ScheduleForm, now: number): ScheduleRule {
     }
     case 'monthly':
       return { kind: 'calendar', freq: 'monthly', interval: 1, atTime: form.atTime, byMonthDay: form.monthDay };
+  }
+}
+
+/** Schedule kinds available in "On the clock" mode (wall-clock anchored). */
+export const CLOCK_KIND_OPTIONS: ReadonlyArray<{ value: ScheduleKind; label: string }> = [
+  { value: 'once', label: 'Once (specific date & time)' },
+  { value: 'hourly', label: 'Every hour' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+];
+
+/** Time-format placeholders the user can insert into a message template (F8). */
+export const TIME_FORMAT_SUGGESTIONS: ReadonlyArray<{ token: string; label: string }> = [
+  { token: '[HH:mm]', label: '24-hour (14:05)' },
+  { token: '[hh:mm tt]', label: '12-hour (02:05 PM)' },
+  { token: '[HH:mm:ss]', label: 'With seconds (14:05:30)' },
+];
+
+/**
+ * Reverse of {@link buildRule}: maps an existing rule back into editable form
+ * state so a reminder can be loaded into the dialog for editing.
+ */
+export function ruleToForm(rule: ScheduleRule, tz: string): ScheduleForm {
+  const base = defaultScheduleForm();
+  switch (rule.kind) {
+    case 'once':
+      return {
+        ...base,
+        mode: 'clock',
+        kind: 'once',
+        at: DateTime.fromMillis(rule.at, { zone: tz }).toFormat("yyyy-MM-dd'T'HH:mm"),
+      };
+    case 'interval': {
+      const wholeHours = rule.everyMs % 3_600_000 === 0;
+      return {
+        ...base,
+        mode: 'relative',
+        kind: 'interval',
+        intervalAmount: wholeHours ? rule.everyMs / 3_600_000 : rule.everyMs / 60_000,
+        intervalUnit: wholeHours ? 'hours' : 'minutes',
+      };
+    }
+    case 'calendar':
+      switch (rule.freq) {
+        case 'hourly':
+          return { ...base, mode: 'clock', kind: 'hourly' };
+        case 'daily':
+          return { ...base, mode: 'clock', kind: 'daily', atTime: rule.atTime ?? base.atTime };
+        case 'weekly':
+          return {
+            ...base, mode: 'clock', kind: 'weekly',
+            atTime: rule.atTime ?? base.atTime,
+            weekdays: rule.byWeekday ? [...rule.byWeekday] : base.weekdays,
+          };
+        case 'monthly':
+        case 'yearly':
+          return {
+            ...base, mode: 'clock', kind: 'monthly',
+            atTime: rule.atTime ?? base.atTime,
+            monthDay: rule.byMonthDay ?? base.monthDay,
+          };
+      }
   }
 }
 
