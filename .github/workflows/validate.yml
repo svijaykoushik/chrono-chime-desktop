@@ -1,0 +1,43 @@
+name: Validate
+
+# Validate and test every pull request targeting main or a release/** branch.
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
+
+# Cancel superseded runs for the same PR.
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Type-check & test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build renderer (compile sanity check)
+        run: npx vite build --config vite.renderer.config.ts
