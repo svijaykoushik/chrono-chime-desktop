@@ -31,15 +31,28 @@ implements it → the tests that prove it. All tests run with `npm test` (Vitest
 | F13 Bulk management | `reminder-service.setEnabled/delete`, selection mode + single & bulk delete confirmation in `RemindersView.tsx` | `services.test.ts` |
 | F14 Reliability & recovery | `main/scheduler/scheduler.ts`, `main/recurrence/recovery.ts`, boot + `powerMonitor` resume in `main.ts`, SQLite durability | `scheduler.test.ts`, `recovery.test.ts`, `sqlite-repository.test.ts` |
 
+## Post-PRD enhancements
+
+Built after the initial feature set, on top of the same architecture:
+
+| Enhancement | Implementation |
+| --- | --- |
+| Hidden application menu bar | `Menu.setApplicationMenu(null)` in `main.ts` |
+| Launch at login (user-level, Win + Linux) | `main/autostart.ts` (Windows login item; Linux `~/.config/autostart/*.desktop`), exposed via `Settings.launchAtLogin` |
+| Dark mode / theme | `Settings.theme` (`light`/`dark`/`system`); `ThemeProvider` in `App` + `makeTheme` in `renderer/theme.ts` |
+| Reminder editing (preserve history & future) | `renderer/ReminderDialog.tsx` edit mode + `scheduleForm.ruleToForm`; `services.test.ts` |
+| "Starting now" vs "On the clock" + time-format chips | `renderer/ReminderDialog.tsx`, `renderer/scheduleForm.ts` |
+| Brand theme "Aesthetic Bubblegum Pink" | `renderer/theme.ts` (`BRAND`); see [Branding & Theme](./branding-and-theme.md) |
+| Distributables (Windows/Linux) | `forge.config.js` (Squirrel + Deb); see [Packaging & Distribution](../build/packaging-and-distribution.md) |
+
 ## Architecture realized
 
-- **Main process:** Scheduler (single drift-free timer) → pure Recurrence engine; SQLite repository; Notification Manager; Settings store; Zod-validated IPC server; tray; `powerMonitor` recovery.
-- **Preload:** `contextBridge` exposes the typed `window.chrono` API only (`contextIsolation`, `sandbox`, no `nodeIntegration`).
-- **Renderer:** React + MUI (Material 3 theme) — Reminders, Routines, Settings tabs; live search; selection mode; in-app fired-event snackbar + sound playback.
+- **Main process** (`src/main.ts` + `src/main/**`): Scheduler (single drift-free timer) → pure Recurrence engine; better-sqlite3 `Repository`; Notification Manager; Settings store; autostart; Zod-validated IPC handlers; tray; menu hidden; `powerMonitor` recovery.
+- **Preload** (`src/preload.ts`): `contextBridge` exposes the typed `window.chrono` API only (`contextIsolation`, `sandbox`, no `nodeIntegration`).
+- **Renderer** (`src/renderer.tsx` + `src/renderer/**`): React + MUI (Material 3, Bubblegum-Pink brand) — Reminders, Routines, Settings tabs; live search; selection mode; create/edit dialog; in-app fired-event snackbar + sound playback.
 
 ## Known limitations / next steps
 
-- **Live GUI run not verified here** (headless environment has no display); the full build/link/package pipeline passes. Run `npm start` on a desktop to launch.
-- Editing an existing reminder from the UI reuses the create dialog shape; an in-place edit form is a follow-up.
-- `npm run lint` requires the ESLint plugin stack referenced in `.eslintrc.json` to be installed; tests + `typecheck` are the active quality gates.
-- A Playwright launch smoke test (Part C step 8) remains to be added.
+- `npm run lint` requires the ESLint plugin stack referenced in `.eslintrc.json` to be installed; `npm test` (Vitest) + `npm run typecheck` are the active quality gates.
+- A Playwright launch smoke test (Part C step 8) remains to be added; renderer components are currently covered via service-layer tests + bundle checks rather than React Testing Library.
+- Native module ABI: `npm start`/`make` rebuild `better-sqlite3` for Electron, `npm test` rebuilds it for Node (handled automatically by the `pre*` scripts).

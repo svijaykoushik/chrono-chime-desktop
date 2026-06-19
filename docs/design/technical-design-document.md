@@ -3,11 +3,14 @@
 > Phase 1 deliverable. This document defines the complete system design and a
 > technical specification for **every** feature in the
 > [Product Requirements Document](../prd/chronochime-product-requirements-document.md).
-> No application code is written until this document is approved.
 
-Status: **Draft — awaiting approval**
-Target: Electron desktop application (Windows / macOS / Linux)
+Status: **✅ Accepted for Implementation** (Phase 2 complete — see
+[Implementation Status](./implementation-status.md))
+Target: Electron desktop application (**Windows and Linux**; macOS not targeted)
 Methodology: Test-Driven Development (Vitest)
+
+> The open questions in **Part D** were reviewed and **accepted** before
+> implementation; their resolutions are recorded there.
 
 ---
 
@@ -38,7 +41,7 @@ responsibility boundary is the IPC layer.
 │                                                                              │
 │   Scheduler Engine ──uses──> Recurrence Engine (pure, no I/O)                │
 │        │                                                                     │
-│        ├── reads/writes ──> Persistence Layer (SQLite + Drizzle ORM)         │
+│        ├── reads/writes ──> Persistence Layer (SQLite via better-sqlite3)    │
 │        ├── invokes ───────> Notification Manager ──> OS notifications + audio│
 │        ├── consults ──────> Quiet Hours Service                             │
 │        ├── consults ──────> Time / Drift Monitor (wall-clock + powerMonitor) │
@@ -277,7 +280,7 @@ Strict red→green→refactor, bottom-up so pure logic is proven before wiring.
 1. **Recurrence Engine** (F2,F3,F4,F6) — pure `nextOccurrence`. Highest test density; covers drift, DST, month-length, set-position.
 2. **Presentation helpers** (F5 `describeRule`, F8 `renderTemplate`, F10 `isWithinQuietHours`) — pure, golden tests.
 3. **Missed-occurrence policy** (F14) — pure decision function over (lastFire, now, rule).
-4. **Persistence layer** — Drizzle schema + repository, in-memory SQLite in tests.
+4. **Persistence layer** — `Repository` interface with in-memory and better-sqlite3 implementations; in-memory SQLite (`:memory:`) + a temp-file durability test.
 5. **Scheduler Engine** — with an injectable fake clock/timer; assert re-arm and recovery without real time.
 6. **Notification Manager + Quiet Hours wiring** (F7,F9) — mock Electron `Notification`/audio.
 7. **IPC contract** (Zod round-trip) and handlers (F1,F11,F12,F13).
@@ -287,9 +290,30 @@ Test layout: `tests/unit/**`, `tests/integration/**`; CI runs `npm test` (Vitest
 
 ---
 
-## Part D — Open Questions / Decisions for Approval
+## Part D — Decisions (Accepted)
 
-1. **Stack confirmation:** Luxon for time math, better-sqlite3 + Drizzle for storage, Vitest for tests — confirm or substitute.
-2. **Missed-occurrence grace window** default (proposed: one-shot 5 min; recurring coalesce-to-one). Confirm.
-3. **Scope ordering:** which features to implement first in Phase 2 (proposed order = Part C).
-4. The stale v1 enums in `.github/copilot-instructions.md` (hardcoded Pomodoro/hourly-chime) will be superseded by the generic `ScheduleRule` model above; the instructions file will be updated to match.
+These were the open questions at the end of Phase 1; each was **accepted** by the
+product owner before implementation. The answers given are recorded here.
+
+1. **Stack confirmation — ACCEPTED (as proposed).** Luxon for time math, Vitest
+   for tests, React + MUI (Material 3) for the renderer.
+   - *Refinement during implementation:* Drizzle ORM was **dropped** in favour of
+     a thin hand-written **better-sqlite3** repository behind the `Repository`
+     interface — for a fixed two-table local schema this avoids a migration
+     toolchain while keeping queries typed and tested. Drizzle remains a drop-in
+     option later. (See A.5.)
+2. **Missed-occurrence grace window — ACCEPTED (as proposed).** One-shot
+   reminders missed within a **5-minute** grace window fire once then deactivate;
+   recurring misses **coalesce into a single catch-up** and resume on the lattice.
+   Implemented in `recurrence/recovery.ts` (`DEFAULT_GRACE_MS`). (See A.8.)
+3. **Scope ordering — ACCEPTED ("proceed" with the proposed order).** Phase 2
+   followed the bottom-up Part C order (pure logic → persistence → scheduler →
+   notifications → IPC → renderer).
+4. **Stale v1 enums superseded — DONE.** The hardcoded Pomodoro/hourly-chime
+   enums in `.github/copilot-instructions.md` were replaced by the generic
+   `ScheduleRule` model; the instructions and agent definitions now match this
+   architecture.
+
+Outcome: all 14 features implemented via TDD; see
+[Implementation Status](./implementation-status.md) for the feature → code →
+test traceability and verification gates.
