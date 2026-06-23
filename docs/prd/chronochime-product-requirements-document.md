@@ -569,6 +569,16 @@ The handling policy shall be predictable and clearly communicated.
 
 ---
 
+> **Operational requirements** — local-first diagnostics/logging with a friendly
+> crash overlay, a pull-based update notifier
+> ([docs/specs/diagnostics-and-updates.md](../specs/diagnostics-and-updates.md)),
+> and an offline-first feedback/community surface
+> ([docs/specs/feedback-and-community.md](../specs/feedback-and-community.md)) —
+> are specified separately. They are platform/operational concerns, not
+> temporal-notification features, and are intentionally kept out of this PRD.
+
+---
+
 # 9. User Experience Principles
 
 ChronoChime should feel:

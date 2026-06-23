@@ -18,6 +18,16 @@ Index of all project documentation.
   the "Aesthetic Bubblegum Pink" brand palette (from the app icon) and how the
   theme is applied. **Future UI work must follow this.**
 
+## Specifications (operational)
+
+- [Diagnostics, Logging & Updates](specs/diagnostics-and-updates.md) —
+  implementation spec for local-first logging + crash overlay and the GitHub
+  Releases update notifier. Operational features that support reliability but are
+  not part of the temporal-notification domain.
+- [About & Feedback](specs/feedback-and-community.md) —
+  implementation spec for the offline-first, user-initiated feedback paths (public
+  GitHub issue + private email) and the About surface. No telemetry/backend.
+
 ## Build & Release
 
 - [Packaging & Distribution](build/packaging-and-distribution.md) —
