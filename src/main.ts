@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, powerMonitor, protocol, net, Tray, Menu, nativeImage } from 'electron';
 import { randomUUID } from 'node:crypto';
+import { mkdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { SqliteRepository } from './main/store/sqlite-repository';
@@ -32,7 +33,17 @@ declare const MAIN_WINDOW_VITE_NAME: string;
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 
+// Dev builds get an isolated data dir so they never share logs/db/settings with
+// an installed ChronoChime (or a legacy v1-beta checkout). Production is
+// unchanged — it intentionally upgrades the old install in place.
+if (!app.isPackaged) {
+  app.setPath('userData', join(app.getPath('appData'), 'ChronoChime-dev'));
+}
+
 const userData = app.getPath('userData');
+// Ensure the data dir exists before opening the DB — it may not on first launch
+// (Electron doesn't pre-create it before this module-load code runs).
+mkdirSync(userData, { recursive: true });
 const repo = new SqliteRepository(join(userData, 'chronochime.db'));
 const settingsStore = new SettingsStore(join(userData, 'settings.json'));
 
