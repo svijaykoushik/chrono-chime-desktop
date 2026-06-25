@@ -1,3 +1,4 @@
+import 'electron-log/preload'; // bridges electron-log/renderer → main under sandbox (D§1.2.1)
 import { contextBridge, ipcRenderer } from 'electron';
 import { CH } from './shared/contract';
 import type { ChronoBridge, FiredEvent } from './shared/bridge';

@@ -10,6 +10,7 @@ import { RoutineService } from './main/app/routine-service';
 import { NotificationManager } from './main/notification/manager';
 import { SettingsStore } from './main/settings';
 import { getAutoStart, setAutoStart } from './main/autostart';
+import { initLogging, logger } from './main/diagnostics/logger';
 import {
   CH,
   reminderListReq,
@@ -162,6 +163,8 @@ if (!app.requestSingleInstanceLock()) {
       const file = join(app.getAppPath(), 'assets/sounds', id);
       return net.fetch(pathToFileURL(file).toString());
     });
+    initLogging(); // configure file logging + retention sweep (D§1)
+    logger.info('ChronoChime starting', { version: app.getVersion(), platform: process.platform });
     Menu.setApplicationMenu(null); // hide the application menu bar (Win/Linux)
     registerIpc();
     scheduler.start(); // boot recovery + arm (F14)
