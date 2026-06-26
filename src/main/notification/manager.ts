@@ -1,6 +1,7 @@
 import { Notification } from 'electron';
 import { decideNotification } from './decide';
 import { renderTemplate } from '../../shared/template';
+import { logger } from '../diagnostics/logger';
 import type { SoundChoice } from '../../shared/reminder';
 import type { FireEvent } from '../scheduler/types';
 import type { Repository } from '../store/repository';
@@ -36,7 +37,10 @@ export class NotificationManager {
 
   deliver(event: FireEvent): void {
     const reminder = this.d.repo.getReminder(event.item.id);
-    if (!reminder) return;
+    if (!reminder) {
+      logger.warn('Notification', 'Attempted to deliver notification for non-existent reminder', { reminderId: event.item.id });
+      return;
+    }
     const settings = this.d.getSettings();
 
     const decision = decideNotification(
@@ -52,19 +56,36 @@ export class NotificationManager {
       body = `${body} (${event.missedCount} missed while away)`;
     }
 
+    const soundId = soundToId(decision.sound);
+    if (decision.sound === null) {
+      logger.info('Notification', 'Notification audio suppressed by Quiet Hours', {
+        reminderId: reminder.id,
+        quietHours: settings.quietHours,
+      });
+    }
+
+    logger.info('Notification', 'Delivering notification', {
+      reminderId: reminder.id,
+      title: reminder.title,
+      sound: soundId,
+      silent: decision.sound === null,
+    });
+
     if (Notification.isSupported()) {
       new Notification({
         title: reminder.title,
         body,
         silent: decision.sound === null, // OS sound suppressed; visual remains
       }).show();
+    } else {
+      logger.warn('Notification', 'OS notifications are not supported on this environment');
     }
 
     this.d.emit({
       reminderId: reminder.id,
       title: reminder.title,
       body,
-      sound: soundToId(decision.sound),
+      sound: soundId,
       firedAt: event.firedAt,
     });
   }

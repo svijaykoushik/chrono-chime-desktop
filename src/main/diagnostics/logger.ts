@@ -39,5 +39,21 @@ export function initLogging(): void {
   pruneLogs(dir); // enforce ≤5 files / ≤7 days at boot
 }
 
-/** Scoped main-process logger; `logger.info(...)`, `.warn(...)`, `.error(...)`. */
-export const logger = log.scope('main');
+export const logger = {
+  debug(module: string, message: string, meta?: Record<string, any>): void {
+    log.scope(module).debug(message, meta);
+  },
+  info(module: string, message: string, meta?: Record<string, any>): void {
+    log.scope(module).info(message, meta);
+  },
+  warn(module: string, message: string, meta?: Record<string, any>): void {
+    log.scope(module).warn(message, meta);
+  },
+  error(module: string, message: string, error?: Error, meta?: Record<string, any>): void {
+    log.scope(module).error(message, {
+      ...meta,
+      errorMessage: error?.message,
+      stack: error?.stack,
+    });
+  },
+};

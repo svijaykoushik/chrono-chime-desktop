@@ -147,7 +147,13 @@ function createTray(): void {
     Menu.buildFromTemplate([
       { label: 'Open ChronoChime', click: () => (mainWindow ? mainWindow.show() : createWindow()) },
       { type: 'separator' },
-      { label: 'Quit', click: () => app.exit(0) },
+      {
+        label: 'Quit',
+        click: () => {
+          logger.info('main', 'Application quitting via tray menu');
+          app.exit(0);
+        },
+      },
     ]),
   );
 }
@@ -157,6 +163,7 @@ if (!app.requestSingleInstanceLock()) {
   app.exit(0);
 } else {
   app.on('second-instance', () => {
+    logger.warn('main', 'Second instance launch detected; focusing existing window');
     if (mainWindow) {
       mainWindow.show();
       mainWindow.focus();
@@ -169,29 +176,53 @@ if (!app.requestSingleInstanceLock()) {
   ]);
 
   app.whenReady().then(() => {
-    protocol.handle('chrono-sound', (request) => {
-      const id = basename(decodeURIComponent(new URL(request.url).hostname || request.url.replace('chrono-sound://', '')));
-      const file = join(app.getAppPath(), 'assets/sounds', id);
-      return net.fetch(pathToFileURL(file).toString());
-    });
-    initLogging(); // configure file logging + retention sweep (D§1)
-    logger.info('ChronoChime starting', { version: app.getVersion(), platform: process.platform });
-    Menu.setApplicationMenu(null); // hide the application menu bar (Win/Linux)
-    registerIpc();
-    scheduler.start(); // boot recovery + arm (F14)
-    createWindow();
-    createTray();
+    try {
+      protocol.handle('chrono-sound', (request) => {
+        const id = basename(decodeURIComponent(new URL(request.url).hostname || request.url.replace('chrono-sound://', '')));
+        const file = join(app.getAppPath(), 'assets/sounds', id);
+        return net.fetch(pathToFileURL(file).toString());
+      });
+      initLogging(); // configure file logging + retention sweep (D§1)
+      logger.info('main', 'ChronoChime starting', { version: app.getVersion(), platform: process.platform });
+      Menu.setApplicationMenu(null); // hide the application menu bar (Win/Linux)
+      registerIpc();
+      scheduler.start(); // boot recovery + arm (F14)
+      createWindow();
+      createTray();
 
-    // Resume from sleep → re-run recovery so missed occurrences are handled.
-    powerMonitor.on('resume', () => scheduler.start());
+      // Resume from sleep → re-run recovery so missed occurrences are handled.
+      powerMonitor.on('resume', () => {
+        logger.info('main', 'System resumed from sleep; triggering recovery sweep');
+        scheduler.start();
+      });
 
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
-    });
+      app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+      });
+
+      // Handle signal exit logging (SIGINT, SIGTERM)
+      process.on('SIGINT', () => {
+        logger.info('main', 'Application received SIGINT signal; exiting');
+        app.exit(0);
+      });
+
+      process.on('SIGTERM', () => {
+        logger.info('main', 'Application received SIGTERM signal; exiting');
+        app.exit(0);
+      });
+
+      app.on('before-quit', () => {
+        logger.info('main', 'Application before-quit event triggered');
+      });
+    } catch (err) {
+      logger.error('main', 'Fatal exception during application startup', err instanceof Error ? err : new Error(String(err)));
+      app.exit(1);
+    }
   });
 
   // Background-first: keep the scheduler running in the tray after the window closes.
   app.on('window-all-closed', () => {
+    logger.info('main', 'All windows closed; keeping app running in tray');
     // Intentionally do not quit; ChronoChime lives in the tray.
   });
 }

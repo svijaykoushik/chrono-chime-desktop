@@ -5,6 +5,7 @@ import type {
   PersistedRoutine,
   Repository,
 } from './repository';
+import { logger } from '../diagnostics/logger';
 
 interface ReminderRow {
   id: string;
@@ -59,13 +60,24 @@ export class SqliteRepository implements Repository {
   private readonly db: Database.Database;
 
   constructor(filename: string) {
-    this.db = new Database(filename);
-    this.db.pragma('journal_mode = WAL');
-    this.db.exec(SCHEMA);
+    try {
+      this.db = new Database(filename);
+      this.db.pragma('journal_mode = WAL');
+      this.db.exec(SCHEMA);
+      logger.info('Database', 'SQLite database initialized successfully', { filename });
+    } catch (err) {
+      logger.error('Database', 'Failed to initialize SQLite database', err instanceof Error ? err : new Error(String(err)), { filename });
+      throw err;
+    }
   }
 
   close(): void {
-    this.db.close();
+    try {
+      this.db.close();
+      logger.info('Database', 'SQLite database closed');
+    } catch (err) {
+      logger.error('Database', 'Error while closing SQLite database', err instanceof Error ? err : new Error(String(err)));
+    }
   }
 
   private toReminder(row: ReminderRow): Reminder {
@@ -85,26 +97,32 @@ export class SqliteRepository implements Repository {
   }
 
   insertReminder(r: Reminder): Reminder {
-    this.db
-      .prepare(
-        `INSERT INTO reminders
-           (id, title, message, enabled, rule, notification, next_fire_at, last_fire_at, routine_id, created_at, updated_at)
-         VALUES (@id, @title, @message, @enabled, @rule, @notification, @next, @last, @routine, @created, @updated)`,
-      )
-      .run({
-        id: r.id,
-        title: r.title,
-        message: r.message ?? null,
-        enabled: r.enabled ? 1 : 0,
-        rule: JSON.stringify(r.rule),
-        notification: JSON.stringify(r.notification),
-        next: r.nextFireAt,
-        last: r.lastFireAt,
-        routine: r.routineId,
-        created: r.createdAt,
-        updated: r.updatedAt,
-      });
-    return r;
+    try {
+      this.db
+        .prepare(
+          `INSERT INTO reminders
+             (id, title, message, enabled, rule, notification, next_fire_at, last_fire_at, routine_id, created_at, updated_at)
+           VALUES (@id, @title, @message, @enabled, @rule, @notification, @next, @last, @routine, @created, @updated)`,
+        )
+        .run({
+          id: r.id,
+          title: r.title,
+          message: r.message ?? null,
+          enabled: r.enabled ? 1 : 0,
+          rule: JSON.stringify(r.rule),
+          notification: JSON.stringify(r.notification),
+          next: r.nextFireAt,
+          last: r.lastFireAt,
+          routine: r.routineId,
+          created: r.createdAt,
+          updated: r.updatedAt,
+        });
+      logger.debug('Database', 'Inserted reminder', { id: r.id, enabled: r.enabled });
+      return r;
+    } catch (err) {
+      logger.error('Database', 'Failed to insert reminder', err instanceof Error ? err : new Error(String(err)), { id: r.id });
+      throw err;
+    }
   }
 
   getReminder(id: string): Reminder | undefined {
@@ -113,36 +131,49 @@ export class SqliteRepository implements Repository {
   }
 
   updateReminder(id: string, patch: Partial<Reminder>): Reminder | undefined {
-    const cur = this.getReminder(id);
-    if (!cur) return undefined;
-    const next: Reminder = { ...cur, ...patch };
-    this.db
-      .prepare(
-        `UPDATE reminders SET
-           title=@title, message=@message, enabled=@enabled, rule=@rule, notification=@notification,
-           next_fire_at=@next, last_fire_at=@last, routine_id=@routine, updated_at=@updated
-         WHERE id=@id`,
-      )
-      .run({
-        id,
-        title: next.title,
-        message: next.message ?? null,
-        enabled: next.enabled ? 1 : 0,
-        rule: JSON.stringify(next.rule),
-        notification: JSON.stringify(next.notification),
-        next: next.nextFireAt,
-        last: next.lastFireAt,
-        routine: next.routineId,
-        updated: next.updatedAt,
-      });
-    return next;
+    try {
+      const cur = this.getReminder(id);
+      if (!cur) return undefined;
+      const next: Reminder = { ...cur, ...patch };
+      this.db
+        .prepare(
+          `UPDATE reminders SET
+             title=@title, message=@message, enabled=@enabled, rule=@rule, notification=@notification,
+             next_fire_at=@next, last_fire_at=@last, routine_id=@routine, updated_at=@updated
+           WHERE id=@id`,
+        )
+        .run({
+          id,
+          title: next.title,
+          message: next.message ?? null,
+          enabled: next.enabled ? 1 : 0,
+          rule: JSON.stringify(next.rule),
+          notification: JSON.stringify(next.notification),
+          next: next.nextFireAt,
+          last: next.lastFireAt,
+          routine: next.routineId,
+          updated: next.updatedAt,
+        });
+      logger.debug('Database', 'Updated reminder', { id, enabled: next.enabled });
+      return next;
+    } catch (err) {
+      logger.error('Database', 'Failed to update reminder', err instanceof Error ? err : new Error(String(err)), { id });
+      throw err;
+    }
   }
 
   deleteReminders(ids: string[]): number {
-    if (ids.length === 0) return 0;
-    const stmt = this.db.prepare('DELETE FROM reminders WHERE id = ?');
-    const tx = this.db.transaction((list: string[]) => list.reduce((n, id) => n + stmt.run(id).changes, 0));
-    return tx(ids);
+    try {
+      if (ids.length === 0) return 0;
+      const stmt = this.db.prepare('DELETE FROM reminders WHERE id = ?');
+      const tx = this.db.transaction((list: string[]) => list.reduce((n, id) => n + stmt.run(id).changes, 0));
+      const count = tx(ids);
+      logger.info('Database', 'Deleted reminders', { count, requestedIds: ids });
+      return count;
+    } catch (err) {
+      logger.error('Database', 'Failed to delete reminders', err instanceof Error ? err : new Error(String(err)), { ids });
+      throw err;
+    }
   }
 
   listReminders(opts: ListReminderOptions = {}): Reminder[] {
@@ -159,10 +190,16 @@ export class SqliteRepository implements Repository {
   }
 
   insertRoutine(r: PersistedRoutine): PersistedRoutine {
-    this.db
-      .prepare('INSERT INTO routines (id, title, type, enabled, config, created_at) VALUES (?,?,?,?,?,?)')
-      .run(r.id, r.title, r.type, r.enabled ? 1 : 0, JSON.stringify(r.config), r.createdAt);
-    return r;
+    try {
+      this.db
+        .prepare('INSERT INTO routines (id, title, type, enabled, config, created_at) VALUES (?,?,?,?,?,?)')
+        .run(r.id, r.title, r.type, r.enabled ? 1 : 0, JSON.stringify(r.config), r.createdAt);
+      logger.debug('Database', 'Inserted routine', { id: r.id, enabled: r.enabled });
+      return r;
+    } catch (err) {
+      logger.error('Database', 'Failed to insert routine', err instanceof Error ? err : new Error(String(err)), { id: r.id });
+      throw err;
+    }
   }
 
   getRoutine(id: string): PersistedRoutine | undefined {
@@ -182,11 +219,18 @@ export class SqliteRepository implements Repository {
   }
 
   deleteRoutine(id: string): number {
-    const tx = this.db.transaction((rid: string) => {
-      this.db.prepare('DELETE FROM reminders WHERE routine_id = ?').run(rid);
-      return this.db.prepare('DELETE FROM routines WHERE id = ?').run(rid).changes;
-    });
-    return tx(id);
+    try {
+      const tx = this.db.transaction((rid: string) => {
+        this.db.prepare('DELETE FROM reminders WHERE routine_id = ?').run(rid);
+        return this.db.prepare('DELETE FROM routines WHERE id = ?').run(rid).changes;
+      });
+      const count = tx(id);
+      logger.info('Database', 'Deleted routine and cascaded child reminders', { id, changes: count });
+      return count;
+    } catch (err) {
+      logger.error('Database', 'Failed to delete routine', err instanceof Error ? err : new Error(String(err)), { id });
+      throw err;
+    }
   }
 
   listRoutines(): PersistedRoutine[] {
@@ -195,6 +239,12 @@ export class SqliteRepository implements Repository {
   }
 
   setRoutineEnabled(id: string, enabled: boolean): void {
-    this.db.prepare('UPDATE routines SET enabled = ? WHERE id = ?').run(enabled ? 1 : 0, id);
+    try {
+      this.db.prepare('UPDATE routines SET enabled = ? WHERE id = ?').run(enabled ? 1 : 0, id);
+      logger.debug('Database', 'Updated routine enabled state', { id, enabled });
+    } catch (err) {
+      logger.error('Database', 'Failed to update routine enabled state', err instanceof Error ? err : new Error(String(err)), { id, enabled });
+      throw err;
+    }
   }
 }
