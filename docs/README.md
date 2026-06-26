@@ -27,6 +27,9 @@ Index of all project documentation.
 - [About & Feedback](specs/feedback-and-community.md) —
   implementation spec for the offline-first, user-initiated feedback paths (public
   GitHub issue + private email) and the About surface. No telemetry/backend.
+- [Shipping Implementation Plan](specs/shipping-implementation-plan.md) —
+  milestone-sequenced plan (M1–M7) for building the diagnostics/updates and
+  about/feedback specs, with exit criteria and risks.
 
 ## Build & Release
 
