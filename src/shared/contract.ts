@@ -18,6 +18,8 @@ export const CH = {
   settingsUpdate: 'chronochime:settings:update',
   soundPreview: 'chronochime:sound:preview',
   eventFired: 'chronochime:event:fired',
+  diagnosticsExport: 'chronochime:diagnostics:export',
+  diagnosticsOpenDir: 'chronochime:diagnostics:openDir',
 } as const;
 
 /** Request schemas — every IPC input is validated against these. */

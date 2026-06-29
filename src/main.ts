@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, powerMonitor, protocol, net, Tray, Menu, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, powerMonitor, protocol, net, Tray, Menu, nativeImage, dialog } from 'electron';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
@@ -12,6 +12,7 @@ import { NotificationManager } from './main/notification/manager';
 import { SettingsStore } from './main/settings';
 import { getAutoStart, setAutoStart } from './main/autostart';
 import { initLogging, logger } from './main/diagnostics/logger';
+import { exportLogs, openLogsDir } from './main/diagnostics/export';
 import {
   CH,
   reminderListReq,
@@ -109,6 +110,17 @@ function registerIpc(): void {
   ipcMain.handle(CH.soundPreview, () => {
     // Sound preview is played in the renderer; main acknowledges the request.
     return undefined;
+  });
+  ipcMain.handle(CH.diagnosticsExport, async () => {
+    const { filePath } = await dialog.showSaveDialog({
+      title: 'Export Diagnostic Logs',
+      defaultPath: `chronochime-logs-${new Date().toISOString().split('T')[0]}.zip`,
+      filters: [{ name: 'ZIP Archive', extensions: ['zip'] }],
+    });
+    if (filePath) await exportLogs(filePath);
+  });
+  ipcMain.handle(CH.diagnosticsOpenDir, async () => {
+    await openLogsDir();
   });
 }
 

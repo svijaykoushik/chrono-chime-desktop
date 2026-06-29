@@ -42,6 +42,10 @@ export interface ChronoBridge {
   sound: {
     preview(soundId: string): Promise<void>;
   };
+  diagnostics: {
+    exportLogs(): Promise<void>;
+    openLogsDir(): Promise<void>;
+  };
   onFired(cb: (event: FiredEvent) => void): () => void;
 }
 

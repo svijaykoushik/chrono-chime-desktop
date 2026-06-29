@@ -24,6 +24,10 @@ const bridge: ChronoBridge = {
   sound: {
     preview: (soundId) => ipcRenderer.invoke(CH.soundPreview, { soundId }),
   },
+  diagnostics: {
+    exportLogs: () => ipcRenderer.invoke(CH.diagnosticsExport),
+    openLogsDir: () => ipcRenderer.invoke(CH.diagnosticsOpenDir),
+  },
   onFired: (cb) => {
     const listener = (_e: unknown, event: FiredEvent) => cb(event);
     ipcRenderer.on(CH.eventFired, listener);

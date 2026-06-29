@@ -1,6 +1,5 @@
-import React from 'react';
 import {
-  Box, Card, CardContent, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography,
+  Box, Card, CardContent, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography, Button,
 } from '@mui/material';
 import type { Settings } from '../shared/contract';
 
@@ -73,6 +72,29 @@ export function SettingsView({ settings, onChange }: Props) {
         <CardContent>
           <Typography variant="h6" gutterBottom>Time zone</Typography>
           <Typography variant="body2" color="text.secondary">{settings.timezone}</Typography>
+        </CardContent>
+      </Card>
+
+      <Card variant="outlined" sx={{ mt: 2 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>Diagnostics</Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Export system and renderer logs for troubleshooting.
+          </Typography>
+          <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => window.chrono.diagnostics.exportLogs()}
+            >
+              Export Logs
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => window.chrono.diagnostics.openLogsDir()}
+            >
+              Open Logs Dir
+            </Button>
+          </Stack>
         </CardContent>
       </Card>
     </Box>
