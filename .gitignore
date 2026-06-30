@@ -88,5 +88,8 @@ typings/
 # Vite
 .vite/
 
+# Manual Vite build output
+dist/
+
 # Electron-Forge
 out/
