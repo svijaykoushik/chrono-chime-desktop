@@ -20,6 +20,8 @@ export const CH = {
   eventFired: 'chronochime:event:fired',
   diagnosticsExport: 'chronochime:diagnostics:export',
   diagnosticsOpenDir: 'chronochime:diagnostics:openDir',
+  crashGetInfo: 'chronochime:crash:getInfo',
+  crashExportAndRestart: 'chronochime:crash:exportAndRestart',
 } as const;
 
 /** Request schemas — every IPC input is validated against these. */

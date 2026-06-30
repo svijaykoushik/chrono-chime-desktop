@@ -13,6 +13,7 @@ import { SettingsStore } from './main/settings';
 import { getAutoStart, setAutoStart } from './main/autostart';
 import { initLogging, logger } from './main/diagnostics/logger';
 import { exportLogs, openLogsDir } from './main/diagnostics/export';
+import { installCrashHandlers, exportCrashLogsAndRestart, getCrashInfo } from './main/diagnostics/crash';
 import {
   CH,
   reminderListReq,
@@ -30,9 +31,13 @@ import type { RoutineView } from './shared/bridge';
 // Injected by the Electron Forge Vite plugin.
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
 declare const MAIN_WINDOW_VITE_NAME: string;
+declare const CRASH_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
+declare const CRASH_WINDOW_VITE_NAME: string;
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
+let crashWindow: BrowserWindow | null = null;
+let crashHandlers: ReturnType<typeof installCrashHandlers> | null = null;
 
 // Dev builds get an isolated data dir so they never share logs/db/settings with
 // an installed ChronoChime (or a legacy v1-beta checkout). Production is
@@ -122,6 +127,51 @@ function registerIpc(): void {
   ipcMain.handle(CH.diagnosticsOpenDir, async () => {
     await openLogsDir();
   });
+
+  ipcMain.handle(CH.crashGetInfo, () => {
+    return getCrashInfo();
+  });
+
+  ipcMain.handle(CH.crashExportAndRestart, async () => {
+    await exportCrashLogsAndRestart(exportLogs);
+  });
+}
+
+function createCrashWindow(): void {
+  crashWindow = new BrowserWindow({
+    width: 780,
+    height: 640,
+    minWidth: 720,
+    minHeight: 520,
+    show: false,
+    resizable: false,
+    webPreferences: {
+      preload: join(__dirname, 'crash-preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  if (CRASH_WINDOW_VITE_DEV_SERVER_URL) {
+    crashWindow.loadURL(`${CRASH_WINDOW_VITE_DEV_SERVER_URL}/crash.html`);
+  } else {
+    crashWindow.loadFile(join(__dirname, `../renderer/${CRASH_WINDOW_VITE_NAME}/crash.html`));
+  }
+
+  crashWindow.once('ready-to-show', () => crashWindow?.show());
+  crashWindow.on('closed', () => {
+    crashWindow = null;
+  });
+}
+
+function showCrashWindow(): void {
+  if (crashWindow) {
+    crashWindow.show();
+    return;
+  }
+
+  createCrashWindow();
 }
 
 function createWindow(): void {
@@ -149,6 +199,10 @@ function createWindow(): void {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  if (crashHandlers) {
+    mainWindow.webContents.on('render-process-gone', crashHandlers.onRenderProcessGone);
+  }
 }
 
 function createTray(): void {
@@ -197,6 +251,7 @@ if (!app.requestSingleInstanceLock()) {
       initLogging(); // configure file logging + retention sweep (D§1)
       logger.info('main', 'ChronoChime starting', { version: app.getVersion(), platform: process.platform });
       Menu.setApplicationMenu(null); // hide the application menu bar (Win/Linux)
+      crashHandlers = installCrashHandlers(showCrashWindow, (code) => app.exit(code));
       registerIpc();
       scheduler.start(); // boot recovery + arm (F14)
       createWindow();

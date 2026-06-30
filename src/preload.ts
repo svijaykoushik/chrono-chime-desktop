@@ -28,6 +28,10 @@ const bridge: ChronoBridge = {
     exportLogs: () => ipcRenderer.invoke(CH.diagnosticsExport),
     openLogsDir: () => ipcRenderer.invoke(CH.diagnosticsOpenDir),
   },
+  crash: {
+    getInfo: () => ipcRenderer.invoke(CH.crashGetInfo),
+    exportAndRestart: () => ipcRenderer.invoke(CH.crashExportAndRestart),
+  },
   onFired: (cb) => {
     const listener = (_e: unknown, event: FiredEvent) => cb(event);
     ipcRenderer.on(CH.eventFired, listener);

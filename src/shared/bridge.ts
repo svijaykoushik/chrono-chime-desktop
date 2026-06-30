@@ -20,6 +20,13 @@ export interface RoutineView {
   children: Reminder[];
 }
 
+export interface CrashInfo {
+  message: string;
+  stack: string;
+  processType: 'main' | 'renderer';
+  timestamp: number;
+}
+
 /** The typed API exposed on `window.chrono` by the preload bridge. */
 export interface ChronoBridge {
   reminders: {
@@ -45,6 +52,10 @@ export interface ChronoBridge {
   diagnostics: {
     exportLogs(): Promise<void>;
     openLogsDir(): Promise<void>;
+  };
+  crash: {
+    getInfo(): Promise<CrashInfo | null>;
+    exportAndRestart(): Promise<void>;
   };
   onFired(cb: (event: FiredEvent) => void): () => void;
 }

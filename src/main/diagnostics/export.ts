@@ -7,6 +7,8 @@ import { logsDir } from './logger';
  * Following the shipping plan, this is a pure operation that doesn't
  * touch the UI (the UI is handled by the IPC handler).
  */
+export type ExportLogsFn = (savePath: string) => Promise<void>;
+
 export async function exportLogs(savePath: string): Promise<void> {
   const dir = logsDir();
   const zip = new AdmZip();
