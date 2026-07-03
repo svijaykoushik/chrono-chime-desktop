@@ -22,6 +22,10 @@ export const CH = {
   diagnosticsOpenDir: 'chronochime:diagnostics:openDir',
   crashGetInfo: 'chronochime:crash:getInfo',
   crashExportAndRestart: 'chronochime:crash:exportAndRestart',
+  // Update checker IPC channels
+  updateCheck: 'chronochime:update:check',
+  updateDownloadProgress: 'chronochime:update:download-progress',
+  updateInstallResult: 'chronochime:update:install-result',
 } as const;
 
 /** Request schemas — every IPC input is validated against these. */
@@ -44,6 +48,22 @@ export const settingsSchema = z.object({
   timezone: z.string(),
   theme: z.enum(['light', 'dark', 'system']).default('system'),
   launchAtLogin: z.boolean().default(false),
+});
+
+/** Update checker schemas */
+export const updateCheckResult = z.object({
+  available: z.boolean(),
+  latestVersion: z.string().optional(),
+  notes: z.string().optional(),
+});
+export const updateProgress = z.object({
+  percent: z.number().min(0).max(100),
+  transferred: z.number(),
+  total: z.number(),
+});
+export const installResult = z.object({
+  success: z.boolean(),
+  error: z.string().optional(),
 });
 
 /** Re-exported so renderer + main share one source of truth. */

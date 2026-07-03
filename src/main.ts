@@ -14,6 +14,8 @@ import { getAutoStart, setAutoStart } from './main/autostart';
 import { initLogging, logger } from './main/diagnostics/logger';
 import { exportLogs, openLogsDir } from './main/diagnostics/export';
 import { installCrashHandlers, exportCrashLogsAndRestart, getCrashInfo } from './main/diagnostics/crash';
+import { UpdateService } from './main/update/update-service';
+let updateService: UpdateService | undefined;
 import {
   CH,
   reminderListReq,
@@ -256,6 +258,8 @@ if (!app.requestSingleInstanceLock()) {
       scheduler.start(); // boot recovery + arm (F14)
       createWindow();
       createTray();
+      // Initialise update checker service (M4)
+      updateService = new UpdateService();
 
       // Resume from sleep → re-run recovery so missed occurrences are handled.
       powerMonitor.on('resume', () => {
@@ -280,6 +284,10 @@ if (!app.requestSingleInstanceLock()) {
 
       app.on('before-quit', () => {
         logger.info('main', 'Application before-quit event triggered');
+        // Dispose periodic update timer
+        if (typeof updateService !== 'undefined') {
+          updateService.dispose();
+        }
       });
     } catch (err) {
       logger.error('main', 'Fatal exception during application startup', err instanceof Error ? err : new Error(String(err)));

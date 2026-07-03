@@ -22,6 +22,27 @@
 *   Update checker and update UI work.
 
 ## What to Do Next
-1.  Continue M4 work on the GitHub Releases update checker and renderer update UI.
-2.  Add integration coverage for crash export and restart flow when the crash window is triggered.
-3.  Prepare M3/M4 validation notes for the next PR review.
+1.  **Phase A – Foundations** – Completed (GitHub client, version utils, IPC contracts, and `UpdateService` skeleton instantiated).
+2.  **Phase B – Service & Scheduler** – Implement full periodic timer logic, logging, and manual trigger IPC.
+3.  **Phase C – Preload Bridge** – Extend bridge with download progress and install result listeners.
+4.  **Phase D – Renderer UI** – Build `UpdateDialog` component, integrate into Settings view, and display release notes.
+5.  **Phase E – Downloader & Installer** – Secure asset download, checksum verification, and platform‑specific installer launch.
+6.  **Phase F – Error Handling & Edge Cases** – Graceful UI messages for network failures, missing assets, checksum mismatches, and user‑skip logic.
+7.  **Phase G – Testing & Documentation** – Write unit/integration tests, update design docs, and ensure CI passes.
+8.  Add integration coverage for crash export and restart flow when the crash window is triggered.
+9.  Prepare M3/M4 validation notes for the next PR review.
+
+## Roadmap for Update Checker (M4)
+The following roadmap breaks the remaining work into concrete, time‑boxed steps that the AI agent can follow. Each step includes a short description, expected deliverables, and verification criteria.
+
+| Phase | Duration | Goal | Deliverables | Acceptance Criteria |
+|-------|----------|------|---------------|---------------------|
+| **A** | 1 week | **Foundations** – Set up GitHub client, version utils, and IPC contracts. | `src/main/update/github-client.ts`, `src/main/update/version-utils.ts`, additions to `src/shared/contract.ts`. | Unit tests pass for version comparison and mocked GitHub responses; `npm run typecheck` succeeds. |
+| **B** | 1 week | **Service & Scheduler** – Implement `update-service.ts` with periodic 24 h timer and logging. | Service class, timer registration in `src/main/main.ts`, logging integration. | Logs show “Update check scheduled” and “Update check completed” messages; manual trigger works via IPC. |
+| **C** | 1 week | **Preload Bridge** – Expose update API to renderer. | Updated `src/preload.ts` with `window.chrono.update` methods and Zod validation. | Renderer can call `window.chrono.update.check()` and receive a typed response. |
+| **D** | 1 week | **Renderer UI** – Build `UpdateDialog` and hook into Settings view. | `src/renderer/update/UpdateDialog.tsx`, `useUpdate.ts`, button in `SettingsView.tsx`. | Dialog displays latest version, release notes (markdown), and three action buttons; UI follows brand palette. |
+| **E** | 1 week | **Downloader & Installer** – Implement secure asset download, checksum verification, and installer launch. | `src/main/update/downloader.ts`, `installer.ts`, platform‑specific launch scripts. | Successful download of a test asset, checksum match, and installer process starts (mocked in tests). |
+| **F** | 1 week | **Error Handling & Edge Cases** – Add graceful handling for network failures, missing assets, checksum mismatches, and user‑skip logic. | Updated service with retry logic, user settings for `skippedVersion`, UI error dialogs. | All error scenarios display user‑friendly messages and are logged; tests cover each case. |
+| **G** | 1 week | **Testing & Documentation** – Write unit/integration tests, update docs, and add to CI. | Tests under `tests/unit/update/` and `tests/integration/update-checker.test.ts`; update `docs/design/update-checker.md` and `docs/specs/diagnostics-and-updates.md`. | `npm test` passes with new tests; documentation reflects implementation details. |
+
+**Overall Timeline:** 7 weeks total (Phases A‑G). After Phase G, perform a full regression test run, ensure `npm run typecheck` passes, and prepare the PR for review.

@@ -32,6 +32,22 @@ const bridge: ChronoBridge = {
     getInfo: () => ipcRenderer.invoke(CH.crashGetInfo),
     exportAndRestart: () => ipcRenderer.invoke(CH.crashExportAndRestart),
   },
+  update: {
+    // Returns {available:boolean, latestVersion?, notes?}
+    check: () => ipcRenderer.invoke(CH.updateCheck),
+    // Register a listener for download progress events
+    onDownloadProgress: (cb: (progress: any) => void) => {
+      const listener = (_e: unknown, progress: any) => cb(progress);
+      ipcRenderer.on(CH.updateDownloadProgress, listener);
+      return () => ipcRenderer.removeListener(CH.updateDownloadProgress, listener);
+    },
+    // Register a listener for install result events
+    onInstallResult: (cb: (result: any) => void) => {
+      const listener = (_e: unknown, result: any) => cb(result);
+      ipcRenderer.on(CH.updateInstallResult, listener);
+      return () => ipcRenderer.removeListener(CH.updateInstallResult, listener);
+    },
+  },
   onFired: (cb) => {
     const listener = (_e: unknown, event: FiredEvent) => cb(event);
     ipcRenderer.on(CH.eventFired, listener);
