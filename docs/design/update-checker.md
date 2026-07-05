@@ -27,6 +27,9 @@ All code lives under `src/main/update/` (main‑side) and `src/renderer/update/`
    - **Remind me later** – dismisses dialog; next automatic check remains scheduled.
    - **Skip this version** – records the version in user settings so it will not be offered again.
 8. **Error handling** – Network failures, checksum mismatches, or missing assets must be reported to the user with a friendly message and logged.
+9. **Update Channels** – Support switching between **Stable** and **Prerelease** channels:
+   - **Stable** (default): Queries `/releases/latest` for official public builds.
+   - **Prerelease**: Queries the list endpoint `/releases` to discover beta and pre-release releases, offering updates if the latest pre-release version is newer than the current client.
 
 ### Non‑functional
 - **Security** – All network requests use HTTPS. No code is executed from untrusted sources; only the signed installer binary is launched.
@@ -102,6 +105,25 @@ Corresponding channel names:
 - `chronochime:update:check` – request/response.
 - `chronochime:update:download-progress` – push from main to renderer.
 - `chronochime:update:install-result` – final status.
+
+---
+
+## Release Channels Design
+To cater to both general users who prioritize stability and power users who want early access to new features, ChronoChime supports two release channels:
+
+### 1. Settings Schema Extension
+A new `updateChannel` property is introduced to the `Settings` contract schema:
+```ts
+export const settingsSchema = z.object({
+  // ...
+  updateChannel: z.enum(['stable', 'prerelease']).default('stable'),
+});
+```
+
+### 2. GitHub Releases Endpoint Switching
+Depending on the configured channel, the `UpdateService` orchestrates which GitHub Releases API endpoint to query:
+- **Stable Channel:** Queries the standard `/releases/latest` API. This returns only the latest stable release.
+- **Prerelease Channel:** Queries the list API `/releases`. The main process iterates through the list of recent releases, ignores drafts, and selects the latest release (regardless of whether `prerelease` is true or false).
 
 ---
 

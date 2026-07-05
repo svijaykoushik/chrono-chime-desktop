@@ -25,7 +25,9 @@
 1.  Add integration coverage for crash export and restart flow when the crash window is triggered.
 2.  Prepare M3/M4 validation notes for the next PR review.
 
-## Roadmap for Update Checker (M4)
+<details>
+<summary>Roadmap for Update Checker (M4)</summary>
+
 The following roadmap breaks the remaining work into concrete, time‑boxed steps that the AI agent can follow. Each step includes a short description, expected deliverables, and verification criteria.
 
 | Phase | Duration | Goal | Deliverables | Acceptance Criteria |
@@ -39,3 +41,4 @@ The following roadmap breaks the remaining work into concrete, time‑boxed step
 | **G** | 1 week | **Testing & Documentation** – Write unit/integration tests, update docs, and add to CI. | Tests under `tests/unit/update/` and `tests/integration/update-checker.test.ts`; update `docs/design/update-checker.md` and `docs/specs/diagnostics-and-updates.md`. | `npm test` passes with new tests; documentation reflects implementation details. |
 
 **Overall Timeline:** 7 weeks total (Phases A‑G). After Phase G, perform a full regression test run, ensure `npm run typecheck` passes, and prepare the PR for review.
+</details>
