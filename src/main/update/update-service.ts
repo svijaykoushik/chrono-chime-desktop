@@ -34,13 +34,13 @@ export class UpdateService {
       const currentVersion = app.getVersion();
       if (isNewer(release.tag_name, currentVersion)) {
         this.latest = release;
-        logger.info('Update available', { currentVersion, latest: release.tag_name });
+        logger.info('Update', 'Update available', { currentVersion, latest: release.tag_name });
       } else {
         this.latest = null;
-        logger.info('No update needed', { currentVersion });
+        logger.info('Update', 'No update needed', { currentVersion });
       }
     } catch (e) {
-      logger.error('Failed to check for updates', e as any);
+      logger.error('Update', 'Failed to check for updates', e as Error);
     }
   }
 

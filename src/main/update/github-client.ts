@@ -37,14 +37,14 @@ export async function fetchLatestRelease(): Promise<ReleaseInfo> {
           };
           resolve(info);
         } catch (e) {
-          logger.error('Failed to parse GitHub release JSON', e as any);
+          logger.error('Update', 'Failed to parse GitHub release JSON', e as Error);
           reject(e);
         }
       });
     });
 
     request.on('error', (err) => {
-      logger.error('GitHub release request error', err);
+      logger.error('Update', 'GitHub release request error', err);
       reject(err);
     });
 

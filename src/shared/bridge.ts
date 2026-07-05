@@ -1,6 +1,6 @@
 import type { Reminder, ReminderInput } from './reminder';
 import type { RoutineInput } from './routine';
-import type { Settings } from './contract';
+import type { Settings, UpdateCheckResult, UpdateProgress, InstallResult } from './contract';
 
 /** Shape of a fired-event payload pushed from main → renderer. */
 export interface FiredEvent {
@@ -56,6 +56,11 @@ export interface ChronoBridge {
   crash: {
     getInfo(): Promise<CrashInfo | null>;
     exportAndRestart(): Promise<void>;
+  };
+  update: {
+    check(): Promise<UpdateCheckResult>;
+    onDownloadProgress(cb: (progress: UpdateProgress) => void): () => void;
+    onInstallResult(cb: (result: InstallResult) => void): () => void;
   };
   onFired(cb: (event: FiredEvent) => void): () => void;
 }

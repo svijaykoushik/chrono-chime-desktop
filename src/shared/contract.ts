@@ -70,3 +70,6 @@ export const installResult = z.object({
 export { reminderSchema, scheduleRuleSchema };
 export type Settings = z.infer<typeof settingsSchema>;
 export type QuietHours = z.infer<typeof quietHoursSchema>;
+export type UpdateCheckResult = z.infer<typeof updateCheckResult>;
+export type UpdateProgress = z.infer<typeof updateProgress>;
+export type InstallResult = z.infer<typeof installResult>;
