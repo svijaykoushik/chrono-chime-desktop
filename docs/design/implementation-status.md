@@ -7,7 +7,7 @@ implements it → the tests that prove it. All tests run with `npm test` (Vitest
 
 | Gate | Command | Result |
 | --- | --- | --- |
-| Unit + integration tests | `npm test` | **70 passing** across 8 files |
+| Unit + integration tests | `npm test` | **116 passing** across 16 files |
 | Type safety (strict) | `npm run typecheck` | clean |
 | Renderer bundle | Vite production build | builds (931 modules) |
 | Full app package | `npm run package` | packages for linux-x64; native `better_sqlite3.node` unpacked, assets bundled |

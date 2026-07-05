@@ -43,15 +43,15 @@ Settings card that the update UI later hangs its "Check for updates" control on.
 **Updates** go detection → UI → downloader (the downloader is the largest, riskiest
 piece, so it lands last).
 
-| # | Milestone | Spec | Size | Blocks |
-| --- | --- | --- | --- | --- |
-| M1 | Logging foundation | D§1.1–1.3, 1.2.1 | M | M2, M3 |
-| M2 | Export diagnostic logs | D§1.6 | S | M3 |
-| M3 | Crash capture + overlay | D§1.4–1.5 | M | — |
-| M4 | About & Feedback | F (all) | M | M6 (shared card) |
-| M5 | Update detection (no UI) | D§2.1–2.5 | M | M6 |
-| M6 | Update UI (banner/modal) | D§2.6 | M | M7 |
-| M7 | Managed downloader + release checksums | D§2.7, 2.9 | L | — |
+| # | Milestone | Spec | Size | Blocks | Status |
+| --- | --- | --- | --- | --- | --- |
+| M1 | Logging foundation | D§1.1–1.3, 1.2.1 | M | M2, M3 | **Done** |
+| M2 | Export diagnostic logs | D§1.6 | S | M3 | **Done** |
+| M3 | Crash capture + overlay | D§1.4–1.5 | M | — | **Done** |
+| M4 | About & Feedback | F (all) | M | M6 (shared card) | **Done** |
+| M5 | Update detection (no UI) | D§2.1–2.5 | M | M6 | **Done** |
+| M6 | Update UI (banner/modal) | D§2.6 | M | M7 | **Done** |
+| M7 | Managed downloader + release checksums | D§2.7, 2.9 | L | — | **Done** |
 
 ---
 
