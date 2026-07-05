@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem,
-  Stack, ToggleButton, ToggleButtonGroup, Typography, Chip, Box,
+  Stack, ToggleButton, ToggleButtonGroup, Typography, Chip, Box, InputAdornment,
 } from '@mui/material';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import { SoundPickerDialog } from './SoundPickerDialog';
 import { describeRule } from '../shared/describe-rule';
 import {
   buildRule, defaultScheduleForm, ruleToForm, CLOCK_KIND_OPTIONS, TIME_FORMAT_SUGGESTIONS, WEEKDAY_LABELS,
@@ -10,18 +12,16 @@ import {
 } from './scheduleForm';
 import type { Reminder, ReminderInput, SoundChoice } from '../shared/reminder';
 
-const SOUND_OPTIONS: { value: string; label: string; choice: SoundChoice }[] = [
-  { value: 'default', label: 'Default', choice: { kind: 'default' } },
-  { value: 'silent', label: 'Silent', choice: { kind: 'silent' } },
-  { value: 'notification.mp3', label: 'Chime 1', choice: { kind: 'builtin', id: 'notification.mp3' } },
-  { value: 'notification2.wav', label: 'Chime 2', choice: { kind: 'builtin', id: 'notification2.wav' } },
-  { value: 'notification3.wav', label: 'Chime 3', choice: { kind: 'builtin', id: 'notification3.wav' } },
-];
-
-const soundChoiceToValue = (s: SoundChoice): string => {
-  if (s.kind === 'builtin') return s.id;
-  if (s.kind === 'silent') return 'silent';
-  return 'default';
+const getSoundLabel = (s: SoundChoice): string => {
+  if (s.kind === 'silent') return 'Silent';
+  if (s.kind === 'builtin') {
+    if (s.id === 'notification.mp3') return 'Chime 1';
+    if (s.id === 'notification2.wav') return 'Chime 2';
+    if (s.id === 'notification3.wav') return 'Chime 3';
+    return s.id;
+  }
+  if (s.kind === 'custom') return s.path;
+  return 'Default';
 };
 
 interface Props {
@@ -36,7 +36,8 @@ interface Props {
 export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
-  const [sound, setSound] = useState('default');
+  const [sound, setSound] = useState<SoundChoice>({ kind: 'default' });
+  const [soundPickerOpen, setSoundPickerOpen] = useState(false);
   const [form, setForm] = useState<ScheduleForm>(defaultScheduleForm());
 
   // Populate the form when the dialog opens (from the reminder when editing).
@@ -45,12 +46,12 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
     if (reminder) {
       setTitle(reminder.title);
       setMessage(reminder.message ?? '');
-      setSound(soundChoiceToValue(reminder.notification.sound));
+      setSound(reminder.notification.sound);
       setForm(ruleToForm(reminder.rule, tz));
     } else {
       setTitle('');
       setMessage('');
-      setSound('default');
+      setSound({ kind: 'default' });
       setForm(defaultScheduleForm());
     }
   }, [open, reminder, tz]);
@@ -73,7 +74,6 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
 
   const handleSave = () => {
     if (!title.trim()) return;
-    const choice = SOUND_OPTIONS.find((o) => o.value === sound)!.choice;
 
     // Preserve the interval lattice (anchor) when editing and the period is
     // unchanged, so changing other fields does not shift future executions.
@@ -92,13 +92,14 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
       message: message.trim() || undefined,
       enabled: reminder ? reminder.enabled : true,
       rule: finalRule,
-      notification: { sound: choice, vibrate: reminder?.notification.vibrate ?? false },
+      notification: { sound, vibrate: reminder?.notification.vibrate ?? false },
     });
     onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>{isEditing ? 'Edit reminder' : 'New reminder'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
@@ -177,11 +178,20 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
             />
           )}
 
-          <TextField select label="Sound" value={sound} onChange={(e) => setSound(e.target.value)}>
-            {SOUND_OPTIONS.map((o) => (
-              <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
-            ))}
-          </TextField>
+          <TextField
+            label="Sound"
+            value={getSoundLabel(sound)}
+            onClick={() => setSoundPickerOpen(true)}
+            InputProps={{
+              readOnly: true,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <VolumeUpIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ cursor: 'pointer', '& input': { cursor: 'pointer' } }}
+          />
 
           <Typography variant="body2" color="text.secondary">Summary: {preview}</Typography>
         </Stack>
@@ -192,6 +202,13 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
           {isEditing ? 'Save changes' : 'Save'}
         </Button>
       </DialogActions>
-    </Dialog>
+      </Dialog>
+      <SoundPickerDialog
+        open={soundPickerOpen}
+        value={sound}
+        onClose={() => setSoundPickerOpen(false)}
+        onSelect={setSound}
+      />
+    </>
   );
 }
