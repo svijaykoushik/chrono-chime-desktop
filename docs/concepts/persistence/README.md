@@ -4,7 +4,7 @@ ChronoChime operates as a local-first application. All schedules, configurations
 
 ## Subsystems
 
-### 1. [SQLite Repository](file:///home/vijaykoushik/Evee/My%20Documents/GitHub/chrono-chime-desktop/src/main/store/sqlite-repository.ts)
+### 1. [SQLite Repository](../../../src/main/store/sqlite-repository.ts)
 - **Engine:** Direct bindings via `better-sqlite3`.
 - **Prepared Statements:** For predictable performance, SQL queries are prepared once during repository startup and reused for all CRUD transactions.
 - **Synchronous Execution:** Operations execute blocking/synchronously in the main process to ensure structural persistence and prevent concurrent file corruption write-locks.

@@ -12,7 +12,7 @@ graph TD
     Service -->|downloads| Downloader[Staging Downloader]
 ```
 
-### 1. [GitHub Releases Client](file:///home/vijaykoushik/Evee/My%20Documents/GitHub/chrono-chime-desktop/src/main/update/github-client.ts)
+### 1. [GitHub Releases Client](../../../src/main/update/github-client.ts)
 - **Stable Channel:** Queries `/releases/latest` for public tags.
 - **Beta/Prerelease Channel:** Queries `/releases`, filters out drafts, and selects the newest build tag.
 

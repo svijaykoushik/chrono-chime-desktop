@@ -11,7 +11,7 @@ graph TD
     Scheduler -->|schedules| Timer[setTimeout Node timer]
 ```
 
-### 1. [Scheduler Coordinator](file:///home/vijaykoushik/Evee/My%20Documents/GitHub/chrono-chime-desktop/src/main/scheduler/scheduler.ts)
+### 1. [Scheduler Coordinator](../../../src/main/scheduler/scheduler.ts)
 - **Responsibility:** Manages the active timing loop in the Electron main process.
 - **Key Logic:** Drives execution using absolute UTC epoch milliseconds and maintains only a single active timer at any given time.
 - **Drift Prevention:** Recalculates the exact wait duration before arming every timer to prevent cumulative delays associated with recursive intervals.

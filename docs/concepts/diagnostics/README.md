@@ -4,7 +4,7 @@ Reliability requires robust local-first diagnostics. ChronoChime captures detail
 
 ## Subsystems
 
-### 1. [Durable Rolling Logger](file:///home/vijaykoushik/Evee/My%20Documents/GitHub/chrono-chime-desktop/src/main/diagnostics/logger.ts)
+### 1. [Durable Rolling Logger](../../../src/main/diagnostics/logger.ts)
 - **Engine:** Built on top of `electron-log`.
 - **Transports:** Writes to both stdout/console (development) and file log transports.
 - **Log Retention Sweep:** A daily sweep limits logs to a maximum of 5 files or a 7-day retention period.
