@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box, Card, CardContent, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography, Button,
 } from '@mui/material';
@@ -12,8 +12,13 @@ interface Props {
 
 export function SettingsView({ settings, onChange }: Props) {
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState<string>('');
   const q = settings.quietHours;
   const setQuiet = (patch: Partial<Settings['quietHours']>) => onChange({ quietHours: { ...q, ...patch } });
+
+  useEffect(() => {
+    window.chrono.update.getVersion().then(setCurrentVersion).catch(() => {});
+  }, []);
 
   return (
     <Box>
@@ -105,7 +110,7 @@ export function SettingsView({ settings, onChange }: Props) {
         <CardContent>
           <Typography variant="h6" gutterBottom>Updates</Typography>
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            Check for and install the latest updates for ChronoChime.
+            Check for and install the latest updates for ChronoChime.{currentVersion ? ` Current version: v${currentVersion}` : ''}
           </Typography>
           <Box sx={{ mt: 2 }}>
             <Button

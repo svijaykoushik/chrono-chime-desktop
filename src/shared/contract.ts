@@ -29,6 +29,7 @@ export const CH = {
   updateDownloadProgress: 'chronochime:update:download-progress',
   updateInstallResult: 'chronochime:update:install-result',
   updateInstall: 'chronochime:update:install',
+  updateGetVersion: 'chronochime:update:get-version',
 } as const;
 
 /** Request schemas — every IPC input is validated against these. */

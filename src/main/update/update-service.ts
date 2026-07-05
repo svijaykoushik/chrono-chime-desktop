@@ -27,6 +27,10 @@ export class UpdateService {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore – ipcMain may be undefined in a mocked environment
     if (typeof ipcMain !== 'undefined' && ipcMain && typeof ipcMain.handle === 'function') {
+      ipcMain.handle(CH.updateGetVersion, async () => {
+        return app.getVersion();
+      });
+
       ipcMain.handle(CH.updateCheck, async () => {
         logger.info('Update', 'Manual update check requested by user');
         await this.checkForUpdates();

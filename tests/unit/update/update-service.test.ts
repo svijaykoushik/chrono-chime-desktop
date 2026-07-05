@@ -83,10 +83,22 @@ describe('UpdateService', () => {
 
   test('Observable Behavior: registers IPC handlers on creation', () => {
     const service = new UpdateService();
+    expect(ipcMain.handle).toHaveBeenCalledWith(CH.updateGetVersion, expect.any(Function));
     expect(ipcMain.handle).toHaveBeenCalledWith(CH.updateCheck, expect.any(Function));
     expect(ipcMain.handle).toHaveBeenCalledWith(CH.updateDownload, expect.any(Function));
     expect(ipcMain.handle).toHaveBeenCalledWith(CH.updateCancelDownload, expect.any(Function));
     expect(ipcMain.handle).toHaveBeenCalledWith(CH.updateInstall, expect.any(Function));
+    service.dispose();
+  });
+
+  test('Observable Behavior: updateGetVersion IPC handler returns current app version', async () => {
+    vi.mocked(app.getVersion).mockReturnValue('1.2.3');
+    const service = new UpdateService();
+    const handler = (ipcMain as any)._getHandler(CH.updateGetVersion);
+    expect(handler).toBeDefined();
+
+    const version = await handler();
+    expect(version).toBe('1.2.3');
     service.dispose();
   });
 
