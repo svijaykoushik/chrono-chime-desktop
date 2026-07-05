@@ -16,7 +16,7 @@ All code lives under `src/main/update/` (main‑side) and `src/renderer/update/`
 
 ## Requirements
 ### Functional
-1. **Automatic periodic check** – On app start and then every 24 h, the main process queries the GitHub Releases API for the repository `vijaykoushik/chrono-chime-desktop`.
+1. **Automatic periodic check** – On app start and then every 24 h, the main process queries the GitHub Releases API for the repository `svijaykoushik/chrono-chime-desktop`.
 2. **Version comparison** – Compare the latest release `tag_name` (semantic version) with the current app version from `package.json`.
 3. **Release notes** – Retrieve the `body` of the release and render it as markdown in the UI.
 4. **Download assets** – When the user clicks **Install**, download the appropriate asset for the current platform (Linux `.deb` or Windows `.exe`).
@@ -44,7 +44,7 @@ All code lives under `src/main/update/` (main‑side) and `src/renderer/update/`
 | File | Responsibility |
 |------|-----------------|
 | `update-service.ts` | Orchestrates periodic checks, stores last‑checked timestamp, and exposes `checkForUpdates()` API.
-| `github-client.ts` | Thin wrapper around `node-fetch` (or `axios`) that calls `https://api.github.com/repos/vijaykoushik/chrono-chime-desktop/releases/latest` and returns a typed `ReleaseInfo` object.
+| `github-client.ts` | Thin wrapper around `node-fetch` (or `axios`) that calls `https://api.github.com/repos/svijaykoushik/chrono-chime-desktop/releases/latest` and returns a typed `ReleaseInfo` object.
 | `version-utils.ts` | Parses semantic versions, compares them, and determines if an update is newer.
 | `downloader.ts` | Streams the selected asset to a temporary file, computes SHA‑256 while downloading, and validates against the checksum file.
 | `installer.ts` | Platform‑specific logic to launch the installer (`dpkg -i` on Linux, `Start-Process` on Windows) in a detached process.

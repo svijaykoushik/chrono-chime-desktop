@@ -15,8 +15,8 @@ export interface ReleaseInfo {
 export async function fetchLatestRelease(channel: 'stable' | 'prerelease' = 'stable'): Promise<ReleaseInfo> {
   return new Promise((resolve, reject) => {
     const url = channel === 'stable'
-      ? 'https://api.github.com/repos/vijaykoushik/chrono-chime-desktop/releases/latest'
-      : 'https://api.github.com/repos/vijaykoushik/chrono-chime-desktop/releases';
+      ? 'https://api.github.com/repos/svijaykoushik/chrono-chime-desktop/releases/latest'
+      : 'https://api.github.com/repos/svijaykoushik/chrono-chime-desktop/releases';
 
     const request = net.request({
       method: 'GET',
