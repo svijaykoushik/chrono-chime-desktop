@@ -14,6 +14,7 @@ const defaults = (): Settings => ({
   timezone: systemTz(),
   theme: 'system',
   launchAtLogin: false,
+  updateChannel: 'stable',
 });
 
 /** Small durable settings store backed by a JSON file in userData. */

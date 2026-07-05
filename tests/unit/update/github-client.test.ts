@@ -130,4 +130,52 @@ describe('fetchLatestRelease', () => {
       await expect(fetchLatestRelease()).rejects.toThrow(`GitHub API returned status code ${code}`);
     }
   });
+
+  test('Prerelease Channel: fetches /releases list, skips drafts, and returns latest pre-release', async () => {
+    const response = new (require('events').EventEmitter)();
+    response.statusCode = 200;
+
+    (net.request as any).mockImplementation((opts: any) => {
+      // Assert it requested the generic releases list URL
+      expect(opts.url).toContain('/releases');
+      expect(opts.url).not.toContain('/latest');
+
+      const req = new (require('events').EventEmitter)();
+      process.nextTick(() => {
+        req.emit('response', response);
+        response.emit('data', JSON.stringify([
+          { tag_name: 'v2.1.0-beta.0', body: 'draft beta', assets: [], draft: true },
+          { tag_name: 'v2.0.0-beta.1', body: 'prerelease beta notes', assets: [], draft: false },
+          { tag_name: 'v1.0.0', body: 'stable notes', assets: [], draft: false },
+        ]));
+        response.emit('end');
+      });
+      req.end = vi.fn();
+      return req;
+    });
+
+    const release = await fetchLatestRelease('prerelease');
+    expect(release.tag_name).toBe('v2.0.0-beta.1'); // selects the first non-draft release
+    expect(release.body).toBe('prerelease beta notes');
+  });
+
+  test('Prerelease Channel Failure Mode: throws error if no non-draft releases found', async () => {
+    const response = new (require('events').EventEmitter)();
+    response.statusCode = 200;
+
+    (net.request as any).mockImplementation(() => {
+      const req = new (require('events').EventEmitter)();
+      process.nextTick(() => {
+        req.emit('response', response);
+        response.emit('data', JSON.stringify([
+          { tag_name: 'v2.1.0-beta.0', body: 'draft beta', assets: [], draft: true },
+        ]));
+        response.emit('end');
+      });
+      req.end = vi.fn();
+      return req;
+    });
+
+    await expect(fetchLatestRelease('prerelease')).rejects.toThrow('No non-draft releases found');
+  });
 });

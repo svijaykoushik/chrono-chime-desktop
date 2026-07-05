@@ -12,11 +12,15 @@ export interface ReleaseInfo {
  * Fetch the latest release from the ChronoChime GitHub repository.
  * Returns a promise that resolves to {@link ReleaseInfo}.
  */
-export async function fetchLatestRelease(): Promise<ReleaseInfo> {
+export async function fetchLatestRelease(channel: 'stable' | 'prerelease' = 'stable'): Promise<ReleaseInfo> {
   return new Promise((resolve, reject) => {
+    const url = channel === 'stable'
+      ? 'https://api.github.com/repos/vijaykoushik/chrono-chime-desktop/releases/latest'
+      : 'https://api.github.com/repos/vijaykoushik/chrono-chime-desktop/releases';
+
     const request = net.request({
       method: 'GET',
-      url: 'https://api.github.com/repos/vijaykoushik/chrono-chime-desktop/releases/latest',
+      url,
       headers: { 'User-Agent': 'ChronoChime-Update-Checker' },
     });
 
@@ -30,10 +34,24 @@ export async function fetchLatestRelease(): Promise<ReleaseInfo> {
       response.on('end', () => {
         try {
           const json = JSON.parse(raw);
+          let targetRelease = json;
+
+          if (channel === 'prerelease') {
+            if (!Array.isArray(json)) {
+              throw new Error('Expected JSON array from GitHub releases list API');
+            }
+            // Find the latest release that is not a draft (can be stable or pre-release)
+            const latest = json.find((r: any) => !r.draft);
+            if (!latest) {
+              throw new Error('No non-draft releases found');
+            }
+            targetRelease = latest;
+          }
+
           const info: ReleaseInfo = {
-            tag_name: json.tag_name,
-            body: json.body ?? '',
-            assets: json.assets.map((a: any) => ({
+            tag_name: targetRelease.tag_name,
+            body: targetRelease.body ?? '',
+            assets: targetRelease.assets.map((a: any) => ({
               name: a.name,
               browser_download_url: a.browser_download_url,
               size: a.size,

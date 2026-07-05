@@ -4,7 +4,7 @@ import { isNewer } from './version-utils';
 import { selectAsset } from './asset-select';
 import { Downloader } from './downloader';
 import { app, ipcMain, BrowserWindow } from 'electron';
-import { CH, updateCheckResult } from '../../shared/contract';
+import { CH, updateCheckResult, type Settings } from '../../shared/contract';
 import process from 'node:process';
 
 /**
@@ -18,7 +18,10 @@ export class UpdateService {
   private readonly intervalMs = 24 * 60 * 60 * 1000; // 24 h
   private downloader = new Downloader();
 
-  constructor(getMainWindow?: () => BrowserWindow | null) {
+  constructor(
+    getMainWindow?: () => BrowserWindow | null,
+    private readonly getSettings?: () => Settings
+  ) {
     // Immediate check on startup
     this.checkForUpdates();
     // Schedule recurring checks
@@ -83,7 +86,9 @@ export class UpdateService {
   /** Perform a single check against GitHub. */
   async checkForUpdates(): Promise<void> {
     try {
-      const release = await fetchLatestRelease();
+      const settings = this.getSettings ? this.getSettings() : null;
+      const channel = settings?.updateChannel || 'stable';
+      const release = await fetchLatestRelease(channel);
       const currentVersion = app.getVersion();
       if (isNewer(release.tag_name, currentVersion)) {
         this.latest = release;

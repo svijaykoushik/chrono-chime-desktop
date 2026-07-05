@@ -162,4 +162,26 @@ describe('UpdateService', () => {
       service.dispose();
     }
   });
+
+  test('Observable Behavior: queries correct release channel from settings', async () => {
+    vi.mocked(github.fetchLatestRelease).mockResolvedValue({
+      tag_name: 'v2.0.0-beta.0',
+      body: 'beta notes',
+      assets: [],
+    });
+
+    // 1. Stable channel configured -> passes 'stable'
+    const getSettingsStable = vi.fn().mockReturnValue({ updateChannel: 'stable' });
+    const serviceStable = new UpdateService(undefined, getSettingsStable);
+    await serviceStable.checkForUpdates();
+    expect(github.fetchLatestRelease).toHaveBeenLastCalledWith('stable');
+    serviceStable.dispose();
+
+    // 2. Prerelease channel configured -> passes 'prerelease'
+    const getSettingsPrerelease = vi.fn().mockReturnValue({ updateChannel: 'prerelease' });
+    const servicePrerelease = new UpdateService(undefined, getSettingsPrerelease);
+    await servicePrerelease.checkForUpdates();
+    expect(github.fetchLatestRelease).toHaveBeenLastCalledWith('prerelease');
+    servicePrerelease.dispose();
+  });
 });

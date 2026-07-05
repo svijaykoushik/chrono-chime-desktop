@@ -259,7 +259,7 @@ if (!app.requestSingleInstanceLock()) {
       createWindow();
       createTray();
       // Initialise update checker service (M4)
-      updateService = new UpdateService(() => mainWindow);
+      updateService = new UpdateService(() => mainWindow, () => settingsStore.get());
 
       // Resume from sleep → re-run recovery so missed occurrences are handled.
       powerMonitor.on('resume', () => {

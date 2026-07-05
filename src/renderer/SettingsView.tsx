@@ -112,14 +112,26 @@ export function SettingsView({ settings, onChange }: Props) {
           <Typography variant="body2" color="text.secondary" gutterBottom>
             Check for and install the latest updates for ChronoChime.{currentVersion ? ` Current version: v${currentVersion}` : ''}
           </Typography>
-          <Box sx={{ mt: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ mt: 2 }} alignItems="center">
+            <TextField
+              select
+              label="Update Channel"
+              value={settings.updateChannel || 'stable'}
+              size="small"
+              sx={{ minWidth: 160 }}
+              onChange={(e) => onChange({ updateChannel: e.target.value as Settings['updateChannel'] })}
+            >
+              <MenuItem value="stable">Stable</MenuItem>
+              <MenuItem value="prerelease">Beta (Pre-release)</MenuItem>
+            </TextField>
             <Button
               variant="outlined"
               onClick={() => setUpdateOpen(true)}
+              sx={{ height: 40 }}
             >
               Check for Updates
             </Button>
-          </Box>
+          </Stack>
         </CardContent>
       </Card>
 
