@@ -7,6 +7,21 @@ Index of all project documentation.
 - [Product Requirements Document](prd/chronochime-product-requirements-document.md) —
   the PRD: mission, philosophy, and feature requirements (F1–F14).
 
+## Architectural Concepts
+
+A breakdown of ChronoChime's design, subsystems, and load-bearing mechanics:
+
+- **[Core Scheduling System](concepts/scheduling/README.md)**
+  - [Recurrence & Calendaring Engine](concepts/scheduling/recurrence_engine.md) — DST resilience and drift lattice math.
+  - [Boot & Sleep Recovery Manager](concepts/scheduling/boot_recovery.md) — Grace windows and coalesced checks.
+- **[Persistence System](concepts/persistence/README.md)** — SQLite direct prepared statements repository.
+- **[Secure IPC & Bridge System](concepts/ipc/README.md)** — Sandboxed `contextBridge` validation contract.
+- **[Application Updates System](concepts/updates/README.md)**
+  - [Range-Resume Staging Downloader](concepts/updates/staged_downloader.md) — Partial offsets, checksums, and atomic renames.
+- **[Diagnostics & Logging System](concepts/diagnostics/README.md)**
+  - [Process-Safe Reentrancy & Crash Guard](concepts/diagnostics/crash_reentrancy.md) — Single-flight locks and crash loop breakers.
+- **[Notification & Sound Delivery System](concepts/notification/README.md)** — Quiet hours suppression and `chrono-sound://` preview protocol.
+
 ## Design
 
 - [Technical Design Document](design/technical-design-document.md) —
