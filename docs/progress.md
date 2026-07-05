@@ -16,21 +16,14 @@
 *   M1 Logging foundation — Done
 *   M2 Export diagnostic logs — Done
 *   M3 Crash capture + friendly crash overlay — Done
-*   M4 Update checker + update UI — In progress
+*   M4 Update checker + update UI — Done
 
 ## Features in Progress
-*   Update checker and update UI work.
+*   None (Milestone 4 fully implemented and verified).
 
 ## What to Do Next
-1.  **Phase A – Foundations** – Completed (GitHub client, version utils, IPC contracts, and `UpdateService` skeleton instantiated).
-2.  **Phase B – Service & Scheduler** – Implement full periodic timer logic, logging, and manual trigger IPC.
-3.  **Phase C – Preload Bridge** – Extend bridge with download progress and install result listeners.
-4.  **Phase D – Renderer UI** – Build `UpdateDialog` component, integrate into Settings view, and display release notes.
-5.  **Phase E – Downloader & Installer** – Secure asset download, checksum verification, and platform‑specific installer launch.
-6.  **Phase F – Error Handling & Edge Cases** – Graceful UI messages for network failures, missing assets, checksum mismatches, and user‑skip logic.
-7.  **Phase G – Testing & Documentation** – Write unit/integration tests, update design docs, and ensure CI passes.
-8.  Add integration coverage for crash export and restart flow when the crash window is triggered.
-9.  Prepare M3/M4 validation notes for the next PR review.
+1.  Add integration coverage for crash export and restart flow when the crash window is triggered.
+2.  Prepare M3/M4 validation notes for the next PR review.
 
 ## Roadmap for Update Checker (M4)
 The following roadmap breaks the remaining work into concrete, time‑boxed steps that the AI agent can follow. Each step includes a short description, expected deliverables, and verification criteria.

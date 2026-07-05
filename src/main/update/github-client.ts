@@ -22,6 +22,10 @@ export async function fetchLatestRelease(): Promise<ReleaseInfo> {
 
     let raw = '';
     request.on('response', (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`GitHub API returned status code ${response.statusCode}`));
+        return;
+      }
       response.on('data', (chunk) => (raw += chunk.toString()));
       response.on('end', () => {
         try {

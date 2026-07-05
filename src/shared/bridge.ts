@@ -59,6 +59,9 @@ export interface ChronoBridge {
   };
   update: {
     check(): Promise<UpdateCheckResult>;
+    download(): Promise<void>;
+    cancelDownload(): Promise<void>;
+    install(): Promise<void>;
     onDownloadProgress(cb: (progress: UpdateProgress) => void): () => void;
     onInstallResult(cb: (result: InstallResult) => void): () => void;
   };

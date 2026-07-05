@@ -1,7 +1,9 @@
+import React, { useState } from 'react';
 import {
   Box, Card, CardContent, FormControlLabel, MenuItem, Stack, Switch, TextField, Typography, Button,
 } from '@mui/material';
 import type { Settings } from '../shared/contract';
+import { UpdateDialog } from './update/UpdateDialog';
 
 interface Props {
   settings: Settings;
@@ -9,6 +11,7 @@ interface Props {
 }
 
 export function SettingsView({ settings, onChange }: Props) {
+  const [updateOpen, setUpdateOpen] = useState(false);
   const q = settings.quietHours;
   const setQuiet = (patch: Partial<Settings['quietHours']>) => onChange({ quietHours: { ...q, ...patch } });
 
@@ -97,6 +100,25 @@ export function SettingsView({ settings, onChange }: Props) {
           </Stack>
         </CardContent>
       </Card>
+
+      <Card variant="outlined" sx={{ mt: 2 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>Updates</Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Check for and install the latest updates for ChronoChime.
+          </Typography>
+          <Box sx={{ mt: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setUpdateOpen(true)}
+            >
+              Check for Updates
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+
+      <UpdateDialog open={updateOpen} onClose={() => setUpdateOpen(false)} />
     </Box>
   );
 }

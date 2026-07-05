@@ -35,6 +35,9 @@ const bridge: ChronoBridge = {
   update: {
     // Returns {available:boolean, latestVersion?, notes?}
     check: () => ipcRenderer.invoke(CH.updateCheck),
+    download: () => ipcRenderer.invoke(CH.updateDownload),
+    cancelDownload: () => ipcRenderer.invoke(CH.updateCancelDownload),
+    install: () => ipcRenderer.invoke(CH.updateInstall),
     // Register a listener for download progress events
     onDownloadProgress: (cb: (progress: any) => void) => {
       const listener = (_e: unknown, progress: any) => cb(progress);
