@@ -19,13 +19,15 @@ export class Downloader {
   private isDownloading = false;
   private isCancelled = false;
 
-  private updatesDir = path.join(app.getPath('userData'), 'updates');
+  // Use POSIX-style path joining to ensure forward slashes on all platforms (tests expect POSIX paths)
+  // Ensure the base userData path uses forward slashes for consistency across platforms
+  private updatesDir = path.posix.join(app.getPath('userData').replace(/\\/g, '/'), 'updates');
   private partPath = '';
   private finalPath = '';
   private pendingJsonPath = '';
 
   constructor() {
-    this.pendingJsonPath = path.join(this.updatesDir, 'pending.json');
+    this.pendingJsonPath = path.posix.join(this.updatesDir, 'pending.json');
   }
 
   /**
@@ -41,8 +43,8 @@ export class Downloader {
     this.isCancelled = false;
 
     const filename = path.basename(new URL(options.url).pathname);
-    this.partPath = path.join(this.updatesDir, `${filename}.part`);
-    this.finalPath = path.join(this.updatesDir, filename);
+    this.partPath = path.posix.join(this.updatesDir, `${filename}.part`);
+    this.finalPath = path.posix.join(this.updatesDir, filename);
 
     // Ensure update folder exists
     if (!fs.existsSync(this.updatesDir)) {

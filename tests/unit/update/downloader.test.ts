@@ -1,4 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from 'vitest';
+import path from 'node:path';
 import { Downloader } from '../../../src/main/update/downloader';
 import { net, shell, app } from 'electron';
 import fs from 'node:fs';
@@ -76,13 +77,19 @@ describe('Downloader', () => {
     });
 
     // Check directory preparation and metadata writing
-    expect(fs.mkdirSync).toHaveBeenCalledWith('/tmp/mock-userData-dl/updates', { recursive: true });
+    // Build expected paths using the same logic as the production code (POSIX join)
+    const base = '/tmp/mock-userData-dl';
+    const updates = path.posix.join(base, 'updates');
+    const pending = path.posix.join(updates, 'pending.json');
+    const part = path.posix.join(updates, 'installer.exe.part');
+
+    expect(fs.mkdirSync).toHaveBeenCalledWith(updates, { recursive: true });
     expect(fs.writeFileSync).toHaveBeenCalledWith(
-      '/tmp/mock-userData-dl/updates/pending.json',
+      pending,
       expect.stringContaining('"version":"v2.0.0"'),
       'utf8'
     );
-    expect(fs.createWriteStream).toHaveBeenCalledWith('/tmp/mock-userData-dl/updates/installer.exe.part', { flags: 'w' });
+    expect(fs.createWriteStream).toHaveBeenCalledWith(part, { flags: 'w' });
 
     // Simulate server response and chunk emission
     const respEmitter = new EventEmitter();
@@ -97,10 +104,8 @@ describe('Downloader', () => {
     expect(progressSpy).toHaveBeenCalled();
     expect(mockWriteStream.write).toHaveBeenCalledTimes(2);
     expect(mockWriteStream.end).toHaveBeenCalled();
-    expect(fs.renameSync).toHaveBeenCalledWith(
-      '/tmp/mock-userData-dl/updates/installer.exe.part',
-      '/tmp/mock-userData-dl/updates/installer.exe'
-    );
+    const finalExe = path.posix.join(updates, 'installer.exe');
+    expect(fs.renameSync).toHaveBeenCalledWith(part, finalExe);
     expect(doneSpy).toHaveBeenCalled();
     expect(doneSpy.mock.calls[0]?.[0]).toBeUndefined();
   });
@@ -136,13 +141,14 @@ describe('Downloader', () => {
     });
 
     // Verify correct Range header inclusion
+    const resumePart = path.posix.join(updates, 'installer.exe.part');
     expect(net.request).toHaveBeenCalledWith(expect.objectContaining({
       headers: expect.objectContaining({
         Range: 'bytes=40-',
       }),
     }));
     // Stream flag should be append 'a'
-    expect(fs.createWriteStream).toHaveBeenCalledWith('/tmp/mock-userData-dl/updates/installer.exe.part', { flags: 'a' });
+    expect(fs.createWriteStream).toHaveBeenCalledWith(resumePart, { flags: 'a' });
   });
 
   test('Failure Mode: falls back to full download if range request status is 200 instead of 206', () => {
@@ -177,7 +183,7 @@ describe('Downloader', () => {
     reqEmitter.emit('response', respEmitter);
 
     // Verify it cleans the corrupt partial file and restarts download fresh
-    expect(fs.unlinkSync).toHaveBeenCalledWith('/tmp/mock-userData-dl/updates/installer.exe.part');
+    expect(fs.unlinkSync).toHaveBeenCalledWith(part);
   });
 
   test('Failure Mode: cleans up resources on file size integrity mismatch', () => {
