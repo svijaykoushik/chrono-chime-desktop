@@ -1,9 +1,6 @@
 {
-    "cSpell.words": [
-        "asar",
-        "chrono",
-        "chronochime",
-        "svijaykoushik"
-    ],
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "chat.tools.terminal.autoApprove": {
+        "npx vitest": true,
+        "git add": true
+    }
 }

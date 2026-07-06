@@ -1,36 +1,67 @@
 name: Release
+
+# Build distributables and publish a GitHub Release when a version tag is pushed.
+# Tag the commit (e.g. `git tag v2.0.0 && git push origin v2.0.0`) to trigger.
 on:
   push:
     tags:
       - 'v*'
 
-jobs:
-  publish:
-    runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-        node-version: [20.x]
+permissions:
+  contents: write # required to create the release and upload assets
 
+jobs:
+  build:
+    name: Build distributables (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest # → Linux .deb
+          - os: windows-latest # → Windows Squirrel .exe / .nupkg
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@master
-      - name: 💚 Use Node.js ${{ matrix.node-version }}
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-      - name: 🧱 Install Dependencies
+          node-version: '20'
+          cache: npm
+
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y fakeroot dpkg
+
+      - name: Install dependencies
         run: npm ci
-      - name: 📦 Bundle Application
-        run: npm run package
-      - name: 🧪 Run Tests
-        if: ${{ matrix.os != 'macOS-latest'}}
-        uses: coactions/setup-xvfb@v1
+
+      - name: Make distributables
+        run: npm run make
+
+      - name: Upload distributables
+        uses: actions/upload-artifact@v4
         with:
-          run: npm run wdio
-      - name: 📦 Publish to GitHub releases
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
+          name: distributables-${{ matrix.os }}
+          path: out/make/**
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all distributables
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Create release and attach distributables
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: dist/**/*

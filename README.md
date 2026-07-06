@@ -1,41 +1,54 @@
 # ChronoChime
 
-![ChronoChime Logo]('./chrono-chime-icon-192.png')
+> Reliably notify people when their chosen temporal conditions become true.
 
-Welcome to ChronoChime, a desktop application built with Electron.js that sends you hourly notifications along with a soothing chime. Stay on track and manage your time effortlessly with ChronoChime!
+ChronoChime is a calm, reliable temporal-notification desktop app. It remembers
+time on your behalf and notifies you at the moments you define — single
+reminders, recurring schedules, and composite routines — without becoming a task
+manager or productivity suite.
 
-## Overview
+## Tech stack
 
-ChronoChime is crafted using HTML, CSS, and JavaScript for the desktop environment. It utilizes Electron.js for seamless desktop application functionality, including background notifications and caching.
+- **Electron** (Forge + Vite) — cross-platform desktop shell, background-first (tray)
+- **TypeScript** (strict) everywhere
+- **React + Material UI** (Material 3 theme) renderer
+- **better-sqlite3** durable local persistence (behind a `Repository` interface)
+- **Luxon** for DST-aware calendar math; **Zod** for IPC + row validation
+- **Vitest** for test-driven development
 
-## Setting up for Development
+## Architecture
 
-To setup development environment for ChronoChime, follow these steps:
+A reliability-first, three-layer Electron design:
 
-1. Clone the repository:
+- **Main process** — a single drift-free **Scheduler** driven by a pure
+  `nextOccurrence(rule, after, tz)` recurrence engine; SQLite persistence;
+  Notification Manager; Zod-validated IPC. Runs without the window open.
+- **Preload** — `contextBridge` exposes only the typed `window.chrono` API
+  (`contextIsolation`, `sandbox`, no `nodeIntegration`).
+- **Renderer** — React/MUI views for Reminders, Routines, and Settings.
 
-   ```bash
-   git clone https://github.com/svijaykoushik/chorno-chime-desktop.git
-   ```
-2. Navigate to the project directory:
+All scheduling is derived from persisted **rule definitions**, never from
+in-memory timers, so the app recovers correctly after restart or sleep.
 
-   ```bash
-   cd chorno-chime-desktop
-   ```
-3. Install the dependencies:
+See [`docs/design/technical-design-document.md`](docs/design/technical-design-document.md)
+for the full design and [`docs/design/implementation-status.md`](docs/design/implementation-status.md)
+for feature-by-feature traceability.
 
-   ```bash
-   npm ci
-   ```
-  
-4. Start the app:
+## Develop
 
-   ```bash
-   npm run start
-   ```
+```bash
+npm install
+npm start        # launch the app with HMR (requires a desktop session)
+npm test         # run the Vitest suite (68 tests)
+npm run typecheck
+npm run package  # build the unpacked app folder (out/ChronoChime-<platform>-<arch>/)
+npm run make     # build installers: .deb (Linux) / Squirrel .exe (Windows)
+```
 
-## About
-ChronoChime was created as a fun and functional project to showcase the capabilities of Electron.js for desktop applications. Enhance your productivity and organization with the gentle reminders of ChronoChime's hourly notifications.
+ChronoChime targets **Windows and Linux only**. See
+[`docs/README.md`](docs/README.md) for the full documentation index, including
+[Packaging & Distribution](docs/build/packaging-and-distribution.md).
 
-## Contributing
-Contributions are welcome! If you encounter any issues or have ideas for improvements, please feel free to submit a pull request.
+## License
+
+MIT
