@@ -1,7 +1,7 @@
 {
   "name": "chronochime",
   "productName": "ChronoChime",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "description": "Reliably notify people when their chosen temporal conditions become true.",
   "license": "MIT",
   "main": ".vite/build/main.js",
