@@ -111,16 +111,20 @@ describe('Downloader', () => {
   });
 
   test('Happy Path: resumes download using Range headers when partial state is valid', () => {
+    // Define base and updates path consistent with other tests
+    const base = '/tmp/mock-userData-dl';
+    const updates = path.posix.join(base, 'updates');
+
     // Mock that pending.json and .part file both exist
-    vi.mocked(fs.existsSync).mockImplementation((path: any) => {
-      if (path.includes('pending.json') || path.includes('.part') || path.includes('updates')) return true;
+    vi.mocked(fs.existsSync).mockImplementation((p: any) => {
+      if (p.includes('pending.json') || p.includes('.part') || p.includes('updates')) return true;
       return false;
     });
 
     vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
       url: 'https://example.com/installer.exe',
       version: 'v2.0.0',
-      path: '/tmp/mock-userData-dl/updates/installer.exe.part',
+      path: path.posix.join(updates, 'installer.exe.part'),
       received: 40,
       total: 100,
     }));
@@ -152,12 +156,17 @@ describe('Downloader', () => {
   });
 
   test('Failure Mode: falls back to full download if range request status is 200 instead of 206', () => {
+    // Define base and updates path for consistency
+    const base = '/tmp/mock-userData-dl';
+    const updates = path.posix.join(base, 'updates');
+    const part = path.posix.join(updates, 'installer.exe.part');
+
     // Mock that pending.json and .part file exist to trigger Range resume request
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
       url: 'https://example.com/installer.exe',
       version: 'v2.0.0',
-      path: '/tmp/mock-userData-dl/updates/installer.exe.part',
+      path: part,
       received: 40,
       total: 100,
     }));
