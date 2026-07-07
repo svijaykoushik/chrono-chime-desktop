@@ -55,4 +55,5 @@ A breakdown of ChronoChime's design, subsystems, and load-bearing mechanics:
 ## Contributor guidance
 
 - Repository conventions: [`../.github/copilot-instructions.md`](../.github/copilot-instructions.md)
+- Project‑wide code‑base conventions: [`code-base-conventions.md`](code-base-conventions.md)
 - Process-specific agents: [`../.github/agents/`](../.github/agents/)
