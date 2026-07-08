@@ -88,3 +88,50 @@ compatibility *after* a stable `1.0.0` is out.
   menu or run `chronochime`.
 - **Windows (.exe):** run the generated Setup `.exe`; Squirrel installs per-user
   and creates Start Menu / desktop shortcuts.
+
+## Release Failure Runbook
+
+If a GitHub Actions release workflow run fails after pushing a semver version tag (e.g. `v1.0.0-rc.1`), follow this runbook to resolve the failure and re-release on the same tag.
+
+### 1. Identify the Cause
+Check the failing step in the GitHub Actions runner console:
+- **Windows Squirrel Maker Failures:** Typically caused by missing package metadata required by NuGet (e.g., `Authors is required`). Ensure `author` is defined in `package.json` and `authors` is passed to the `MakerSquirrel` config in `forge.config.js`.
+- **Dependency/Build Issues:** Errors due to native module rebuilds, mismatching Node/Electron ABIs, or syntax compilation failures.
+
+### 2. Clean Up and Reset the Release Tag
+Because GitHub Actions release workflows trigger specifically on new tag pushes, pushing updates to the branch will not automatically re-run the workflow for that tag. You must move the tag to point to the commit containing the fix.
+
+Follow these steps:
+
+1. **Delete the tag locally:**
+   ```bash
+   git tag -d <tag_name>
+   ```
+   *Example:* `git tag -d v1.0.0-rc.1`
+
+2. **Delete the tag remotely on GitHub:**
+   ```bash
+   git push origin --delete <tag_name>
+   ```
+   *Example:* `git push origin --delete v1.0.0-rc.1`
+
+3. **Apply the fix and commit:**
+   Implement the necessary code or config fixes, then commit and push to the release branch (e.g., `main`):
+   ```bash
+   git add .
+   git commit -m "chore: fix release build issue [details]"
+   git push origin main
+   ```
+
+4. **Re-create the tag on the new commit:**
+   Make sure your local branch is up-to-date, then tag the new commit:
+   ```bash
+   git tag <tag_name>
+   ```
+   *Example:* `git tag v1.0.0-rc.1`
+
+5. **Push the tag to trigger the workflow again:**
+   ```bash
+   git push origin <tag_name>
+   ```
+   *Example:* `git push origin v1.0.0-rc.1`
