@@ -29,6 +29,7 @@ module.exports = {
     new MakerSquirrel({
       name: 'ChronoChime',
       setupIcon: './assets/icons/chrono-chime-icon.ico',
+      authors: 'Vijaykoushik, S',
     }),
     // Linux Debian package (.deb) — requires `dpkg` and `fakeroot` on the build host.
     new MakerDeb(

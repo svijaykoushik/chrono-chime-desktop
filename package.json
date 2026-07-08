@@ -1,6 +1,7 @@
 {
   "name": "chronochime",
   "productName": "ChronoChime",
+  "author": "Vijaykoushik, S",
   "version": "1.0.0-rc.1",
   "description": "Reliably notify people when their chosen temporal conditions become true.",
   "license": "MIT",
