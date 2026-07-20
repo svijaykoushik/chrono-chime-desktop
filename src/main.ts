@@ -10,7 +10,7 @@ import { ReminderService } from './main/app/reminder-service';
 import { RoutineService } from './main/app/routine-service';
 import { NotificationManager } from './main/notification/manager';
 import { SettingsStore } from './main/settings';
-import { getAutoStart, setAutoStart } from './main/autostart';
+import { getAutoStart, setAutoStart, START_MINIMIZED_ARG } from './main/autostart';
 import { initLogging, logger } from './main/diagnostics/logger';
 import { exportLogs, openLogsDir } from './main/diagnostics/export';
 import { installCrashHandlers, exportCrashLogsAndRestart, getCrashInfo } from './main/diagnostics/crash';
@@ -110,8 +110,11 @@ function registerIpc(): void {
   ipcMain.handle(CH.settingsGet, () => ({ ...settingsStore.get(), launchAtLogin: getAutoStart() }));
   ipcMain.handle(CH.settingsUpdate, (_e, raw) => {
     const patch = settingsSchema.partial().parse(raw);
-    if (patch.launchAtLogin !== undefined) setAutoStart(patch.launchAtLogin);
     const updated = settingsStore.update(patch);
+    if (patch.launchAtLogin !== undefined || patch.startMinimizedOnAutoLaunch !== undefined) {
+      const launchAtLogin = patch.launchAtLogin !== undefined ? patch.launchAtLogin : getAutoStart();
+      setAutoStart(launchAtLogin, updated.startMinimizedOnAutoLaunch);
+    }
     return { ...updated, launchAtLogin: getAutoStart() };
   });
   ipcMain.handle(CH.soundPreview, () => {
@@ -176,7 +179,7 @@ function showCrashWindow(): void {
   createCrashWindow();
 }
 
-function createWindow(): void {
+function createWindow(showOnReady = true): void {
   mainWindow = new BrowserWindow({
     width: 980,
     height: 720,
@@ -197,7 +200,11 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
-  mainWindow.once('ready-to-show', () => mainWindow?.show());
+  mainWindow.once('ready-to-show', () => {
+    if (showOnReady) {
+      mainWindow?.show();
+    }
+  });
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -256,7 +263,8 @@ if (!app.requestSingleInstanceLock()) {
       crashHandlers = installCrashHandlers(showCrashWindow, (code) => app.exit(code));
       registerIpc();
       scheduler.start(); // boot recovery + arm (F14)
-      createWindow();
+      const autoLaunchMinimized = process.argv.includes(START_MINIMIZED_ARG) && settingsStore.get().startMinimizedOnAutoLaunch;
+      createWindow(!autoLaunchMinimized);
       createTray();
       // Initialise update checker service (M4)
       updateService = new UpdateService(() => mainWindow, () => settingsStore.get());
