@@ -41,17 +41,32 @@ export function SettingsView({ settings, onChange }: Props) {
       <Card variant="outlined" sx={{ mt: 2 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>Startup</Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={settings.launchAtLogin}
-                onChange={(e) => onChange({ launchAtLogin: e.target.checked })}
-              />
-            }
-            label="Launch ChronoChime when I sign in"
-          />
+          <Stack spacing={1} sx={{ mt: 1 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={settings.launchAtLogin}
+                  onChange={(e) => onChange({ launchAtLogin: e.target.checked })}
+                />
+              }
+              label="Launch ChronoChime when I sign in"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={settings.startMinimizedOnAutoLaunch}
+                  onChange={(e) => onChange({ startMinimizedOnAutoLaunch: e.target.checked })}
+                  disabled={!settings.launchAtLogin}
+                />
+              }
+              label="Start minimized on auto launch"
+            />
+          </Stack>
           <Typography variant="caption" color="text.secondary" display="block">
             Starts the app automatically at login for your user account only.
+          </Typography>
+          <Typography variant="caption" color="text.secondary" display="block">
+            When enabled, auto-launched ChronoChime opens minimized in the tray instead of showing the main window.
           </Typography>
         </CardContent>
       </Card>

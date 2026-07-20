@@ -52,6 +52,7 @@ export const settingsSchema = z.object({
   timezone: z.string(),
   theme: z.enum(['light', 'dark', 'system']).default('system'),
   launchAtLogin: z.boolean().default(false),
+  startMinimizedOnAutoLaunch: z.boolean().default(false),
   updateChannel: z.enum(['stable', 'prerelease']).default('stable'),
 });
 

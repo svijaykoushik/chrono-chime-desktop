@@ -14,6 +14,7 @@ const defaults = (): Settings => ({
   timezone: systemTz(),
   theme: 'system',
   launchAtLogin: false,
+  startMinimizedOnAutoLaunch: false,
   updateChannel: 'stable',
 });
 
