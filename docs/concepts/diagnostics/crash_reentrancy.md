@@ -1,3 +1,11 @@
+---
+type: Concept
+title: Process-Safe Reentrancy & Crash Guard
+description: Single-flight locks and crash-loop breakers protecting the diagnostics subsystem.
+tags: [diagnostics, crash, reliability]
+timestamp: 2026-07-05
+---
+
 # Process-Safe Reentrancy & Crash Guard
 
 If the crash handler itself encounters an error, it could trigger an infinite loop of crash windows, freezing the host computer. ChronoChime prevents this using a single-flight lock and loop-breaker mechanism.

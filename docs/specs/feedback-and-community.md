@@ -1,3 +1,11 @@
+---
+type: Specification
+title: About & Feedback
+description: Implementation spec for offline-first, user-initiated feedback paths and the About surface.
+tags: [spec, feedback]
+timestamp: 2026-06-23
+---
+
 # Implementation Spec — About & Feedback (Offline-First)
 
 Status: **Accepted — ready to implement** (Phase: shipping prep)

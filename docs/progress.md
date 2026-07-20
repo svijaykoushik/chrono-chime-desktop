@@ -1,3 +1,11 @@
+---
+type: Status
+title: Implementation Progress
+description: Running log of work done, milestone status, and next steps.
+tags: [status]
+timestamp: 2026-07-08
+---
+
 # ChronoChime Implementation Progress
 
 ## Work Done

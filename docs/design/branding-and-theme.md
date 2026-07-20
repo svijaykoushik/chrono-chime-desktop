@@ -1,3 +1,11 @@
+---
+type: Design
+title: Branding & Theme
+description: The "Aesthetic Bubblegum Pink" brand palette and how the theme is applied across the UI.
+tags: [design, branding, ui]
+timestamp: 2026-06-18
+---
+
 # ChronoChime — Branding & Theme
 
 ChronoChime's visual identity is **"Aesthetic Bubblegum Pink"**, derived from

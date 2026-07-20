@@ -7,7 +7,22 @@ Welcome to the **ChronoChime** desktop repository. This document serves as the a
 ## 1. Core Philosophy & Guardrails
 
 > [!IMPORTANT]
-> **Mandatory First Step:** All AI sessions must immediately read the Product Requirements Document: [chronochime-product-requirements-document.md](docs/prd/chronochime-product-requirements-document.md) to align on the core product philosophy before modifying code.
+> **Mandatory First Step — start from the OKF bundle.** The `docs/` directory is
+> an [OKF bundle](docs/knowledge-format.md): a self-contained, hierarchical
+> knowledge base. Any contributor or agent, regardless of tooling, begins the
+> same way:
+>
+> 1. Open the bundle map at [`docs/index.md`](docs/index.md).
+> 2. Read the [Knowledge Format & Workflow](docs/knowledge-format.md) to learn how
+>    the bundle is structured and the workflow every documentation change follows.
+> 3. Read the [Product Requirements Document](docs/prd/chronochime-product-requirements-document.md)
+>    to align on the core product philosophy before modifying code.
+>
+> When you change the codebase or the docs, follow the bundle workflow: update the
+> relevant document's frontmatter `timestamp`, keep the directory `index.md` map
+> current, record decisions as ADRs in [`docs/decisions/`](docs/decisions/index.md),
+> update [`docs/progress.md`](docs/progress.md), and append a dated entry to
+> [`docs/log.md`](docs/log.md).
 
 ChronoChime is governed by non-negotiable architectural and design guardrails derived from its core mission:
 

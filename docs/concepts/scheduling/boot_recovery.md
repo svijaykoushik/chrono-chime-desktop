@@ -1,3 +1,11 @@
+---
+type: Concept
+title: Boot & Sleep Recovery Manager
+description: Grace windows and coalesced missed-occurrence recovery after boot or sleep.
+tags: [scheduling, recovery, reliability]
+timestamp: 2026-07-05
+---
+
 # Boot & Sleep Recovery Manager
 
 Reliability dictates that ChronoChime must recover from system restarts, unexpected crashes, and long sleep cycles without overwhelming the user with backlogged notifications.

@@ -1,3 +1,11 @@
+---
+type: Concept
+title: Range-Resume Staging Downloader
+description: Partial-offset resumable downloads with checksum verification and atomic renames.
+tags: [updates, download]
+timestamp: 2026-07-05
+---
+
 # Range-Resume Staged Downloader
 
 Downloading installer binaries over home internet requires network fault tolerance. The Staging Downloader is engineered to support interrupted downloads and file integrity checking.

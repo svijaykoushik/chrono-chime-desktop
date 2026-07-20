@@ -1,3 +1,11 @@
+---
+type: Status
+title: Implementation Status
+description: Feature -> code -> test traceability matrix and the current verification gates.
+tags: [status, traceability]
+timestamp: 2026-07-05
+---
+
 # ChronoChime — Implementation Status
 
 Phase 2 (TDD implementation) traceability: every PRD feature → the module that
