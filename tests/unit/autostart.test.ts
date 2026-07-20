@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import path from 'node:path';
 
 const originalPlatform = process.platform;
 
@@ -46,7 +47,7 @@ describe('autostart persistence', () => {
     mockFs.existsSync.mockReturnValueOnce(true);
 
     expect(getAutoStart()).toBe(true);
-    expect(mockFs.existsSync).toHaveBeenCalledWith('/home/testuser/.config/autostart/chronochime.desktop');
+    expect(mockFs.existsSync).toHaveBeenCalledWith(path.join('/home/testuser', '.config', 'autostart', 'chronochime.desktop'));
   });
 
   it('writes a Linux autostart entry with --start-minimized when requested', async () => {
@@ -57,10 +58,10 @@ describe('autostart persistence', () => {
 
     setAutoStart(true, true);
 
-    expect(mockFs.mkdirSync).toHaveBeenCalledWith('/home/testuser/.config/autostart', { recursive: true });
+    expect(mockFs.mkdirSync).toHaveBeenCalledWith(path.join('/home/testuser', '.config', 'autostart'), { recursive: true });
     expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
-    const [path, contents] = mockFs.writeFileSync.mock.calls[0] as [string, string];
-    expect(path).toBe('/home/testuser/.config/autostart/chronochime.desktop');
+    const [writePath, contents] = mockFs.writeFileSync.mock.calls[0] as [string, string];
+    expect(writePath).toBe(path.join('/home/testuser', '.config', 'autostart', 'chronochime.desktop'));
     expect(contents).toContain(`Exec=${process.execPath} ${START_MINIMIZED_ARG}`);
   });
 
@@ -86,7 +87,7 @@ describe('autostart persistence', () => {
 
     setAutoStart(false, true);
 
-    expect(mockFs.rmSync).toHaveBeenCalledWith('/home/testuser/.config/autostart/chronochime.desktop');
+    expect(mockFs.rmSync).toHaveBeenCalledWith(path.join('/home/testuser', '.config', 'autostart', 'chronochime.desktop'));
   });
 
   it('reads Windows app login-item state', async () => {
