@@ -59,7 +59,7 @@ describe('autostart persistence', () => {
 
     expect(mockFs.mkdirSync).toHaveBeenCalledWith('/home/testuser/.config/autostart', { recursive: true });
     expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
-    const [path, contents] = mockFs.writeFileSync.mock.calls[0];
+    const [path, contents] = mockFs.writeFileSync.mock.calls[0] as [string, string];
     expect(path).toBe('/home/testuser/.config/autostart/chronochime.desktop');
     expect(contents).toContain(`Exec=${process.execPath} ${START_MINIMIZED_ARG}`);
   });
@@ -73,7 +73,7 @@ describe('autostart persistence', () => {
     setAutoStart(true, false);
 
     expect(mockFs.writeFileSync).toHaveBeenCalledTimes(1);
-    const [, contents] = mockFs.writeFileSync.mock.calls[0];
+    const [, contents] = mockFs.writeFileSync.mock.calls[0] as [string, string];
     expect(contents).toContain(`Exec=${process.execPath}`);
     expect(contents).not.toContain('--start-minimized');
   });
