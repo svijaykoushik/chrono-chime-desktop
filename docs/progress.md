@@ -10,10 +10,13 @@
     *   Added scheduler timing logs (timer arming delays, timer fires, drift metrics, reschedule events, missed occurrence recovery sweeps) in `src/main/scheduler/scheduler.ts`.
     *   Integrated persistence operations logs (SQLite opening, close connection, insert/update/delete query successes and error catches) in `src/main/store/sqlite-repository.ts`.
     *   Added notification delivery and Quiet Hours suppression tracking in `src/main/notification/manager.ts`.
-    *   Verified type safety (`npm run typecheck`) after wiring crash handling and crash overlay support.
-    *   Implemented crash protection logic in `src/main/diagnostics/crash.ts` with safe reentrancy, renderer crash capture, and crash overlay launch.
-    *   Added a dedicated crash renderer entry (`src/crash.tsx`, `src/crash-preload.ts`, `crash.html`) and Forge Vite multi-renderer configuration.
     *   Added targeted crash handler tests in `tests/unit/crash.test.ts` and verified the crash renderer build with `npx vite build --config vite.renderer.config.ts`.
+*   **Main-Process Audio Playback:**
+    *   Implemented `src/main/notification/audio-player.ts` to play MP3 and WAV files directly from the main process using platform-specific commands (PowerShell on Windows, `paplay`/`pw-play`/`aplay`/`ffplay` on Linux) with robust escaping.
+    *   Integrated `playAudio` helper into `NotificationManager` (`src/main/notification/manager.ts`), silencing OS notifications for custom/builtin sounds to avoid duplicate chimes.
+    *   Wired the new helper in `src/main.ts` and updated the `CH.soundPreview` IPC handler to play preview audio from the main process.
+    *   Cleaned up redundant sound playback logic from the renderer `src/renderer/App.tsx`.
+    *   Added comprehensive unit tests for `NotificationManager` in `tests/unit/notification.test.ts` and characterization + adversarial tests in `tests/unit/audio-player.test.ts` (all 137 tests passing).
 
 ## Milestone Status
 *   M1 Logging foundation — Done
@@ -22,7 +25,7 @@
 *   M4 Update checker + update UI — Done
 
 ## Features in Progress
-*   None (Milestone 4 fully implemented and verified).
+*   None.
 
 ## What to Do Next
 1.  Add integration coverage for crash export and restart flow when the crash window is triggered.

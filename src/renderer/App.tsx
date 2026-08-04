@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AppBar, Box, Container, CssBaseline, Snackbar, Tab, Tabs, ThemeProvider, Toolbar, Typography,
 } from '@mui/material';
@@ -16,13 +16,11 @@ export function App() {
   const [systemDark, setSystemDark] = useState(
     () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false,
   );
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     void window.chrono.settings.get().then(setSettings);
     const off = window.chrono.onFired((event: FiredEvent) => {
       setSnack(`${event.title}: ${event.body}`);
-      if (event.sound && event.sound !== 'default') playSound(event.sound);
     });
     return off;
   }, []);
@@ -43,13 +41,6 @@ export function App() {
   }, [settings?.theme, systemDark]);
 
   const theme = useMemo(() => makeTheme(mode), [mode]);
-
-  const playSound = (id: string) => {
-    const src = id.includes('/') || id.includes('\\') ? `file://${id}` : `chrono-sound://${id}`;
-    if (!audioRef.current) audioRef.current = new Audio();
-    audioRef.current.src = src;
-    void audioRef.current.play().catch(() => undefined);
-  };
 
   const updateSettings = async (patch: Partial<Settings>) => {
     setSettings(await window.chrono.settings.update(patch));

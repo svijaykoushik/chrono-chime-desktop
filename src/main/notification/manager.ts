@@ -1,4 +1,5 @@
-import { Notification } from 'electron';
+import { Notification, app } from 'electron';
+import { join } from 'node:path';
 import { decideNotification } from './decide';
 import { renderTemplate } from '../../shared/template';
 import { logger } from '../diagnostics/logger';
@@ -11,8 +12,9 @@ import type { FiredEvent } from '../../shared/bridge';
 export interface NotificationManagerDeps {
   repo: Repository;
   getSettings: () => Settings;
-  /** Pushes the fired event to the renderer (for in-app sound playback / UI). */
+  /** Pushes the fired event to the renderer (for UI alerts). */
   emit: (event: FiredEvent) => void;
+  playAudio: (filePath: string) => void;
 }
 
 function soundToId(sound: SoundChoice | null): string | null {
@@ -71,14 +73,34 @@ export class NotificationManager {
       silent: decision.sound === null,
     });
 
+    const isSilent = decision.sound === null || decision.sound.kind !== 'default';
+
     if (Notification.isSupported()) {
       new Notification({
         title: reminder.title,
         body,
-        silent: decision.sound === null, // OS sound suppressed; visual remains
+        silent: isSilent, // OS sound suppressed; visual remains. Custom/builtin sound played below.
       }).show();
     } else {
       logger.warn('Notification', 'OS notifications are not supported on this environment');
+    }
+
+    // Play the custom/builtin sound in the main process
+    if (decision.sound && decision.sound.kind !== 'default' && decision.sound.kind !== 'silent') {
+      let filePath = '';
+      if (decision.sound.kind === 'builtin') {
+        filePath = join(app.getAppPath(), 'assets/sounds', decision.sound.id);
+      } else if (decision.sound.kind === 'custom') {
+        filePath = decision.sound.path;
+      }
+
+      if (filePath) {
+        try {
+          this.d.playAudio(filePath);
+        } catch (err) {
+          logger.error('Notification', 'Failed to play audio in main process', err instanceof Error ? err : new Error(String(err)));
+        }
+      }
     }
 
     this.d.emit({
@@ -90,3 +112,4 @@ export class NotificationManager {
     });
   }
 }
+

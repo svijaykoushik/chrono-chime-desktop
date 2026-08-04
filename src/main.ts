@@ -9,6 +9,7 @@ import { Scheduler } from './main/scheduler/scheduler';
 import { ReminderService } from './main/app/reminder-service';
 import { RoutineService } from './main/app/routine-service';
 import { NotificationManager } from './main/notification/manager';
+import { playAudio } from './main/notification/audio-player';
 import { SettingsStore } from './main/settings';
 import { getAutoStart, setAutoStart, START_MINIMIZED_ARG } from './main/autostart';
 import { initLogging, logger } from './main/diagnostics/logger';
@@ -59,6 +60,7 @@ const notifications = new NotificationManager({
   repo,
   getSettings: () => settingsStore.get(),
   emit: (event) => mainWindow?.webContents.send(CH.eventFired, event),
+  playAudio,
 });
 
 const scheduler = new Scheduler({
@@ -117,9 +119,24 @@ function registerIpc(): void {
     }
     return { ...updated, launchAtLogin: getAutoStart() };
   });
-  ipcMain.handle(CH.soundPreview, () => {
-    // Sound preview is played in the renderer; main acknowledges the request.
-    return undefined;
+  ipcMain.handle(CH.soundPreview, (_e, raw) => {
+    const { soundId } = (raw as { soundId?: string }) ?? {};
+    if (!soundId || soundId === 'silent') return;
+
+    let filePath = '';
+    if (soundId === 'default') {
+      filePath = join(app.getAppPath(), 'assets/sounds', 'notification.mp3');
+    } else if (soundId.includes('/') || soundId.includes('\\')) {
+      filePath = soundId;
+    } else {
+      filePath = join(app.getAppPath(), 'assets/sounds', soundId);
+    }
+
+    try {
+      playAudio(filePath);
+    } catch (err) {
+      logger.error('main', 'Failed to play sound preview in main process', err instanceof Error ? err : new Error(String(err)));
+    }
   });
   ipcMain.handle(CH.diagnosticsExport, async () => {
     const { filePath } = await dialog.showSaveDialog({
