@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { DateTime } from 'luxon';
 import { Notification } from 'electron';
+import { join } from 'node:path';
 import { decideNotification } from '../../src/main/notification/decide';
 import { NotificationManager } from '../../src/main/notification/manager';
 import type { NotificationPrefs } from '../../src/shared/reminder';
@@ -155,7 +156,7 @@ describe('NotificationManager — F7/F9/F10 delivery', () => {
     const instance = (Notification as any).instances[0]!;
     expect(instance.options.silent).toBe(true); // OS silent
 
-    expect(playAudio).toHaveBeenCalledWith('/mock/app/path/assets/sounds/chime.wav');
+    expect(playAudio).toHaveBeenCalledWith(join('/mock/app/path', 'assets/sounds', 'chime.wav'));
     expect(emit).toHaveBeenCalledWith({
       reminderId: 'rem-1',
       title: 'Stretch',
