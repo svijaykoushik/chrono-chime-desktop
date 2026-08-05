@@ -1,3 +1,11 @@
+---
+type: Concept
+title: Recurrence & Calendaring Engine
+description: Timezone-aware, DST-resilient occurrence math built on Luxon.
+tags: [scheduling, recurrence, luxon]
+timestamp: 2026-07-05
+---
+
 # Recurrence & Calendaring Engine
 
 The Recurrence Engine represents the pure mathematical core of ChronoChime's scheduling. It contains zero I/O side effects, allowing it to be fully unit-tested natively outside of Electron.

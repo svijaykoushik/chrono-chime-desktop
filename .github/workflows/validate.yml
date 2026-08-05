@@ -7,6 +7,8 @@ on:
       - main
       - 'release/**'
       - 'release-*'
+    paths-ignore:
+      - '**/*.md'
 
 # Cancel superseded runs for the same PR.
 concurrency:

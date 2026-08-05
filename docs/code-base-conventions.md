@@ -1,3 +1,11 @@
+---
+type: Convention
+title: Code-Base Conventions
+description: Project-wide coding conventions and standards for the ChronoChime codebase.
+tags: [conventions, contributing]
+timestamp: 2026-07-06
+---
+
 # Code‑Base Conventions
 
 This document captures the **project‑wide conventions** that all contributors

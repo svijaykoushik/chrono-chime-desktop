@@ -1,3 +1,11 @@
+---
+type: Runbook
+title: Packaging & Distribution
+description: How to build ChronoChime distributables (Squirrel/.deb), packaging config, and the release-failure runbook.
+tags: [build, release, packaging]
+timestamp: 2026-07-08
+---
+
 # ChronoChime — Packaging & Distribution
 
 ChronoChime targets **Windows and Linux only** (no macOS). Builds are produced

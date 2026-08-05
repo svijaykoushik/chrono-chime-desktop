@@ -1,3 +1,11 @@
+---
+type: Specification
+title: Shipping Implementation Plan
+description: Milestone-sequenced build plan (M1-M7) with exit criteria and risks.
+tags: [spec, planning]
+timestamp: 2026-07-05
+---
+
 # Implementation Plan — Shipping-Prep Features
 
 A sequenced, milestone-based plan for implementing the two accepted specs:

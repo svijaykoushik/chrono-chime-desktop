@@ -1,3 +1,11 @@
+---
+type: Design
+title: Technical Design Document
+description: System architecture, the ScheduleRule model, recurrence engine, IPC contract, and persistence.
+tags: [design, architecture]
+timestamp: 2026-06-19
+---
+
 # ChronoChime — Technical Design Document (TDD)
 
 > Phase 1 deliverable. This document defines the complete system design and a

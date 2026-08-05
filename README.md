@@ -46,7 +46,7 @@ npm run make     # build installers: .deb (Linux) / Squirrel .exe (Windows)
 ```
 
 ChronoChime targets **Windows and Linux only**. See
-[`docs/README.md`](docs/README.md) for the full documentation index, including
+[`docs/index.md`](docs/index.md) for the full documentation index, including
 [Packaging & Distribution](docs/build/packaging-and-distribution.md).
 
 ## License

@@ -1,3 +1,11 @@
+---
+type: PRD
+title: ChronoChime Product Requirements Document
+description: Mission, philosophy, out-of-scope boundaries, and the F1-F14 feature requirements.
+tags: [product, requirements]
+timestamp: 2026-06-23
+---
+
 # ChronoChime Product Requirements Document (PRD)
 
 ## Version

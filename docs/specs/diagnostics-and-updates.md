@@ -1,3 +1,11 @@
+---
+type: Specification
+title: Diagnostics, Logging & Updates
+description: Implementation spec for local-first logging, the crash overlay, and the update notifier.
+tags: [spec, diagnostics, updates]
+timestamp: 2026-06-23
+---
+
 # Implementation Spec — Diagnostics/Logging & Alternate Updates
 
 Status: **Accepted — ready to implement** (Phase: shipping prep)

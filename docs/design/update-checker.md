@@ -1,3 +1,11 @@
+---
+type: Design
+title: Update Checker
+description: Design of the GitHub Releases update checker and its update UI.
+tags: [design, updates]
+timestamp: 2026-07-05
+---
+
 # Update Checker Feature Design Document
 
 **Feature ID:** M4 (Update checker and UI)
