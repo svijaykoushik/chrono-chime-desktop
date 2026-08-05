@@ -33,6 +33,8 @@ export class ReminderService {
       routineId: null,
       createdAt: now,
       updatedAt: now,
+      conclusion: null,
+      concludedAt: null,
     };
     this.d.repo.insertReminder(reminder);
     this.d.scheduler.reschedule();
@@ -46,10 +48,13 @@ export class ReminderService {
     const rule = patch.rule ?? cur.rule;
     const enabled = patch.enabled ?? cur.enabled;
     const recompute = patch.rule !== undefined || patch.enabled !== undefined;
+    const nextFireAt = recompute ? this.fireTimeFor(rule, enabled, now) : cur.nextFireAt;
+    const clearConclusion = nextFireAt !== null;
     const updated = this.d.repo.updateReminder(id, {
       ...patch,
       updatedAt: now,
-      ...(recompute ? { nextFireAt: this.fireTimeFor(rule, enabled, now) } : {}),
+      ...(recompute ? { nextFireAt } : {}),
+      ...(clearConclusion ? { conclusion: null, concludedAt: null } : {}),
     });
     this.d.scheduler.reschedule();
     return updated;
@@ -62,10 +67,13 @@ export class ReminderService {
     for (const id of ids) {
       const cur = this.d.repo.getReminder(id);
       if (!cur) continue;
+      const nextFire = this.fireTimeFor(cur.rule, enabled, now);
+      const finalEnabled = (enabled && nextFire === null) ? false : enabled;
       const u = this.d.repo.updateReminder(id, {
-        enabled,
-        nextFireAt: this.fireTimeFor(cur.rule, enabled, now),
+        enabled: finalEnabled,
+        nextFireAt: nextFire,
         updatedAt: now,
+        ...(nextFire !== null ? { conclusion: null, concludedAt: null } : {}),
       });
       if (u) out.push(u);
     }

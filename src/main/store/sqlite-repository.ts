@@ -19,6 +19,8 @@ interface ReminderRow {
   routine_id: string | null;
   created_at: number;
   updated_at: number;
+  conclusion: string | null;
+  concluded_at: number | null;
 }
 
 interface RoutineRow {
@@ -42,7 +44,9 @@ CREATE TABLE IF NOT EXISTS reminders (
   last_fire_at INTEGER,
   routine_id   TEXT,
   created_at   INTEGER NOT NULL,
-  updated_at   INTEGER NOT NULL
+  updated_at   INTEGER NOT NULL,
+  conclusion   TEXT,
+  concluded_at INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_reminders_routine ON reminders(routine_id);
 CREATE TABLE IF NOT EXISTS routines (
@@ -64,6 +68,32 @@ export class SqliteRepository implements Repository {
       this.db = new Database(filename);
       this.db.pragma('journal_mode = WAL');
       this.db.exec(SCHEMA);
+
+      // Run migrations to add conclusion and concluded_at columns if they don't exist
+      try {
+        this.db.exec('ALTER TABLE reminders ADD COLUMN conclusion TEXT DEFAULT NULL');
+      } catch (err) {
+        // Ignored if column already exists
+      }
+      try {
+        this.db.exec('ALTER TABLE reminders ADD COLUMN concluded_at INTEGER DEFAULT NULL');
+      } catch (err) {
+        // Ignored if column already exists
+      }
+
+      // Backfill once rule + last_fire_at != null to conclusion = 'fired'
+      try {
+        this.db.prepare(`
+          UPDATE reminders
+          SET conclusion = 'fired', concluded_at = last_fire_at
+          WHERE conclusion IS NULL
+            AND last_fire_at IS NOT NULL
+            AND json_extract(rule, '$.kind') = 'once'
+        `).run();
+      } catch (err) {
+        logger.error('Database', 'Migration backfill failed', err instanceof Error ? err : new Error(String(err)));
+      }
+
       logger.info('Database', 'SQLite database initialized successfully', { filename });
     } catch (err) {
       logger.error('Database', 'Failed to initialize SQLite database', err instanceof Error ? err : new Error(String(err)), { filename });
@@ -93,6 +123,8 @@ export class SqliteRepository implements Repository {
       routineId: row.routine_id,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      conclusion: row.conclusion ?? null,
+      concludedAt: row.concluded_at ?? null,
     });
   }
 
@@ -101,8 +133,8 @@ export class SqliteRepository implements Repository {
       this.db
         .prepare(
           `INSERT INTO reminders
-             (id, title, message, enabled, rule, notification, next_fire_at, last_fire_at, routine_id, created_at, updated_at)
-           VALUES (@id, @title, @message, @enabled, @rule, @notification, @next, @last, @routine, @created, @updated)`,
+             (id, title, message, enabled, rule, notification, next_fire_at, last_fire_at, routine_id, created_at, updated_at, conclusion, concluded_at)
+           VALUES (@id, @title, @message, @enabled, @rule, @notification, @next, @last, @routine, @created, @updated, @conclusion, @concludedAt)`,
         )
         .run({
           id: r.id,
@@ -116,6 +148,8 @@ export class SqliteRepository implements Repository {
           routine: r.routineId,
           created: r.createdAt,
           updated: r.updatedAt,
+          conclusion: r.conclusion ?? null,
+          concludedAt: r.concludedAt ?? null,
         });
       logger.debug('Database', 'Inserted reminder', { id: r.id, enabled: r.enabled });
       return r;
@@ -139,7 +173,8 @@ export class SqliteRepository implements Repository {
         .prepare(
           `UPDATE reminders SET
              title=@title, message=@message, enabled=@enabled, rule=@rule, notification=@notification,
-             next_fire_at=@next, last_fire_at=@last, routine_id=@routine, updated_at=@updated
+             next_fire_at=@next, last_fire_at=@last, routine_id=@routine, updated_at=@updated,
+             conclusion=@conclusion, concluded_at=@concludedAt
            WHERE id=@id`,
         )
         .run({
@@ -153,6 +188,8 @@ export class SqliteRepository implements Repository {
           last: next.lastFireAt,
           routine: next.routineId,
           updated: next.updatedAt,
+          conclusion: next.conclusion ?? null,
+          concludedAt: next.concludedAt ?? null,
         });
       logger.debug('Database', 'Updated reminder', { id, enabled: next.enabled });
       return next;

@@ -29,6 +29,8 @@ export const reminderSchema = reminderInputSchema.extend({
   routineId: z.string().nullable(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
+  conclusion: z.enum(['fired', 'missed']).nullable().default(null),
+  concludedAt: z.number().int().nullable().default(null),
 });
 
 export type SoundChoice = z.infer<typeof soundChoiceSchema>;

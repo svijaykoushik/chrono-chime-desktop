@@ -2,6 +2,16 @@
 
 All changes made to the codebase are tracked here in reverse chronological order.
 
+### 2026-08-05
+- **One-time Reminders & Conclusion State (Issue #57)**
+  - Reorganized `ReminderDialog.tsx` layout to separate "Once" from repeating/intervals into a top-level selection.
+  - Implemented `conclusion` ('fired'/'missed') and `concludedAt` fields on `Reminder` schema to distinguish between disabled, successfully fired, and missed occurrences.
+  - Added sqlite database migrations to add `conclusion` and `concluded_at` columns, and backfill legacy fired one-shot reminders.
+  - Updated scheduler to set conclusion instead of setting `enabled: false` upon firing/skipping.
+  - Excluded concluded reminders from schedulable list in repository layer.
+  - Rendered status chips and replacement "Schedule again" button in `RemindersView.tsx`.
+  - Added new unit tests and verified all 141 tests pass.
+
 ### 2026-07-20
 - **Standardized `docs/` as an OKF bundle** ([ADR-001](/decisions/ADR-001-adopt-okf.md)).
   - Added [`knowledge-format.md`](/knowledge-format.md) defining the project-adapted [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) profile: reserved files, frontmatter contract, `type` vocabulary, cross-linking, and the docs workflow.

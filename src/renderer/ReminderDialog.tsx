@@ -10,7 +10,11 @@ import {
   buildRule, defaultScheduleForm, ruleToForm, CLOCK_KIND_OPTIONS, TIME_FORMAT_SUGGESTIONS, WEEKDAY_LABELS,
   type ScheduleForm, type ScheduleKind, type ScheduleMode,
 } from './scheduleForm';
+import { DateTime } from 'luxon';
 import type { Reminder, ReminderInput, SoundChoice } from '../shared/reminder';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 const getSoundLabel = (s: SoundChoice): string => {
   if (s.kind === 'silent') return 'Silent';
@@ -47,7 +51,11 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
       setTitle(reminder.title);
       setMessage(reminder.message ?? '');
       setSound(reminder.notification.sound);
-      setForm(ruleToForm(reminder.rule, tz));
+      const initialForm = ruleToForm(reminder.rule, tz);
+      if (reminder.conclusion !== null && initialForm.kind === 'once') {
+        initialForm.at = DateTime.now().plus({ minutes: 30 }).toFormat("yyyy-MM-dd'T'HH:mm");
+      }
+      setForm(initialForm);
     } else {
       setTitle('');
       setMessage('');
@@ -59,6 +67,22 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
   const rule = useMemo(() => buildRule(form, Date.now()), [form]);
   const preview = useMemo(() => describeRule(rule, tz), [rule, tz]);
   const isEditing = Boolean(reminder);
+
+  const isOnce = form.kind === 'once';
+
+  const isPastOnce = useMemo(() => {
+    if (form.kind !== 'once') return false;
+    if (!form.at) return true;
+    return new Date(form.at).getTime() <= Date.now();
+  }, [form.kind, form.at]);
+
+  const handlePrimaryChange = (val: 'once' | 'repeating') => {
+    if (val === 'once') {
+      setForm((f) => ({ ...f, kind: 'once', mode: 'clock' }));
+    } else {
+      setForm((f) => ({ ...f, kind: f.kind === 'once' ? 'daily' : f.kind }));
+    }
+  };
 
   const set = <K extends keyof ScheduleForm>(key: K, value: ScheduleForm[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -73,7 +97,7 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
     setMessage((m) => (m ? `${m} ${token}` : token));
 
   const handleSave = () => {
-    if (!title.trim()) return;
+    if (!title.trim() || isPastOnce) return;
 
     // Preserve the interval lattice (anchor) when editing and the period is
     // unchanged, so changing other fields does not shift future executions.
@@ -121,61 +145,82 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
 
           <Stack spacing={1}>
             <Typography variant="subtitle2">When</Typography>
-            <ToggleButtonGroup exclusive value={form.mode} onChange={(_e, v: ScheduleMode | null) => setMode(v)} size="small">
-              <ToggleButton value="relative">Starting now</ToggleButton>
-              <ToggleButton value="clock">On the clock</ToggleButton>
+            <ToggleButtonGroup exclusive value={isOnce ? 'once' : 'repeating'} onChange={(_e, v: 'once' | 'repeating' | null) => v && handlePrimaryChange(v)} size="small">
+              <ToggleButton value="once">Once</ToggleButton>
+              <ToggleButton value="repeating">Repeating</ToggleButton>
             </ToggleButtonGroup>
           </Stack>
 
-          {form.mode === 'relative' ? (
-            <Stack direction="row" spacing={2}>
-              <TextField
-                type="number" label="Every" sx={{ flex: 1 }}
-                value={form.intervalAmount}
-                onChange={(e) => set('intervalAmount', Number(e.target.value))}
+          {isOnce ? (
+            <LocalizationProvider dateAdapter={AdapterLuxon}>
+              <DateTimePicker
+                label="Date & time"
+                value={form.at ? DateTime.fromFormat(form.at, "yyyy-MM-dd'T'HH:mm", { zone: tz }) : null}
+                onChange={(val) => set('at', val ? val.toFormat("yyyy-MM-dd'T'HH:mm") : '')}
+                slotProps={{
+                  textField: {
+                    required: true,
+                    error: isPastOnce,
+                    helperText: isPastOnce ? "Must be in the future" : "",
+                    fullWidth: true
+                  }
+                }}
               />
-              <TextField
-                select label="Unit" sx={{ flex: 1 }}
-                value={form.intervalUnit}
-                onChange={(e) => set('intervalUnit', e.target.value as 'minutes' | 'hours')}
-              >
-                <MenuItem value="minutes">minutes</MenuItem>
-                <MenuItem value="hours">hours</MenuItem>
-              </TextField>
-            </Stack>
+            </LocalizationProvider>
           ) : (
-            <TextField select label="Repeats" value={form.kind} onChange={(e) => set('kind', e.target.value as ScheduleKind)}>
-              {CLOCK_KIND_OPTIONS.map((o) => (
-                <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
-              ))}
-            </TextField>
-          )}
+            <>
+              <Stack spacing={1}>
+                <Typography variant="subtitle2">Timing Mode</Typography>
+                <ToggleButtonGroup exclusive value={form.mode} onChange={(_e, v: ScheduleMode | null) => setMode(v)} size="small">
+                  <ToggleButton value="relative">Starting now</ToggleButton>
+                  <ToggleButton value="clock">On the clock</ToggleButton>
+                </ToggleButtonGroup>
+              </Stack>
 
-          {form.mode === 'clock' && form.kind === 'once' && (
-            <TextField
-              type="datetime-local" label="When" InputLabelProps={{ shrink: true }}
-              value={form.at} onChange={(e) => set('at', e.target.value)}
-            />
-          )}
+              {form.mode === 'relative' ? (
+                <Stack direction="row" spacing={2}>
+                  <TextField
+                    type="number" label="Every" sx={{ flex: 1 }}
+                    value={form.intervalAmount}
+                    onChange={(e) => set('intervalAmount', Number(e.target.value))}
+                  />
+                  <TextField
+                    select label="Unit" sx={{ flex: 1 }}
+                    value={form.intervalUnit}
+                    onChange={(e) => set('intervalUnit', e.target.value as 'minutes' | 'hours')}
+                  >
+                    <MenuItem value="minutes">minutes</MenuItem>
+                    <MenuItem value="hours">hours</MenuItem>
+                  </TextField>
+                </Stack>
+              ) : (
+                <TextField select label="Repeats" value={form.kind} onChange={(e) => set('kind', e.target.value as ScheduleKind)}>
+                  {CLOCK_KIND_OPTIONS.map((o) => (
+                    <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
+                  ))}
+                </TextField>
+              )}
 
-          {form.mode === 'clock' && (form.kind === 'daily' || form.kind === 'weekly' || form.kind === 'monthly') && (
-            <TextField type="time" label="At" InputLabelProps={{ shrink: true }} value={form.atTime} onChange={(e) => set('atTime', e.target.value)} />
-          )}
+              {form.mode === 'clock' && (form.kind === 'daily' || form.kind === 'weekly' || form.kind === 'monthly') && (
+                <TextField type="time" label="At" InputLabelProps={{ shrink: true }} value={form.atTime} onChange={(e) => set('atTime', e.target.value)} />
+              )}
 
-          {form.mode === 'clock' && form.kind === 'weekly' && (
-            <ToggleButtonGroup value={form.weekdays} size="small" onChange={(_e, v: number[]) => set('weekdays', v)}>
-              {WEEKDAY_LABELS.map((d) => (
-                <ToggleButton key={d.value} value={d.value}>{d.label}</ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          )}
+              {form.mode === 'clock' && form.kind === 'weekly' && (
+                <ToggleButtonGroup value={form.weekdays} size="small" onChange={(_e, v: number[]) => set('weekdays', v)}>
+                  {WEEKDAY_LABELS.map((d) => (
+                    <ToggleButton key={d.value} value={d.value}>{d.label}</ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              )}
 
-          {form.mode === 'clock' && form.kind === 'monthly' && (
-            <TextField
-              type="number" label="Day of month" inputProps={{ min: 1, max: 31 }}
-              value={form.monthDay}
-              onChange={(e) => set('monthDay', Math.min(31, Math.max(1, Number(e.target.value))))}
-            />
+              {form.mode === 'clock' && form.kind === 'monthly' && (
+                <TextField
+                  type="number" label="Day of month" inputProps={{ min: 1, max: 31 }}
+                  value={form.monthDay}
+                  onChange={(e) => set('monthDay', Math.min(31, Math.max(1, Number(e.target.value))))}
+                />
+              )}
+            </>
           )}
 
           <TextField
@@ -198,7 +243,7 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSave} disabled={!title.trim()}>
+        <Button variant="contained" onClick={handleSave} disabled={!title.trim() || isPastOnce}>
           {isEditing ? 'Save changes' : 'Save'}
         </Button>
       </DialogActions>

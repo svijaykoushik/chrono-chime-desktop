@@ -19,6 +19,12 @@ timestamp: 2026-07-08
     *   Integrated persistence operations logs (SQLite opening, close connection, insert/update/delete query successes and error catches) in `src/main/store/sqlite-repository.ts`.
     *   Added notification delivery and Quiet Hours suppression tracking in `src/main/notification/manager.ts`.
     *   Added targeted crash handler tests in `tests/unit/crash.test.ts` and verified the crash renderer build with `npx vite build --config vite.renderer.config.ts`.
+*   **One-time Reminders & Conclusion State (Issue #57):**
+    *   Lilted "Once" out of repeating options to a top-level choice in `ReminderDialog.tsx` to align with the F2 requirement.
+    *   Integrated `@mui/x-date-pickers` `DateTimePicker` using Luxon adapter to present a premium date picker formatted in the device locale, defaulting new reminders and concluded reschedules to `now + 30 minutes`.
+    *   Implemented conclusion tracking (`conclusion` and `concludedAt`) on `Reminder` schema to distinguish between user disabled, successfully fired, and missed occurrences (F14 missed-occurrence recovery).
+    *   Added database migrations to backfill schema and handle `conclusion`/`concludedAt` persistence in sqlite repository.
+    *   Updated scheduler, services, and tests, ensuring all 141 tests pass.
 *   **Main-Process Audio Playback:**
     *   Implemented `src/main/notification/audio-player.ts` to play MP3 and WAV files directly from the main process using platform-specific commands (PowerShell on Windows, `paplay`/`pw-play`/`aplay`/`ffplay` on Linux) with robust escaping.
     *   Integrated `playAudio` helper into `NotificationManager` (`src/main/notification/manager.ts`), silencing OS notifications for custom/builtin sounds to avoid duplicate chimes.
