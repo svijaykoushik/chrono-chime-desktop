@@ -27,6 +27,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^6.5.0",
     "@mui/material": "^6.5.0",
+    "@mui/x-date-pickers": "^7.29.4",
     "adm-zip": "^0.5.18",
     "better-sqlite3": "^11.10.0",
     "drizzle-orm": "^0.38.4",

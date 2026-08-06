@@ -19,7 +19,7 @@ class Harness {
   }
 
   store: SchedulerStore = {
-    listSchedulable: () => [...this.items.values()].filter((i) => i.enabled),
+    listSchedulable: () => [...this.items.values()].filter((i) => i.enabled && !(i as any).conclusion),
     update: (id, patch) => {
       const cur = this.items.get(id);
       if (cur) this.items.set(id, { ...cur, ...patch });
@@ -88,7 +88,7 @@ describe('Scheduler — F1/F14 deterministic scheduling', () => {
     expect(h.items.get('a')!.nextFireAt).toBe(ms('2026-06-16T10:00'));
   });
 
-  it('deactivates a once reminder after it fires', () => {
+  it('concludes a once reminder after it fires', () => {
     h.add({ id: 'b', enabled: true, nextFireAt: null, lastFireAt: null,
       rule: { kind: 'once', at: ms('2026-06-16T08:30') } });
     const s = h.makeScheduler();
@@ -97,7 +97,8 @@ describe('Scheduler — F1/F14 deterministic scheduling', () => {
     h.advanceTo(ms('2026-06-16T08:30'));
     expect(h.fired).toHaveLength(1);
     const item = h.items.get('b')!;
-    expect(item.enabled).toBe(false);
+    expect(item.enabled).toBe(true);
+    expect((item as any).conclusion).toBe('fired');
     expect(item.nextFireAt).toBeNull();
     expect(s.nextWakeAt()).toBeNull();
   });
@@ -115,7 +116,7 @@ describe('Scheduler — F1/F14 deterministic scheduling', () => {
     expect(h.items.get('c')!.nextFireAt).toBeGreaterThan(h.now);
   });
 
-  it('drops a once reminder missed beyond the grace window without firing', () => {
+  it('concludes a once reminder missed beyond the grace window as missed without firing', () => {
     h.now = ms('2026-06-16T10:00');
     h.add({ id: 'd', enabled: true, nextFireAt: ms('2026-06-16T08:00'), lastFireAt: null,
       rule: { kind: 'once', at: ms('2026-06-16T08:00') } });
@@ -123,7 +124,8 @@ describe('Scheduler — F1/F14 deterministic scheduling', () => {
     s.start();
 
     expect(h.fired).toHaveLength(0);
-    expect(h.items.get('d')!.enabled).toBe(false);
+    expect(h.items.get('d')!.enabled).toBe(true);
+    expect((h.items.get('d') as any).conclusion).toBe('missed');
   });
 
   it('excludes disabled items from scheduling after reschedule', () => {

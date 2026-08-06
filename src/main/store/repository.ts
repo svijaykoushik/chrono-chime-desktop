@@ -92,7 +92,7 @@ export function schedulerStoreFor(repo: Repository): SchedulerStore {
     listSchedulable: (): ScheduledItem[] =>
       repo
         .listReminders({ includeRoutineChildren: true })
-        .filter((r) => r.enabled)
+        .filter((r) => r.enabled && r.conclusion === null)
         .map((r) => ({
           id: r.id,
           rule: r.rule,

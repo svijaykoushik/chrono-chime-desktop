@@ -15,7 +15,10 @@ export interface SchedulerStore {
   listSchedulable(): ScheduledItem[];
   update(
     id: string,
-    patch: Partial<Pick<ScheduledItem, 'nextFireAt' | 'lastFireAt' | 'enabled'>>,
+    patch: Partial<Pick<ScheduledItem, 'nextFireAt' | 'lastFireAt' | 'enabled'>> & {
+      conclusion?: 'fired' | 'missed' | null;
+      concludedAt?: number | null;
+    },
   ): void;
 }
 

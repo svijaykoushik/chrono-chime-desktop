@@ -28,7 +28,7 @@ export interface ScheduleForm {
 export const defaultScheduleForm = (): ScheduleForm => ({
   mode: 'clock',
   kind: 'daily',
-  at: '',
+  at: DateTime.now().plus({ minutes: 30 }).toFormat("yyyy-MM-dd'T'HH:mm"),
   intervalAmount: 25,
   intervalUnit: 'minutes',
   atTime: '09:00',
@@ -60,7 +60,6 @@ export function buildRule(form: ScheduleForm, now: number): ScheduleRule {
 
 /** Schedule kinds available in "On the clock" mode (wall-clock anchored). */
 export const CLOCK_KIND_OPTIONS: ReadonlyArray<{ value: ScheduleKind; label: string }> = [
-  { value: 'once', label: 'Once (specific date & time)' },
   { value: 'hourly', label: 'Every hour' },
   { value: 'daily', label: 'Daily' },
   { value: 'weekly', label: 'Weekly' },

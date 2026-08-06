@@ -44,6 +44,8 @@ export class RoutineService {
         routineId: routine.id,
         createdAt: now,
         updatedAt: now,
+        conclusion: null,
+        concludedAt: null,
       };
       this.d.repo.insertReminder(reminder);
     }

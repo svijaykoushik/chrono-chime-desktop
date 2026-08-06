@@ -79,7 +79,7 @@ export class Scheduler {
       this.applyAfterFire(item, now, decision.deactivate);
     } else if (decision.type === 'skip') {
       logger.warn('Scheduler', 'Recovery decided to skip/deactivate item', { itemId: item.id });
-      this.deps.store.update(item.id, { enabled: false, nextFireAt: null });
+      this.deps.store.update(item.id, { nextFireAt: null, conclusion: 'missed', concludedAt: now });
     }
   }
 
@@ -97,8 +97,8 @@ export class Scheduler {
 
   private applyAfterFire(item: ScheduledItem, now: number, deactivate: boolean): void {
     if (deactivate) {
-      logger.info('Scheduler', 'Deactivating one-shot item after fire', { itemId: item.id });
-      this.deps.store.update(item.id, { lastFireAt: now, nextFireAt: null, enabled: false });
+      logger.info('Scheduler', 'Concluding one-shot item after fire', { itemId: item.id });
+      this.deps.store.update(item.id, { lastFireAt: now, nextFireAt: null, conclusion: 'fired', concludedAt: now });
     } else {
       const next = nextOccurrence(item.rule, now, this.deps.tz);
       logger.debug('Scheduler', 'Rescheduling recurring item', { itemId: item.id, next });

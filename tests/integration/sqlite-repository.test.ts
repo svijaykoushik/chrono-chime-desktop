@@ -31,6 +31,8 @@ function reminder(over: Partial<Reminder> = {}): Reminder {
     routineId: null,
     createdAt: 1,
     updatedAt: 1,
+    conclusion: null,
+    concludedAt: null,
     ...over,
   };
 }

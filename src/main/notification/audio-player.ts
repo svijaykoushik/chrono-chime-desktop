@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { logger } from '../diagnostics/logger';
 
 export function playAudio(filePath: string): void {
+  logger.info('AudioPlayer', `playAudio() triggered for file: ${filePath}`);
   if (!existsSync(filePath)) {
     logger.error('AudioPlayer', `Audio file does not exist: ${filePath}`);
     return;
@@ -29,11 +30,11 @@ export function playAudio(filePath: string): void {
     return;
   }
 
-  logger.info('AudioPlayer', `Playing audio via command: ${command}`);
+  logger.info('AudioPlayer', `System level audio player invocation initiated with command: ${command}`);
 
   exec(command, (error) => {
     if (error) {
-      logger.error('AudioPlayer', 'Audio playback command execution failed', error);
+      logger.error('AudioPlayer', `System level audio player invocation failed: ${error.message}`, error);
     } else {
       logger.info('AudioPlayer', 'Audio playback command execution completed');
     }

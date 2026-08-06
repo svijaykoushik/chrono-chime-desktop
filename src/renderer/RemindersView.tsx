@@ -2,12 +2,15 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   Box, Card, CardContent, Checkbox, Fab, IconButton, InputAdornment, Stack, Switch,
   TextField, Toolbar, Typography, Button, Dialog, DialogTitle, DialogContent, DialogContentText,
-  DialogActions, Tooltip,
+  DialogActions, Tooltip, Chip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import HistoryIcon from '@mui/icons-material/History';
+import { DateTime } from 'luxon';
+import { reminderStatus } from '../shared/reminder-status';
 import { describeRule } from '../shared/describe-rule';
 import { ReminderDialog } from './ReminderDialog';
 import type { Reminder, ReminderInput } from '../shared/reminder';
@@ -88,33 +91,69 @@ export function RemindersView({ tz }: { tz: string }) {
         </Stack>
       ) : (
         <Stack spacing={1.5}>
-          {reminders.map((r) => (
-            <Card
-              key={r.id} variant="outlined"
-              onContextMenu={(e) => { e.preventDefault(); toggleSelect(r.id); }}
-            >
-              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {selectionMode && (
-                  <Checkbox checked={selection.has(r.id)} onChange={() => toggleSelect(r.id)} />
-                )}
-                <Box sx={{ flex: 1, opacity: r.enabled ? 1 : 0.5 }}>
-                  <Typography variant="subtitle1">{r.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">{describeRule(r.rule, tz)}</Typography>
-                </Box>
-                {!selectionMode && (
-                  <>
-                    <Switch checked={r.enabled} onChange={() => toggleEnabled(r)} />
-                    <Tooltip title="Edit">
-                      <IconButton onClick={() => openEdit(r)} aria-label={`edit ${r.title}`}><EditIcon /></IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton onClick={() => setPendingDelete([r.id])} aria-label={`delete ${r.title}`}><DeleteIcon /></IconButton>
-                    </Tooltip>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          {reminders.map((r) => {
+            const status = reminderStatus(r);
+            const formatTime = (ms: number) => DateTime.fromMillis(ms, { zone: tz }).toFormat('HH:mm');
+            return (
+              <Card
+                key={r.id} variant="outlined"
+                onContextMenu={(e) => { e.preventDefault(); toggleSelect(r.id); }}
+              >
+                <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {selectionMode && (
+                    <Checkbox checked={selection.has(r.id)} onChange={() => toggleSelect(r.id)} />
+                  )}
+                  <Box sx={{ flex: 1, opacity: status === 'off' ? 0.5 : 1 }}>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>{r.title}</Typography>
+                      {status === 'done' && (
+                        <Chip
+                          size="small"
+                          label={`Done · fired ${r.concludedAt ? formatTime(r.concludedAt) : ''}`}
+                          color="success"
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: '0.75rem' }}
+                        />
+                      )}
+                      {status === 'missed' && (
+                        <Chip
+                          size="small"
+                          label={`Missed · ChronoChime wasn't running at ${r.concludedAt ? formatTime(r.concludedAt) : ''}`}
+                          color="error"
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: '0.75rem' }}
+                        />
+                      )}
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary">{describeRule(r.rule, tz)}</Typography>
+                  </Box>
+                  {!selectionMode && (
+                    <>
+                      {status === 'done' || status === 'missed' ? (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<HistoryIcon />}
+                          onClick={() => openEdit(r)}
+                          sx={{ textTransform: 'none', borderRadius: 2 }}
+                        >
+                          Schedule again
+                        </Button>
+                      ) : (
+                        <Switch checked={r.enabled} onChange={() => toggleEnabled(r)} />
+                      )}
+                      <Tooltip title="Edit">
+                        <IconButton onClick={() => openEdit(r)} aria-label={`edit ${r.title}`}><EditIcon /></IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton onClick={() => setPendingDelete([r.id])} aria-label={`delete ${r.title}`}><DeleteIcon /></IconButton>
+                      </Tooltip>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </Stack>
       )}
 
