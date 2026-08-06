@@ -36,7 +36,7 @@ export function playAudio(filePath: string): void {
     if (error) {
       logger.error('AudioPlayer', `System level audio player invocation failed: ${error.message}`, error);
     } else {
-      logger.info('AudioPlayer', 'System level audio player invocation completed successfully');
+      logger.info('AudioPlayer', 'Audio playback command execution completed');
     }
   });
 }
