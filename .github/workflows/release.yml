@@ -37,10 +37,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Make distributables
+      - name: Make distributables (Linux)
+        if: runner.os == 'Linux'
         run: |
           umask 022
           npm run make
+
+      - name: Make distributables (Windows)
+        if: runner.os == 'Windows'
+        run: npm run make
 
       - name: Upload distributables
         uses: actions/upload-artifact@v4
