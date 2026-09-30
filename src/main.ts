@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, powerMonitor, protocol, net, Tray, Menu, nativeImage, dialog } from 'electron';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { SqliteRepository } from './main/store/sqlite-repository';
@@ -271,7 +271,11 @@ if (!app.requestSingleInstanceLock()) {
     try {
       protocol.handle('chrono-sound', (request) => {
         const id = basename(decodeURIComponent(new URL(request.url).hostname || request.url.replace('chrono-sound://', '')));
-        const file = join(app.getAppPath(), 'assets/sounds', id);
+        let file = join(app.getAppPath(), 'assets/sounds', id);
+        if (!existsSync(file) && id.toLowerCase().endsWith('.wav')) {
+          const mp3 = file.replace(/\.wav$/i, '.mp3');
+          if (existsSync(mp3)) file = mp3;
+        }
         return net.fetch(pathToFileURL(file).toString());
       });
       initLogging(); // configure file logging + retention sweep (D§1)

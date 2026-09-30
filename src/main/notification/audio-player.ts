@@ -4,6 +4,12 @@ import { logger } from '../diagnostics/logger';
 
 export function playAudio(filePath: string): void {
   logger.info('AudioPlayer', `playAudio() triggered for file: ${filePath}`);
+  if (!existsSync(filePath) && filePath.toLowerCase().endsWith('.wav')) {
+    const mp3 = filePath.replace(/\.wav$/i, '.mp3');
+    if (existsSync(mp3)) {
+      filePath = mp3;
+    }
+  }
   if (!existsSync(filePath)) {
     logger.error('AudioPlayer', `Audio file does not exist: ${filePath}`);
     return;

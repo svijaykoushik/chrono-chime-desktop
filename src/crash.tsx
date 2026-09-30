@@ -1,21 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import {
-  Alert,
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CssBaseline,
-  Stack,
-  ThemeProvider,
-  Typography,
-  createTheme,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface CrashInfo {
   message: string;
@@ -33,7 +17,7 @@ declare global {
   }
 }
 
-function CrashApp() {
+export function CrashApp() {
   const [crashInfo, setCrashInfo] = useState<CrashInfo | null>(null);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,56 +43,124 @@ function CrashApp() {
   };
 
   return (
-    <ThemeProvider theme={createTheme({ palette: { mode: 'light' } })}>
-      <CssBaseline />
-      <Box sx={{ minHeight: '100vh', bgcolor: '#f8f0f4', p: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Card sx={{ width: '100%', maxWidth: 760, boxShadow: 6, borderRadius: 3 }}>
-          <CardContent>
-            <Typography variant="h4" gutterBottom>
-              Something went wrong
-            </Typography>
-            <Typography variant="body1" color="text.secondary" gutterBottom>
-              ChronoChime encountered an unexpected error. Your data is safe locally.
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Export a crash report and restart the app to recover.
-            </Typography>
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#f8f0f4',
+      padding: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      color: '#212121',
+      boxSizing: 'border-box',
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '760px',
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+        padding: '32px',
+        boxSizing: 'border-box',
+      }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 600, margin: '0 0 12px 0', color: '#111827' }}>
+          Something went wrong
+        </h1>
+        <p style={{ margin: '0 0 8px 0', color: '#4b5563', fontSize: '15px', lineHeight: 1.5 }}>
+          ChronoChime encountered an unexpected error. Your data is safe locally.
+        </p>
+        <p style={{ margin: '0 0 24px 0', color: '#6b7280', fontSize: '14px' }}>
+          Export a crash report and restart the app to recover.
+        </p>
 
-            {error ? (
-              <Alert severity="error" sx={{ mt: 3 }}>
-                {error}
-              </Alert>
-            ) : null}
+        {error && (
+          <div style={{
+            backgroundColor: '#fee2e2',
+            color: '#b91c1c',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            fontSize: '14px',
+          }}>
+            {error}
+          </div>
+        )}
 
-            <Stack spacing={2} sx={{ mt: 3 }}>
-              <Button variant="contained" color="primary" onClick={handleExport} disabled={exporting || exported}>
-                {exporting ? 'Exporting…' : exported ? 'Export started' : 'Export Crash Report & Restart'}
-              </Button>
-              <Button variant="outlined" disabled={exporting} onClick={() => window.close()}>
-                Close
-              </Button>
-            </Stack>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+          <button
+            onClick={handleExport}
+            disabled={exporting || exported}
+            style={{
+              padding: '12px 20px',
+              backgroundColor: exporting || exported ? '#f472b6' : '#EE5A8A',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '15px',
+              fontWeight: 500,
+              cursor: exporting || exported ? 'not-allowed' : 'pointer',
+              transition: 'background-color 0.2s',
+            }}
+          >
+            {exporting ? 'Exporting…' : exported ? 'Export started' : 'Export Crash Report & Restart'}
+          </button>
+          <button
+            onClick={() => window.close()}
+            disabled={exporting}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: 'transparent',
+              color: '#4b5563',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            Close
+          </button>
+        </div>
 
-            {crashInfo ? (
-              <Accordion sx={{ mt: 3 }}>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>Technical details</AccordionSummary>
-                <AccordionDetails>
-                  <Typography variant="subtitle2" gutterBottom>
-                    {crashInfo.processType === 'main' ? 'Main process' : 'Renderer process'} crash
-                  </Typography>
-                  <Typography component="pre" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'Monospace', fontSize: 13 }}>
-                    {crashInfo.message}
-                    {crashInfo.stack ? `\n\n${crashInfo.stack}` : ''}
-                  </Typography>
-                </AccordionDetails>
-              </Accordion>
-            ) : null}
-          </CardContent>
-        </Card>
-      </Box>
-    </ThemeProvider>
+        {crashInfo && (
+          <details style={{
+            marginTop: '20px',
+            padding: '12px 16px',
+            backgroundColor: '#f9fafb',
+            border: '1px solid #e5e7eb',
+            borderRadius: '8px',
+          }}>
+            <summary style={{ fontWeight: 500, cursor: 'pointer', color: '#374151', fontSize: '14px' }}>
+              Technical details
+            </summary>
+            <div style={{ marginTop: '12px', fontSize: '13px' }}>
+              <div style={{ fontWeight: 600, color: '#4b5563', marginBottom: '6px' }}>
+                {crashInfo.processType === 'main' ? 'Main process' : 'Renderer process'} crash
+              </div>
+              <pre style={{
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+                fontSize: '12px',
+                backgroundColor: '#f3f4f6',
+                padding: '12px',
+                borderRadius: '6px',
+                overflowX: 'auto',
+                margin: 0,
+                color: '#1f2937',
+              }}>
+                {crashInfo.message}
+                {crashInfo.stack ? `\n\n${crashInfo.stack}` : ''}
+              </pre>
+            </div>
+          </details>
+        )}
+      </div>
+    </div>
   );
 }
 
-const root = createRoot(document.getElementById('root')!);
-root.render(<CrashApp />);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = createRoot(rootElement);
+  root.render(<CrashApp />);
+}

@@ -13,6 +13,10 @@ export interface ScheduledItem {
 export interface SchedulerStore {
   /** All enabled, schedulable items (disabled items are excluded). */
   listSchedulable(): ScheduledItem[];
+  /** Fast-path: query the earliest pending nextFireAt directly from persistence. */
+  getSoonestSchedulableTime?(): number | null;
+  /** Fast-path: query only schedulable items due on or before `now`. */
+  listDueSchedulable?(now: number): ScheduledItem[];
   update(
     id: string,
     patch: Partial<Pick<ScheduledItem, 'nextFireAt' | 'lastFireAt' | 'enabled'>> & {

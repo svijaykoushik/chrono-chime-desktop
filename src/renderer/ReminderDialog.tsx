@@ -3,7 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem,
   Stack, ToggleButton, ToggleButtonGroup, Typography, Chip, Box, InputAdornment,
 } from '@mui/material';
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import { VolumeUpIcon } from './icons';
 import { SoundPickerDialog } from './SoundPickerDialog';
 import { describeRule } from '../shared/describe-rule';
 import {
@@ -12,16 +12,13 @@ import {
 } from './scheduleForm';
 import { DateTime } from 'luxon';
 import type { Reminder, ReminderInput, SoundChoice } from '../shared/reminder';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 const getSoundLabel = (s: SoundChoice): string => {
   if (s.kind === 'silent') return 'Silent';
   if (s.kind === 'builtin') {
     if (s.id === 'notification.mp3') return 'Chime 1';
-    if (s.id === 'notification2.wav') return 'Chime 2';
-    if (s.id === 'notification3.wav') return 'Chime 3';
+    if (s.id === 'notification2.mp3' || s.id === 'notification2.wav') return 'Chime 2';
+    if (s.id === 'notification3.mp3' || s.id === 'notification3.wav') return 'Chime 3';
     return s.id;
   }
   if (s.kind === 'custom') return s.path;
@@ -152,21 +149,17 @@ export function ReminderDialog({ open, tz, reminder, onClose, onSave }: Props) {
           </Stack>
 
           {isOnce ? (
-            <LocalizationProvider dateAdapter={AdapterLuxon}>
-              <DateTimePicker
-                label="Date & time"
-                value={form.at ? DateTime.fromFormat(form.at, "yyyy-MM-dd'T'HH:mm", { zone: tz }) : null}
-                onChange={(val) => set('at', val ? val.toFormat("yyyy-MM-dd'T'HH:mm") : '')}
-                slotProps={{
-                  textField: {
-                    required: true,
-                    error: isPastOnce,
-                    helperText: isPastOnce ? "Must be in the future" : "",
-                    fullWidth: true
-                  }
-                }}
-              />
-            </LocalizationProvider>
+            <TextField
+              label="Date & time"
+              type="datetime-local"
+              value={form.at || ''}
+              onChange={(e) => set('at', e.target.value)}
+              required
+              error={isPastOnce}
+              helperText={isPastOnce ? "Must be in the future" : ""}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
           ) : (
             <>
               <Stack spacing={1}>

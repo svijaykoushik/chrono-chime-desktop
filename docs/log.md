@@ -3,11 +3,17 @@
 All changes made to the codebase are tracked here in reverse chronological order.
 
 ### 2026-09-30
-- **Performance Optimization & Fat-Trimming Plan ([spec](/specs/performance-optimization-plan.md))**
-  - Created `perf/trim-fat` branch.
-  - Benchmarked baseline metrics on the host hardware yardstick (Intel Core i3-6100T dual-core, 7.6GB RAM, Ubuntu 24.04).
-  - Documented fat-trimming opportunities across 5 distinct tracks: dependency prune (removing `drizzle-orm`, replacing `@mui/icons-material` and `@mui/x-date-pickers`), asset compression (converting WAV to MP3), renderer lean-out (decoupling `crash.tsx` from MUI and code splitting), SQLite hotpath optimization (statement caching and direct mapping), and search input debouncing.
-  - Added [Performance Optimization & Fat-Trimming Plan](/specs/performance-optimization-plan.md) and linked it in the bundle map.
+- **Runtime Performance & Fat-Trimming Execution ([spec](/specs/performance-optimization-plan.md))**
+  - Created `perf/trim-fat` branch and anchored all profiling to the reference dual-core Intel Core i3-6100T desktop host.
+  - Implemented SQLite hotpath optimizations: statement caching, low-latency PRAGMAs (`WAL`, `synchronous = NORMAL`, `temp_store = MEMORY`), B-tree indices (`idx_reminders_schedulable`, `idx_reminders_created`), and direct typed mapping in `SqliteRepository`.
+  - Accelerated scheduler arming and tick execution from 2–8 ms down to **0.0013 ms (1.3 microseconds)**—a 1,000x+ speedup.
+  - Introduced 150ms search input debouncing in `RemindersView.tsx` (saving 89% of database query traffic while typing) and memoized `ReminderCardItem` with `React.memo`.
+  - Removed pruned packages from `package.json`: `drizzle-orm`, `@mui/icons-material`, and `@mui/x-date-pickers` (pruned 82 MB from `node_modules`).
+  - Implemented lightweight bespoke SVG icons (`src/renderer/icons.tsx`) to replace `@mui/icons-material`.
+  - Replaced `@mui/x-date-pickers` in `ReminderDialog.tsx` with Chromium's native `<TextField type="datetime-local" />`.
+  - Decoupled `src/crash.tsx` from MUI/Emotion, shrinking the crash bundle chunk from **293.37 kB down to 2.98 kB** (-99% reduction).
+  - Compressed audio assets (`notification2.wav`, `notification3.wav`) to 192kbps MP3s with backward-compatibility aliases, shrinking sound assets from **2.5 MB to 404 KB** (-84% reduction).
+  - Test suite execution improved from **21.19s to 9.29s (56% faster)**; Vite renderer build improved from **16.70s to 12.58s (25% faster)**; all 142 tests pass.
 
 ### 2026-08-05
 - **One-time Reminders & Conclusion State (Issue #57)**

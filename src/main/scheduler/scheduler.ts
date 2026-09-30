@@ -111,8 +111,11 @@ export class Scheduler {
 
   private onTimer(): void {
     const now = this.deps.clock();
-    for (const item of this.deps.store.listSchedulable()) {
-      if (item.nextFireAt != null && item.nextFireAt <= now) this.fire(item, now);
+    const due = this.deps.store.listDueSchedulable
+      ? this.deps.store.listDueSchedulable(now)
+      : this.deps.store.listSchedulable().filter((item) => item.nextFireAt != null && item.nextFireAt <= now);
+    for (const item of due) {
+      this.fire(item, now);
     }
     this.arm();
   }
@@ -125,9 +128,13 @@ export class Scheduler {
     }
     const now = this.deps.clock();
     let soonest: number | null = null;
-    for (const item of this.deps.store.listSchedulable()) {
-      if (item.nextFireAt != null && (soonest == null || item.nextFireAt < soonest)) {
-        soonest = item.nextFireAt;
+    if (this.deps.store.getSoonestSchedulableTime) {
+      soonest = this.deps.store.getSoonestSchedulableTime();
+    } else {
+      for (const item of this.deps.store.listSchedulable()) {
+        if (item.nextFireAt != null && (soonest == null || item.nextFireAt < soonest)) {
+          soonest = item.nextFireAt;
+        }
       }
     }
     if (soonest == null) {
