@@ -36,7 +36,14 @@ export function initLogging(): void {
   log.transports.file.resolvePathFn = (_vars, message) =>
     join(dir, message?.variables?.processType === 'renderer' ? 'renderer.log' : 'main.log');
 
-  pruneLogs(dir); // enforce ≤5 files / ≤7 days at boot
+  // Defer retention sweep to unblock startup execution
+  setImmediate(() => {
+    try {
+      pruneLogs(dir); // enforce ≤5 files / ≤7 days at boot
+    } catch {
+      // Ignore background sweep errors
+    }
+  });
 }
 
 export const logger = {

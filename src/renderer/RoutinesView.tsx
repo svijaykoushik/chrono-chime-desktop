@@ -4,9 +4,7 @@ import {
   DialogContent, DialogTitle, Fab, IconButton, List, ListItem, ListItemText, MenuItem,
   Stack, Switch, TextField, Typography,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { AddIcon, ExpandMoreIcon, DeleteIcon } from './icons';
 import { describeRule } from '../shared/describe-rule';
 import type { RoutineView } from '../shared/bridge';
 import type { RoutineConfig } from '../shared/routine';

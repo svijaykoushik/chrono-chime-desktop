@@ -18,12 +18,16 @@ const SOUND_OPTIONS: { id: string; label: string; choice: SoundChoice }[] = [
   { id: 'default', label: 'Default', choice: { kind: 'default' } },
   { id: 'silent', label: 'Silent', choice: { kind: 'silent' } },
   { id: 'notification.mp3', label: 'Chime 1', choice: { kind: 'builtin', id: 'notification.mp3' } },
-  { id: 'notification2.wav', label: 'Chime 2', choice: { kind: 'builtin', id: 'notification2.wav' } },
-  { id: 'notification3.wav', label: 'Chime 3', choice: { kind: 'builtin', id: 'notification3.wav' } },
+  { id: 'notification2.mp3', label: 'Chime 2', choice: { kind: 'builtin', id: 'notification2.mp3' } },
+  { id: 'notification3.mp3', label: 'Chime 3', choice: { kind: 'builtin', id: 'notification3.mp3' } },
 ];
 
 const getSoundId = (s: SoundChoice): string => {
-  if (s.kind === 'builtin') return s.id;
+  if (s.kind === 'builtin') {
+    if (s.id === 'notification2.wav') return 'notification2.mp3';
+    if (s.id === 'notification3.wav') return 'notification3.mp3';
+    return s.id;
+  }
   if (s.kind === 'silent') return 'silent';
   if (s.kind === 'custom') return s.path;
   return 'default';

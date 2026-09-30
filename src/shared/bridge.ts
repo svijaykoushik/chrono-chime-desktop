@@ -67,6 +67,7 @@ export interface ChronoBridge {
     onInstallResult(cb: (result: InstallResult) => void): () => void;
   };
   onFired(cb: (event: FiredEvent) => void): () => void;
+  notifyStartupReady?(renderMs: number): Promise<void>;
 }
 
 declare global {

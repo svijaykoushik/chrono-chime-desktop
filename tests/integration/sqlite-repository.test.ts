@@ -100,4 +100,21 @@ describe('SqliteRepository — persistence layer', () => {
     expect(got.enabled).toBe(true);
     second.close();
   });
+
+  it('efficiently queries soonest schedulable time and due items', () => {
+    const repo = new SqliteRepository(':memory:');
+    repo.insertReminder(reminder({ id: 'r1', nextFireAt: 2000, enabled: true, conclusion: null }));
+    repo.insertReminder(reminder({ id: 'r2', nextFireAt: 1000, enabled: true, conclusion: null }));
+    repo.insertReminder(reminder({ id: 'r3', nextFireAt: 500, enabled: false, conclusion: null })); // disabled
+    repo.insertReminder(reminder({ id: 'r4', nextFireAt: 300, enabled: true, conclusion: 'fired' })); // concluded
+
+    expect(repo.getSoonestSchedulableTime()).toBe(1000);
+
+    const dueAt1500 = repo.listDueSchedulable(1500);
+    expect(dueAt1500.map((d) => d.id)).toEqual(['r2']);
+
+    const dueAt2500 = repo.listDueSchedulable(2500);
+    expect(dueAt2500.map((d) => d.id)).toEqual(['r2', 'r1']);
+    repo.close();
+  });
 });

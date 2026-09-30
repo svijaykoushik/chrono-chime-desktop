@@ -1,8 +1,9 @@
 import { app, BrowserWindow, ipcMain, powerMonitor, protocol, net, Tray, Menu, nativeImage, dialog } from 'electron';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { performance } from 'node:perf_hooks';
 import { SqliteRepository } from './main/store/sqlite-repository';
 import { schedulerStoreFor } from './main/store/repository';
 import { Scheduler } from './main/scheduler/scheduler';
@@ -17,6 +18,13 @@ import { exportLogs, openLogsDir } from './main/diagnostics/export';
 import { installCrashHandlers, exportCrashLogsAndRestart, getCrashInfo } from './main/diagnostics/crash';
 import { UpdateService } from './main/update/update-service';
 let updateService: UpdateService | undefined;
+
+const startupT0 = performance.now();
+const isStartupBenchmark = process.argv.includes('--benchmark-startup');
+let tWhenReady = 0;
+let tSchedulerStarted = 0;
+let tWindowCreated = 0;
+let tReadyToShow = 0;
 import {
   CH,
   reminderListReq,
@@ -157,6 +165,24 @@ function registerIpc(): void {
   ipcMain.handle(CH.crashExportAndRestart, async () => {
     await exportCrashLogsAndRestart(exportLogs);
   });
+
+  ipcMain.handle(CH.startupReady, (_e, _renderMs: number) => {
+    const tRendererReady = performance.now();
+    if (isStartupBenchmark) {
+      console.log('\n' + '='.repeat(70));
+      console.log('CHRONOCHIME COLD STARTUP BENCHMARK (Host: Intel Core i3-6100T)');
+      console.log('='.repeat(70));
+      console.log(`1. Process Launch to app.whenReady():     ${(tWhenReady - startupT0).toFixed(1)} ms`);
+      console.log(`2. Services & Scheduler Boot:             ${(tSchedulerStarted - tWhenReady).toFixed(1)} ms`);
+      console.log(`3. Window Creation to ready-to-show:      ${(tReadyToShow - tWindowCreated).toFixed(1)} ms`);
+      console.log(`4. Total Cold Start to Window Ready:      ${(tReadyToShow - startupT0).toFixed(1)} ms`);
+      console.log(`5. Total Time-to-Interactive (TTI):       ${(tRendererReady - startupT0).toFixed(1)} ms`);
+      console.log('='.repeat(70) + '\n');
+      setTimeout(() => {
+        app.exit(0);
+      }, 250);
+    }
+  });
 }
 
 function createCrashWindow(): void {
@@ -197,12 +223,14 @@ function showCrashWindow(): void {
 }
 
 function createWindow(showOnReady = true): void {
+  tWindowCreated = performance.now();
   mainWindow = new BrowserWindow({
     width: 980,
     height: 720,
     minWidth: 720,
     minHeight: 560,
     show: false,
+    backgroundColor: '#fffbfa',
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -218,6 +246,7 @@ function createWindow(showOnReady = true): void {
   }
 
   mainWindow.once('ready-to-show', () => {
+    tReadyToShow = performance.now();
     if (showOnReady) {
       mainWindow?.show();
     }
@@ -268,10 +297,15 @@ if (!app.requestSingleInstanceLock()) {
   ]);
 
   app.whenReady().then(() => {
+    tWhenReady = performance.now();
     try {
       protocol.handle('chrono-sound', (request) => {
         const id = basename(decodeURIComponent(new URL(request.url).hostname || request.url.replace('chrono-sound://', '')));
-        const file = join(app.getAppPath(), 'assets/sounds', id);
+        let file = join(app.getAppPath(), 'assets/sounds', id);
+        if (!existsSync(file) && id.toLowerCase().endsWith('.wav')) {
+          const mp3 = file.replace(/\.wav$/i, '.mp3');
+          if (existsSync(mp3)) file = mp3;
+        }
         return net.fetch(pathToFileURL(file).toString());
       });
       initLogging(); // configure file logging + retention sweep (D§1)
@@ -280,11 +314,12 @@ if (!app.requestSingleInstanceLock()) {
       crashHandlers = installCrashHandlers(showCrashWindow, (code) => app.exit(code));
       registerIpc();
       scheduler.start(); // boot recovery + arm (F14)
+      tSchedulerStarted = performance.now();
       const autoLaunchMinimized = process.argv.includes(START_MINIMIZED_ARG) && settingsStore.get().startMinimizedOnAutoLaunch;
       createWindow(!autoLaunchMinimized);
       createTray();
-      // Initialise update checker service (M4)
-      updateService = new UpdateService(() => mainWindow, () => settingsStore.get());
+      // Initialise update checker service (M4) - defer initial check to avoid startup network contention
+      updateService = new UpdateService(() => mainWindow, () => settingsStore.get(), { deferStartupCheck: true });
 
       // Resume from sleep → re-run recovery so missed occurrences are handled.
       powerMonitor.on('resume', () => {

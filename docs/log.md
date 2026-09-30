@@ -2,6 +2,26 @@
 
 All changes made to the codebase are tracked here in reverse chronological order.
 
+### 2026-09-30
+- **Startup Performance Profiling & Optimization ([spec](/specs/performance-optimization-plan.md))**
+  - Profiled cold-start lifecycle on the dual-core Intel Core i3-6100T desktop host using automated IPC benchmark hooks.
+  - Deferred GitHub Releases `UpdateService.checkForUpdates()` check by 10s to eliminate socket and network competition during window launch.
+  - Asynchronously scheduled filesystem log retention pruning in `initLogging()` via `setImmediate()`.
+  - Lazy-loaded `RoutinesView`, `SettingsView`, and `ReminderDialog` via `React.lazy()` / `Suspense` to shrink the initial script evaluation burden.
+  - Seeded initial state in `App.tsx` with default settings so the UI shell and `RemindersView` render on the very first frame without waiting for IPC settings round-trip.
+  - Reduced Time to Window Ready from 3,544.8 ms to **2,766.9 ms (21.9% faster)** and Time-to-Interactive (TTI) from 3,624.3 ms to **3,055.6 ms (15.7% faster)**.
+- **Runtime Performance & Fat-Trimming Execution ([spec](/specs/performance-optimization-plan.md))**
+  - Created `perf/trim-fat` branch and anchored all profiling to the reference dual-core Intel Core i3-6100T desktop host.
+  - Implemented SQLite hotpath optimizations: statement caching, low-latency PRAGMAs (`WAL`, `synchronous = NORMAL`, `temp_store = MEMORY`), B-tree indices (`idx_reminders_schedulable`, `idx_reminders_created`), and direct typed mapping in `SqliteRepository`.
+  - Accelerated scheduler arming and tick execution from 2–8 ms down to **0.0013 ms (1.3 microseconds)**—a 1,000x+ speedup.
+  - Introduced 150ms search input debouncing in `RemindersView.tsx` (saving 89% of database query traffic while typing) and memoized `ReminderCardItem` with `React.memo`.
+  - Removed pruned packages from `package.json`: `drizzle-orm`, `@mui/icons-material`, and `@mui/x-date-pickers` (pruned 82 MB from `node_modules`).
+  - Implemented lightweight bespoke SVG icons (`src/renderer/icons.tsx`) to replace `@mui/icons-material`.
+  - Replaced `@mui/x-date-pickers` in `ReminderDialog.tsx` with Chromium's native `<TextField type="datetime-local" />`.
+  - Decoupled `src/crash.tsx` from MUI/Emotion, shrinking the crash bundle chunk from **293.37 kB down to 2.98 kB** (-99% reduction).
+  - Compressed audio assets (`notification2.wav`, `notification3.wav`) to 192kbps MP3s with backward-compatibility aliases, shrinking sound assets from **2.5 MB to 404 KB** (-84% reduction).
+  - Test suite execution improved from **21.19s to 9.29s (56% faster)**; Vite renderer build improved from **16.70s to 12.58s (25% faster)**; all 142 tests pass.
+
 ### 2026-08-05
 - **One-time Reminders & Conclusion State (Issue #57)**
   - Reorganized `ReminderDialog.tsx` layout to separate "Once" from repeating/intervals into a top-level selection.

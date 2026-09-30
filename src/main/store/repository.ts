@@ -29,6 +29,11 @@ export interface Repository {
   deleteRoutine(id: string): number; // cascades to children
   listRoutines(): PersistedRoutine[];
   setRoutineEnabled(id: string, enabled: boolean): void;
+
+  /** Fast-path: query the earliest pending nextFireAt directly from storage. */
+  getSoonestSchedulableTime?(): number | null;
+  /** Fast-path: query only schedulable items due on or before `now`. */
+  listDueSchedulable?(now: number): ScheduledItem[];
 }
 
 export class InMemoryRepository implements Repository {
@@ -62,6 +67,32 @@ export class InMemoryRepository implements Repository {
       out = out.filter((r) => r.title.toLowerCase().includes(q));
     }
     return out.sort((a, b) => a.createdAt - b.createdAt);
+  }
+
+  getSoonestSchedulableTime(): number | null {
+    let soonest: number | null = null;
+    for (const r of this.reminders.values()) {
+      if (r.enabled && r.conclusion === null && r.nextFireAt != null) {
+        if (soonest === null || r.nextFireAt < soonest) soonest = r.nextFireAt;
+      }
+    }
+    return soonest;
+  }
+
+  listDueSchedulable(now: number): ScheduledItem[] {
+    const due: ScheduledItem[] = [];
+    for (const r of this.reminders.values()) {
+      if (r.enabled && r.conclusion === null && r.nextFireAt != null && r.nextFireAt <= now) {
+        due.push({
+          id: r.id,
+          rule: r.rule,
+          enabled: r.enabled,
+          nextFireAt: r.nextFireAt,
+          lastFireAt: r.lastFireAt,
+        });
+      }
+    }
+    return due.sort((a, b) => (a.nextFireAt ?? 0) - (b.nextFireAt ?? 0));
   }
 
   insertRoutine(r: PersistedRoutine) {
@@ -100,6 +131,12 @@ export function schedulerStoreFor(repo: Repository): SchedulerStore {
           nextFireAt: r.nextFireAt,
           lastFireAt: r.lastFireAt,
         })),
+    getSoonestSchedulableTime: repo.getSoonestSchedulableTime
+      ? () => repo.getSoonestSchedulableTime!()
+      : undefined,
+    listDueSchedulable: repo.listDueSchedulable
+      ? (now: number) => repo.listDueSchedulable!(now)
+      : undefined,
     update: (id, patch) => {
       repo.updateReminder(id, patch);
     },

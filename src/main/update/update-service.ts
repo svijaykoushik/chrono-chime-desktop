@@ -20,10 +20,15 @@ export class UpdateService {
 
   constructor(
     getMainWindow?: () => BrowserWindow | null,
-    private readonly getSettings?: () => Settings
+    private readonly getSettings?: () => Settings,
+    options?: { deferStartupCheck?: boolean }
   ) {
-    // Immediate check on startup
-    this.checkForUpdates();
+    // Startup check: deferred if requested, otherwise immediate
+    if (options?.deferStartupCheck) {
+      setTimeout(() => this.checkForUpdates(), 10_000);
+    } else {
+      this.checkForUpdates();
+    }
     // Schedule recurring checks
     this.timer = setInterval(() => this.checkForUpdates(), this.intervalMs);
     // Register IPC handlers if the electron ipcMain API is available (tests may mock it)
