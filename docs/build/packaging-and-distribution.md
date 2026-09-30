@@ -3,7 +3,7 @@ type: Runbook
 title: Packaging & Distribution
 description: How to build ChronoChime distributables (Squirrel/.deb), packaging config, and the release-failure runbook.
 tags: [build, release, packaging]
-timestamp: 2026-07-08
+timestamp: 2026-10-01
 ---
 
 # ChronoChime — Packaging & Distribution
@@ -103,7 +103,17 @@ If a GitHub Actions release workflow run fails after pushing a semver version ta
 
 ### 1. Identify the Cause
 Check the failing step in the GitHub Actions runner console:
-- **Windows Squirrel Maker Failures:** Typically caused by missing package metadata required by NuGet (e.g., `Authors is required`). Ensure `author` is defined in `package.json` and `authors` is passed to the `MakerSquirrel` config in `forge.config.js`.
+- **Visual Studio Toolchain Detection Failures (`find-visualstudio.js`):**
+  - *Symptom:* `npm error gyp verb find VS unknown version "undefined" found at "C:\Program Files\Microsoft Visual Studio\18\Enterprise"` and `npm error gyp ERR! stack Error: Could not find any Visual Studio installation to use` during `npm ci` or `electron-rebuild`.
+  - *Root Cause:* The GitHub Actions `windows-latest` image may default to Windows Server 2025 with preview Visual Studio 18. Older `@electron/node-gyp` (v10.2.0) instances only recognize VS 2017, 2019, and 2022 (`[2019, 2022]`).
+  - *Fix:* Pin the runner to `runs-on: windows-2022` in workflow files (`release.yml`, `validate.yml`) to guarantee a stable Visual Studio 2022 Enterprise installation (see [ADR-002](/decisions/ADR-002-pin-windows-runner-2022.md)).
+- **Cross-Platform Shell Command Errors (e.g. `umask: command not found`):**
+  - *Symptom:* `The term 'umask' is not recognized as a name of a cmdlet, function, script file, or operable program` on Windows runners.
+  - *Root Cause:* On Windows runners, GitHub Actions executes steps using PowerShell (`pwsh`) by default. POSIX shell builtins (`umask`, `export`, etc.) fail immediately.
+  - *Fix:* Separate multi-platform build steps with OS conditions (`if: runner.os == 'Linux'` vs `if: runner.os == 'Windows'`) or explicitly specify `shell: bash`.
+- **Windows Squirrel Maker Failures (`Authors is required`):**
+  - *Symptom:* `Authors is required` during NuGet packaging.
+  - *Fix:* Ensure `author` is defined in `package.json` and `authors` is explicitly passed to the `MakerSquirrel` config in `forge.config.js`.
 - **Dependency/Build Issues:** Errors due to native module rebuilds, mismatching Node/Electron ABIs, or syntax compilation failures.
 
 ### 2. Clean Up and Reset the Release Tag
