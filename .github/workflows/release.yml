@@ -19,7 +19,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest # → Linux .deb
-          - os: windows-latest # → Windows Squirrel .exe / .nupkg
+          - os: windows-2022 # → Windows Squirrel .exe / .nupkg
     steps:
       - name: Checkout
         uses: actions/checkout@v4
