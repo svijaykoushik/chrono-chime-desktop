@@ -3,12 +3,18 @@ type: Status
 title: Implementation Progress
 description: Running log of work done, milestone status, and next steps.
 tags: [status]
-timestamp: 2026-09-30
+timestamp: 2026-10-01
 ---
 
 # ChronoChime Implementation Progress
 
 ## Work Done
+*   **v1.0.0-rc.2 Multi-Platform Release:**
+    *   Bumped version to `1.0.0-rc.2` encompassing PR #60 through #64 (cold start acceleration, bundle reduction, SQLite hotpaths, conclusion tracking, and main audio playback).
+    *   Fixed multi-platform GitHub Actions release workflow:
+        *   Separated Linux and Windows `npm run make` steps to prevent `umask` failure on Windows PowerShell.
+        *   Pinned Windows runner from `windows-latest` (Server 2025 / VS 18) to `windows-2022` (VS 2022) to resolve native C++ build toolchain incompatibilities in `@electron/node-gyp`.
+    *   Successfully built and published release candidate artifacts: `.deb` for Linux, and Squirrel `.exe` / `.nupkg` for Windows.
 *   **Runtime & Build Performance Optimization (Branch: `perf/trim-fat`):**
     *   **Startup Benchmarking & Optimization:** Profiled cold startup on the dual-core Intel i3-6100T reference machine. Shaved 778 ms off window ready time (3,544.8 ms -> 2,766.9 ms, -21.9%) and 569 ms off Time-to-Interactive (3,624.3 ms -> 3,055.6 ms, -15.7%).
         *   Deferred GitHub `UpdateService.checkForUpdates()` out of cold boot into a 10s background timer.

@@ -2,6 +2,16 @@
 
 All changes made to the codebase are tracked here in reverse chronological order.
 
+### 2026-10-01
+- **v1.0.0-rc.2 Release & Cross-Platform CI Pipeline Fixes**
+  - Released `v1.0.0-rc.2` featuring startup acceleration, bundle trimming, and conclusion tracking.
+  - Resolved Linux and Windows release packaging failures in GitHub Actions:
+    - Fixed Linux-specific `umask 022` step crashing on Windows PowerShell (`pwsh`) runners by isolating the step to `if: runner.os == 'Linux'`.
+    - Pinned Windows CI runner to `windows-2022` in `release.yml` and `validate.yml` to resolve `@electron/node-gyp` incompatibility with preview Visual Studio 18 on `windows-latest`.
+  - Verified multi-platform build pipeline publishing all release artifacts to GitHub Releases:
+    - Linux: `chronochime_1.0.0.rc.2_amd64.deb` (84.93 MiB)
+    - Windows: `ChronoChime-1.0.0-rc.2.Setup.exe` (118.39 MiB), `ChronoChime-1.0.0-rc2-full.nupkg` (117.60 MiB)
+
 ### 2026-09-30
 - **Startup Performance Profiling & Optimization ([spec](/specs/performance-optimization-plan.md))**
   - Profiled cold-start lifecycle on the dual-core Intel Core i3-6100T desktop host using automated IPC benchmark hooks.
