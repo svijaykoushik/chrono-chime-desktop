@@ -37,6 +37,7 @@ A breakdown of ChronoChime's design, subsystems, and load-bearing mechanics:
 ## Specifications (operational)
 
 * [Diagnostics, Logging & Updates](/specs/diagnostics-and-updates.md) — implementation spec for local-first logging + crash overlay and the GitHub Releases update notifier.
+* [Performance Optimization & Fat-Trimming Plan](/specs/performance-optimization-plan.md) — hardware yardstick benchmarks and fat-trimming blueprint.
 * [About & Feedback](/specs/feedback-and-community.md) — implementation spec for offline-first, user-initiated feedback paths (public GitHub issue + private email) and the About surface. No telemetry/backend.
 * [Shipping Implementation Plan](/specs/shipping-implementation-plan.md) — milestone-sequenced plan (M1–M7) with exit criteria and risks.
 

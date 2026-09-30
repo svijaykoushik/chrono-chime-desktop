@@ -2,6 +2,13 @@
 
 All changes made to the codebase are tracked here in reverse chronological order.
 
+### 2026-09-30
+- **Performance Optimization & Fat-Trimming Plan ([spec](/specs/performance-optimization-plan.md))**
+  - Created `perf/trim-fat` branch.
+  - Benchmarked baseline metrics on the host hardware yardstick (Intel Core i3-6100T dual-core, 7.6GB RAM, Ubuntu 24.04).
+  - Documented fat-trimming opportunities across 5 distinct tracks: dependency prune (removing `drizzle-orm`, replacing `@mui/icons-material` and `@mui/x-date-pickers`), asset compression (converting WAV to MP3), renderer lean-out (decoupling `crash.tsx` from MUI and code splitting), SQLite hotpath optimization (statement caching and direct mapping), and search input debouncing.
+  - Added [Performance Optimization & Fat-Trimming Plan](/specs/performance-optimization-plan.md) and linked it in the bundle map.
+
 ### 2026-08-05
 - **One-time Reminders & Conclusion State (Issue #57)**
   - Reorganized `ReminderDialog.tsx` layout to separate "Once" from repeating/intervals into a top-level selection.
