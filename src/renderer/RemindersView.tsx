@@ -8,8 +8,9 @@ import { AddIcon, SearchIcon, DeleteIcon, EditIcon, HistoryIcon } from './icons'
 import { DateTime } from 'luxon';
 import { reminderStatus } from '../shared/reminder-status';
 import { describeRule } from '../shared/describe-rule';
-import { ReminderDialog } from './ReminderDialog';
 import type { Reminder, ReminderInput } from '../shared/reminder';
+
+const ReminderDialog = React.lazy(() => import('./ReminderDialog').then((m) => ({ default: m.ReminderDialog })));
 
 interface ReminderCardItemProps {
   reminder: Reminder;
@@ -204,11 +205,17 @@ export function RemindersView({ tz }: { tz: string }) {
         <AddIcon />
       </Fab>
 
-      <ReminderDialog
-        open={dialogOpen} tz={tz} reminder={editing}
-        onClose={() => setDialogOpen(false)}
-        onSave={handleSave}
-      />
+      {dialogOpen && (
+        <React.Suspense fallback={null}>
+          <ReminderDialog
+            open={dialogOpen}
+            tz={tz}
+            reminder={editing}
+            onClose={() => setDialogOpen(false)}
+            onSave={handleSave}
+          />
+        </React.Suspense>
+      )}
 
       <Dialog open={pendingDelete !== null} onClose={() => setPendingDelete(null)}>
         <DialogTitle>

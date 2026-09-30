@@ -3,6 +3,13 @@
 All changes made to the codebase are tracked here in reverse chronological order.
 
 ### 2026-09-30
+- **Startup Performance Profiling & Optimization ([spec](/specs/performance-optimization-plan.md))**
+  - Profiled cold-start lifecycle on the dual-core Intel Core i3-6100T desktop host using automated IPC benchmark hooks.
+  - Deferred GitHub Releases `UpdateService.checkForUpdates()` check by 10s to eliminate socket and network competition during window launch.
+  - Asynchronously scheduled filesystem log retention pruning in `initLogging()` via `setImmediate()`.
+  - Lazy-loaded `RoutinesView`, `SettingsView`, and `ReminderDialog` via `React.lazy()` / `Suspense` to shrink the initial script evaluation burden.
+  - Seeded initial state in `App.tsx` with default settings so the UI shell and `RemindersView` render on the very first frame without waiting for IPC settings round-trip.
+  - Reduced Time to Window Ready from 3,544.8 ms to **2,766.9 ms (21.9% faster)** and Time-to-Interactive (TTI) from 3,624.3 ms to **3,055.6 ms (15.7% faster)**.
 - **Runtime Performance & Fat-Trimming Execution ([spec](/specs/performance-optimization-plan.md))**
   - Created `perf/trim-fat` branch and anchored all profiling to the reference dual-core Intel Core i3-6100T desktop host.
   - Implemented SQLite hotpath optimizations: statement caching, low-latency PRAGMAs (`WAL`, `synchronous = NORMAL`, `temp_store = MEMORY`), B-tree indices (`idx_reminders_schedulable`, `idx_reminders_created`), and direct typed mapping in `SqliteRepository`.

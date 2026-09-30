@@ -10,6 +10,12 @@ timestamp: 2026-09-30
 
 ## Work Done
 *   **Runtime & Build Performance Optimization (Branch: `perf/trim-fat`):**
+    *   **Startup Benchmarking & Optimization:** Profiled cold startup on the dual-core Intel i3-6100T reference machine. Shaved 778 ms off window ready time (3,544.8 ms -> 2,766.9 ms, -21.9%) and 569 ms off Time-to-Interactive (3,624.3 ms -> 3,055.6 ms, -15.7%).
+        *   Deferred GitHub `UpdateService.checkForUpdates()` out of cold boot into a 10s background timer.
+        *   Converted synchronous filesystem log pruning (`pruneLogs`) during `initLogging()` to `setImmediate()`.
+        *   Code-split `RoutinesView`, `SettingsView`, and `ReminderDialog` via `React.lazy()` / `Suspense` so they are not parsed or evaluated during initial startup.
+        *   Provided default initial state in `App.tsx` enabling the UI shell and `RemindersView` to mount and paint on the very first frame without waiting for IPC settings resolution.
+        *   Configured `backgroundColor: '#fffbfa'` on `BrowserWindow` to eliminate white flashes before paint.
     *   **SQLite Hotpath & Scheduler:** Added composite B-tree indexes (`idx_reminders_schedulable`, `idx_reminders_created`), cached prepared statements, low-latency PRAGMAs (`WAL`, `synchronous = NORMAL`, `temp_store = MEMORY`), and direct typed mapping in `SqliteRepository`. Scheduler arming latency dropped from 2–8 ms down to **0.0013 ms (1.3 microseconds)**—a 1,000x+ speedup.
     *   **UI Search Debounce & Memoization:** Added a 150ms debounce on reminder search input in `RemindersView.tsx` (eliminating 89% of IPC and database query traffic during typing) and memoized `ReminderCardItem` with `React.memo` to eliminate redundant Luxon and Emotion render passes.
     *   **Dependency Pruning:** Removed `drizzle-orm` (unused), `@mui/icons-material`, and `@mui/x-date-pickers`, reducing `node_modules` by 82 MB (from 634 MB to 552 MB).

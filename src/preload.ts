@@ -56,6 +56,7 @@ const bridge: ChronoBridge = {
     ipcRenderer.on(CH.eventFired, listener);
     return () => ipcRenderer.removeListener(CH.eventFired, listener);
   },
+  notifyStartupReady: (renderMs: number) => ipcRenderer.invoke(CH.startupReady, renderMs),
 };
 
 contextBridge.exposeInMainWorld('chrono', bridge);

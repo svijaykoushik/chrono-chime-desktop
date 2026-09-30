@@ -1,24 +1,37 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import {
   AppBar, Box, Container, CssBaseline, Snackbar, Tab, Tabs, ThemeProvider, Toolbar, Typography,
 } from '@mui/material';
 import { RemindersView } from './RemindersView';
-import { RoutinesView } from './RoutinesView';
-import { SettingsView } from './SettingsView';
 import { makeTheme, type ThemeMode } from './theme';
 import type { Settings } from '../shared/contract';
 import type { FiredEvent } from '../shared/bridge';
 
+const RoutinesView = lazy(() => import('./RoutinesView').then((m) => ({ default: m.RoutinesView })));
+const SettingsView = lazy(() => import('./SettingsView').then((m) => ({ default: m.SettingsView })));
+
+const DEFAULT_SETTINGS: Settings = {
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+  quietHours: { enabled: false, start: '22:00', end: '07:00' },
+  theme: 'system',
+  launchAtLogin: false,
+  startMinimizedOnAutoLaunch: false,
+  updateChannel: 'stable',
+};
+
 export function App() {
   const [tab, setTab] = useState(0);
-  const [settings, setSettings] = useState<Settings | null>(null);
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [snack, setSnack] = useState<string | null>(null);
   const [systemDark, setSystemDark] = useState(
     () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false,
   );
 
   useEffect(() => {
-    void window.chrono.settings.get().then(setSettings);
+    void window.chrono.settings.get().then((s) => {
+      setSettings(s);
+      void window.chrono.notifyStartupReady?.(performance.now());
+    });
     const off = window.chrono.onFired((event: FiredEvent) => {
       setSnack(`${event.title}: ${event.body}`);
     });
@@ -35,10 +48,10 @@ export function App() {
   }, []);
 
   const mode: ThemeMode = useMemo(() => {
-    const pref = settings?.theme ?? 'system';
+    const pref = settings.theme;
     if (pref === 'system') return systemDark ? 'dark' : 'light';
     return pref;
-  }, [settings?.theme, systemDark]);
+  }, [settings.theme, systemDark]);
 
   const theme = useMemo(() => makeTheme(mode), [mode]);
 
@@ -49,31 +62,31 @@ export function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {settings && (
-        <Box>
-          <AppBar position="sticky" color="default" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Toolbar>
-              <Typography variant="h6" sx={{ flex: 1 }}>ChronoChime</Typography>
-            </Toolbar>
-            <Tabs value={tab} onChange={(_e, v) => setTab(v)} centered>
-              <Tab label="Reminders" />
-              <Tab label="Routines" />
-              <Tab label="Settings" />
-            </Tabs>
-          </AppBar>
+      <Box>
+        <AppBar position="sticky" color="default" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Toolbar>
+            <Typography variant="h6" sx={{ flex: 1 }}>ChronoChime</Typography>
+          </Toolbar>
+          <Tabs value={tab} onChange={(_e, v) => setTab(v)} centered>
+            <Tab label="Reminders" />
+            <Tab label="Routines" />
+            <Tab label="Settings" />
+          </Tabs>
+        </AppBar>
 
-          <Container maxWidth="md" sx={{ py: 3 }}>
-            {tab === 0 && <RemindersView tz={settings.timezone} />}
+        <Container maxWidth="md" sx={{ py: 3 }}>
+          {tab === 0 && <RemindersView tz={settings.timezone} />}
+          <Suspense fallback={null}>
             {tab === 1 && <RoutinesView tz={settings.timezone} />}
             {tab === 2 && <SettingsView settings={settings} onChange={updateSettings} />}
-          </Container>
+          </Suspense>
+        </Container>
 
-          <Snackbar
-            open={snack !== null} autoHideDuration={6000} onClose={() => setSnack(null)}
-            message={snack ?? ''} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          />
-        </Box>
-      )}
+        <Snackbar
+          open={snack !== null} autoHideDuration={6000} onClose={() => setSnack(null)}
+          message={snack ?? ''} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        />
+      </Box>
     </ThemeProvider>
   );
 }

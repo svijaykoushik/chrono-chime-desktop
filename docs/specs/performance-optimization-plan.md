@@ -57,6 +57,24 @@ These benchmarks were executed directly on this reference machine measuring CPU 
 | **UI Formatting (100 items / render)** | **1.31 ms** (Unmemoized Luxon `toFormat`) | **< 0.02 ms** (Memoized value) | **99% render pass CPU saved** |
 | **Search Burst (10 keystrokes)** | **26.88 ms** (10 unthrottled IPC queries) | **1.67 ms** (1 debounced query) | **93.8% database queries avoided** |
 
+### 2.3 Cold Startup Benchmarks (Measured on i3-6100T)
+Startup benchmarks were executed using automated lifecycle timing hooks across Main, Preload, and Renderer processes:
+
+| Startup Lifecycle Phase | Initial Cold Start | Steady Dev Baseline | After Startup Optimizations | Improvement / Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Process Launch to `app.whenReady()`** | 2,888.1 ms | 416.5 ms | **496.9 ms** | Node/Chromium runtime initialization |
+| **2. Services & Scheduler Boot** | 1,516.7 ms | 51.6 ms | **44.3 ms** | **14.1% faster** (deferred log pruning & update check) |
+| **3. Window Creation to `ready-to-show`** | 11,770.8 ms | 3,076.5 ms | **2,225.6 ms** | **27.7% faster** (code-splitting + instant fallback shell) |
+| **4. Total Time to Window Ready** | 16,175.8 ms | 3,544.8 ms | **2,766.9 ms** | **21.9% faster** (777.9 ms shaved off boot) |
+| **5. Total Time-to-Interactive (TTI)** | 16,356.5 ms | 3,624.3 ms | **3,055.6 ms** | **15.7% faster** (568.7 ms shaved off TTI) |
+
+*Key startup improvements implemented:*
+1. **Deferred GitHub Update Check:** Moved un-deferred `checkForUpdates()` out of the constructor to a 10s timer, preventing network/socket contention during launch.
+2. **Asynchronous Retention Sweep:** Converted synchronous filesystem `pruneLogs()` sweep in `initLogging()` to `setImmediate()`.
+3. **Renderer Code-Splitting:** Lazily loaded `RoutinesView`, `SettingsView`, and `ReminderDialog` via `React.lazy()` / `Suspense`, eliminating them from the initial script evaluation phase.
+4. **Immediate Fallback Shell:** Initialized `App.tsx` with default settings so the UI shell and `RemindersView` mount on the very first frame without awaiting an IPC roundtrip.
+5. **Window Background Flash Prevention:** Configured `backgroundColor: '#fffbfa'` on `BrowserWindow` matching the brand theme.
+
 ---
 
 ## 3. Fat-Trimming & Performance Tracks

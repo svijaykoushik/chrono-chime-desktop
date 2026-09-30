@@ -30,6 +30,7 @@ export const CH = {
   updateInstallResult: 'chronochime:update:install-result',
   updateInstall: 'chronochime:update:install',
   updateGetVersion: 'chronochime:update:get-version',
+  startupReady: 'chronochime:startup:ready',
 } as const;
 
 /** Request schemas — every IPC input is validated against these. */
