@@ -35,6 +35,7 @@ export interface ChronoBridge {
     update(id: string, patch: Partial<ReminderInput>): Promise<Reminder | undefined>;
     setEnabled(ids: string[], enabled: boolean): Promise<Reminder[]>;
     delete(ids: string[]): Promise<number>;
+    snooze(id: string, minutes?: number): Promise<Reminder | undefined>;
   };
   routines: {
     list(): Promise<RoutineView[]>;

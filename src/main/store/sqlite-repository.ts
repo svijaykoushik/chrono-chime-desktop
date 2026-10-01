@@ -22,6 +22,7 @@ interface ReminderRow {
   updated_at: number;
   conclusion: string | null;
   concluded_at: number | null;
+  snoozed_until: number | null;
 }
 
 interface RoutineRow {
@@ -47,7 +48,8 @@ CREATE TABLE IF NOT EXISTS reminders (
   created_at   INTEGER NOT NULL,
   updated_at   INTEGER NOT NULL,
   conclusion   TEXT,
-  concluded_at INTEGER
+  concluded_at INTEGER,
+  snoozed_until INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_reminders_routine ON reminders(routine_id);
 CREATE TABLE IF NOT EXISTS routines (
@@ -104,9 +106,14 @@ export class SqliteRepository implements Repository {
       } catch (err) {
         // Ignored if column already exists
       }
+      try {
+        this.db.exec('ALTER TABLE reminders ADD COLUMN snoozed_until INTEGER DEFAULT NULL');
+      } catch (err) {
+        // Ignored if column already exists
+      }
 
       // Add high-performance B-tree indexes for schedulable items and searches
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_reminders_schedulable ON reminders(enabled, conclusion, next_fire_at)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_reminders_schedulable ON reminders(enabled, conclusion, snoozed_until, next_fire_at)');
       this.db.exec('CREATE INDEX IF NOT EXISTS idx_reminders_created ON reminders(created_at)');
 
       // Backfill once rule + last_fire_at != null to conclusion = 'fired'
@@ -126,26 +133,28 @@ export class SqliteRepository implements Repository {
       this.stmtGetReminder = this.db.prepare('SELECT * FROM reminders WHERE id = ?');
       this.stmtInsertReminder = this.db.prepare(
         `INSERT INTO reminders
-           (id, title, message, enabled, rule, notification, next_fire_at, last_fire_at, routine_id, created_at, updated_at, conclusion, concluded_at)
-         VALUES (@id, @title, @message, @enabled, @rule, @notification, @next, @last, @routine, @created, @updated, @conclusion, @concludedAt)`
+           (id, title, message, enabled, rule, notification, next_fire_at, last_fire_at, routine_id, created_at, updated_at, conclusion, concluded_at, snoozed_until)
+         VALUES (@id, @title, @message, @enabled, @rule, @notification, @next, @last, @routine, @created, @updated, @conclusion, @concludedAt, @snoozedUntil)`
       );
       this.stmtUpdateReminder = this.db.prepare(
         `UPDATE reminders SET
            title=@title, message=@message, enabled=@enabled, rule=@rule, notification=@notification,
            next_fire_at=@next, last_fire_at=@last, routine_id=@routine, updated_at=@updated,
-           conclusion=@conclusion, concluded_at=@concludedAt
+           conclusion=@conclusion, concluded_at=@concludedAt, snoozed_until=@snoozedUntil
          WHERE id=@id`
       );
       this.stmtDeleteReminder = this.db.prepare('DELETE FROM reminders WHERE id = ?');
 
       this.stmtGetSoonestSchedulable = this.db.prepare(
-        `SELECT MIN(next_fire_at) AS soonest FROM reminders
-         WHERE enabled = 1 AND conclusion IS NULL AND next_fire_at IS NOT NULL`
+        `SELECT MIN(COALESCE(snoozed_until, next_fire_at)) AS soonest FROM reminders
+         WHERE enabled = 1 AND conclusion IS NULL AND (snoozed_until IS NOT NULL OR next_fire_at IS NOT NULL)`
       );
       this.stmtListDueSchedulable = this.db.prepare(
         `SELECT * FROM reminders
-         WHERE enabled = 1 AND conclusion IS NULL AND next_fire_at IS NOT NULL AND next_fire_at <= ?
-         ORDER BY next_fire_at ASC`
+         WHERE enabled = 1 AND conclusion IS NULL
+           AND COALESCE(snoozed_until, next_fire_at) IS NOT NULL
+           AND COALESCE(snoozed_until, next_fire_at) <= ?
+         ORDER BY COALESCE(snoozed_until, next_fire_at) ASC`
       );
 
       this.stmtListAllReminders = this.db.prepare('SELECT * FROM reminders ORDER BY created_at ASC');
@@ -191,6 +200,7 @@ export class SqliteRepository implements Repository {
       updatedAt: row.updated_at,
       conclusion: (row.conclusion as 'fired' | 'missed' | null) ?? null,
       concludedAt: row.concluded_at ?? null,
+      snoozedUntil: row.snoozed_until ?? null,
     };
   }
 
@@ -210,6 +220,7 @@ export class SqliteRepository implements Repository {
         updated: r.updatedAt,
         conclusion: r.conclusion ?? null,
         concludedAt: r.concludedAt ?? null,
+        snoozedUntil: r.snoozedUntil ?? null,
       });
       logger.debug('Database', 'Inserted reminder', { id: r.id, enabled: r.enabled });
       return r;
@@ -242,6 +253,7 @@ export class SqliteRepository implements Repository {
         updated: next.updatedAt,
         conclusion: next.conclusion ?? null,
         concludedAt: next.concludedAt ?? null,
+        snoozedUntil: next.snoozedUntil ?? null,
       });
       logger.debug('Database', 'Updated reminder', { id, enabled: next.enabled });
       return next;

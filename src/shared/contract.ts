@@ -10,6 +10,7 @@ export const CH = {
   reminderUpdate: 'chronochime:reminder:update',
   reminderSetEnabled: 'chronochime:reminder:setEnabled',
   reminderDelete: 'chronochime:reminder:delete',
+  reminderSnooze: 'chronochime:reminder:snooze',
   routineList: 'chronochime:routine:list',
   routineCreate: 'chronochime:routine:create',
   routineSetEnabled: 'chronochime:routine:setEnabled',
@@ -39,6 +40,7 @@ export const reminderCreateReq = reminderInputSchema;
 export const reminderUpdateReq = z.object({ id: z.string(), patch: reminderInputSchema.partial() });
 export const reminderSetEnabledReq = z.object({ ids: z.array(z.string()).nonempty(), enabled: z.boolean() });
 export const reminderDeleteReq = z.object({ ids: z.array(z.string()).nonempty() });
+export const reminderSnoozeReq = z.object({ id: z.string(), minutes: z.number().int().positive().default(5) });
 export const routineCreateReq = routineInputSchema;
 export const routineSetEnabledReq = z.object({ id: z.string(), enabled: z.boolean() });
 export const routineDeleteReq = z.object({ id: z.string() });

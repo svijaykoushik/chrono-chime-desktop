@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import {
-  AppBar, Box, Container, CssBaseline, Snackbar, Tab, Tabs, ThemeProvider, Toolbar, Typography,
+  AppBar, Box, Button, Container, CssBaseline, Snackbar, Tab, Tabs, ThemeProvider, Toolbar, Typography,
 } from '@mui/material';
 import { RemindersView } from './RemindersView';
 import { makeTheme, type ThemeMode } from './theme';
@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: Settings = {
 export function App() {
   const [tab, setTab] = useState(0);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [snack, setSnack] = useState<string | null>(null);
+  const [snack, setSnack] = useState<{ id?: string; message: string } | null>(null);
   const [systemDark, setSystemDark] = useState(
     () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false,
   );
@@ -33,10 +33,20 @@ export function App() {
       void window.chrono.notifyStartupReady?.(performance.now());
     });
     const off = window.chrono.onFired((event: FiredEvent) => {
-      setSnack(`${event.title}: ${event.body}`);
+      setSnack({ id: event.reminderId, message: `${event.title}: ${event.body}` });
     });
     return off;
   }, []);
+
+  const handleSnooze = async (minutes = 5) => {
+    if (!snack?.id) return;
+    try {
+      await window.chrono.reminders.snooze(snack.id, minutes);
+      setSnack({ message: `Snoozed for ${minutes} min` });
+    } catch {
+      setSnack(null);
+    }
+  };
 
   // Track the OS color scheme so the "System" theme option stays in sync.
   useEffect(() => {
@@ -83,8 +93,18 @@ export function App() {
         </Container>
 
         <Snackbar
-          open={snack !== null} autoHideDuration={6000} onClose={() => setSnack(null)}
-          message={snack ?? ''} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          open={snack !== null}
+          autoHideDuration={6000}
+          onClose={() => setSnack(null)}
+          message={snack?.message ?? ''}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          action={
+            snack?.id ? (
+              <Button color="inherit" size="small" onClick={() => handleSnooze(5)}>
+                Snooze 5m
+              </Button>
+            ) : undefined
+          }
         />
       </Box>
     </ThemeProvider>

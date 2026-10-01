@@ -29,12 +29,13 @@ export class Scheduler {
     const now = this.deps.clock();
     logger.info('Scheduler', 'Scheduler start/restart initiated', { now });
     for (const item of this.deps.store.listSchedulable()) {
-      if (item.nextFireAt == null) {
+      const effectiveNext = item.snoozedUntil ?? item.nextFireAt;
+      if (effectiveNext == null) {
         // Freshly created / re-enabled — compute its first occurrence.
         const next = nextOccurrence(item.rule, now, this.deps.tz);
         logger.debug('Scheduler', 'Calculating first occurrence for item', { itemId: item.id, ruleKind: item.rule.kind, next });
         this.deps.store.update(item.id, { nextFireAt: next });
-      } else if (item.nextFireAt <= now) {
+      } else if (effectiveNext <= now) {
         this.recover(item, now);
       }
     }
@@ -60,51 +61,75 @@ export class Scheduler {
   }
 
   private recover(item: ScheduledItem, now: number): void {
+    const isSnoozed = item.snoozedUntil != null;
+    const scheduledFor = item.snoozedUntil ?? item.nextFireAt!;
     const decision = decideRecovery({
-      rule: item.rule,
-      scheduledFor: item.nextFireAt!,
+      rule: isSnoozed ? { kind: 'once', at: scheduledFor } : item.rule,
+      scheduledFor,
       now,
       tz: this.deps.tz,
       graceMs: this.deps.graceMs,
     });
     logger.warn('Scheduler', 'Missed occurrence recovery triggered', {
       itemId: item.id,
-      scheduledFor: item.nextFireAt,
+      scheduledFor,
       now,
       decisionType: decision.type,
       missedCount: 'missedCount' in decision ? decision.missedCount : undefined,
     });
     if (decision.type === 'fire-now') {
       this.deps.notify({ item, firedAt: now, missedCount: decision.missedCount });
-      this.applyAfterFire(item, now, decision.deactivate);
+      this.applyAfterFire(item, now, decision.deactivate || (isSnoozed && item.rule.kind === 'once'), isSnoozed);
     } else if (decision.type === 'skip') {
       logger.warn('Scheduler', 'Recovery decided to skip/deactivate item', { itemId: item.id });
-      this.deps.store.update(item.id, { nextFireAt: null, conclusion: 'missed', concludedAt: now });
+      if (item.rule.kind === 'once') {
+        this.deps.store.update(item.id, { nextFireAt: null, snoozedUntil: null, conclusion: 'missed', concludedAt: now });
+      } else {
+        const next = nextOccurrence(item.rule, now, this.deps.tz);
+        this.deps.store.update(item.id, { snoozedUntil: null, nextFireAt: next });
+      }
     }
   }
 
   private fire(item: ScheduledItem, now: number): void {
-    const drift = now - (item.nextFireAt || now);
+    const isSnoozed = item.snoozedUntil != null;
+    const scheduledTime = item.snoozedUntil ?? item.nextFireAt;
+    const drift = now - (scheduledTime || now);
     logger.info('Scheduler', 'Firing reminder', {
       itemId: item.id,
-      scheduledTime: item.nextFireAt,
+      scheduledTime,
       firedAt: now,
       driftMs: drift,
+      isSnoozed,
     });
     this.deps.notify({ item, firedAt: now, missedCount: 1 });
-    this.applyAfterFire(item, now, item.rule.kind === 'once');
+    this.applyAfterFire(item, now, item.rule.kind === 'once', isSnoozed);
   }
 
-  private applyAfterFire(item: ScheduledItem, now: number, deactivate: boolean): void {
+  private applyAfterFire(item: ScheduledItem, now: number, deactivate: boolean, isSnoozed = false): void {
     if (deactivate) {
       logger.info('Scheduler', 'Concluding one-shot item after fire', { itemId: item.id });
-      this.deps.store.update(item.id, { lastFireAt: now, nextFireAt: null, conclusion: 'fired', concludedAt: now });
+      this.deps.store.update(item.id, {
+        lastFireAt: now,
+        nextFireAt: null,
+        snoozedUntil: null,
+        conclusion: 'fired',
+        concludedAt: now,
+      });
     } else {
-      const next = nextOccurrence(item.rule, now, this.deps.tz);
-      logger.debug('Scheduler', 'Rescheduling recurring item', { itemId: item.id, next });
+      let next = item.nextFireAt;
+      if (isSnoozed) {
+        if (next == null || next <= now) {
+          next = nextOccurrence(item.rule, now, this.deps.tz);
+        }
+      } else {
+        next = nextOccurrence(item.rule, now, this.deps.tz);
+      }
+      logger.debug('Scheduler', 'Rescheduling recurring item', { itemId: item.id, next, isSnoozed });
       this.deps.store.update(item.id, {
         lastFireAt: now,
         nextFireAt: next,
+        snoozedUntil: null,
       });
     }
   }
@@ -113,7 +138,12 @@ export class Scheduler {
     const now = this.deps.clock();
     const due = this.deps.store.listDueSchedulable
       ? this.deps.store.listDueSchedulable(now)
-      : this.deps.store.listSchedulable().filter((item) => item.nextFireAt != null && item.nextFireAt <= now);
+      : this.deps.store
+          .listSchedulable()
+          .filter((item) => {
+            const at = item.snoozedUntil ?? item.nextFireAt;
+            return at != null && at <= now;
+          });
     for (const item of due) {
       this.fire(item, now);
     }
@@ -132,8 +162,9 @@ export class Scheduler {
       soonest = this.deps.store.getSoonestSchedulableTime();
     } else {
       for (const item of this.deps.store.listSchedulable()) {
-        if (item.nextFireAt != null && (soonest == null || item.nextFireAt < soonest)) {
-          soonest = item.nextFireAt;
+        const at = item.snoozedUntil ?? item.nextFireAt;
+        if (at != null && (soonest == null || at < soonest)) {
+          soonest = at;
         }
       }
     }

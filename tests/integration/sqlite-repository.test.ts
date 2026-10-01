@@ -33,6 +33,7 @@ function reminder(over: Partial<Reminder> = {}): Reminder {
     updatedAt: 1,
     conclusion: null,
     concludedAt: null,
+    snoozedUntil: null,
     ...over,
   };
 }
@@ -40,11 +41,12 @@ function reminder(over: Partial<Reminder> = {}): Reminder {
 describe('SqliteRepository — persistence layer', () => {
   it('round-trips a reminder through SQLite', () => {
     const repo = new SqliteRepository(':memory:');
-    repo.insertReminder(reminder());
+    repo.insertReminder(reminder({ snoozedUntil: 5_000 }));
     const got = repo.getReminder('r1')!;
     expect(got.title).toBe('Standup');
     expect(got.enabled).toBe(true);
     expect(got.rule).toEqual({ kind: 'calendar', freq: 'daily', interval: 1, atTime: '09:00' });
+    expect(got.snoozedUntil).toBe(5_000);
     repo.close();
   });
 

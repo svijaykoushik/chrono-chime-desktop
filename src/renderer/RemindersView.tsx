@@ -69,6 +69,15 @@ const ReminderCardItem = memo(function ReminderCardItem({
                 sx={{ height: 20, fontSize: '0.75rem' }}
               />
             )}
+            {r.snoozedUntil != null && status === 'scheduled' && (
+              <Chip
+                size="small"
+                label={`Snoozed until ${DateTime.fromMillis(r.snoozedUntil, { zone: tz }).toFormat('HH:mm')}`}
+                color="secondary"
+                variant="outlined"
+                sx={{ height: 20, fontSize: '0.75rem' }}
+              />
+            )}
           </Stack>
           <Typography variant="body2" color="text.secondary">{ruleDescription}</Typography>
         </Box>

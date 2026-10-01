@@ -35,6 +35,7 @@ export class ReminderService {
       updatedAt: now,
       conclusion: null,
       concludedAt: null,
+      snoozedUntil: null,
     };
     this.d.repo.insertReminder(reminder);
     this.d.scheduler.reschedule();
@@ -55,6 +56,7 @@ export class ReminderService {
       updatedAt: now,
       ...(recompute ? { nextFireAt } : {}),
       ...(clearConclusion ? { conclusion: null, concludedAt: null } : {}),
+      ...(enabled === false ? { snoozedUntil: null } : {}),
     });
     this.d.scheduler.reschedule();
     return updated;
@@ -74,6 +76,7 @@ export class ReminderService {
         nextFireAt: nextFire,
         updatedAt: now,
         ...(nextFire !== null ? { conclusion: null, concludedAt: null } : {}),
+        ...(finalEnabled === false ? { snoozedUntil: null } : {}),
       });
       if (u) out.push(u);
     }
@@ -86,6 +89,30 @@ export class ReminderService {
     const n = this.d.repo.deleteReminders(ids);
     this.d.scheduler.reschedule();
     return n;
+  }
+
+  /** Snooze: defer a fired reminder by a short interval without moving the base recurrence lattice. */
+  snooze(id: string, minutes = 5): Reminder {
+    const cur = this.d.repo.getReminder(id);
+    if (!cur) {
+      throw new Error(`Reminder not found: ${id}`);
+    }
+    if (!cur.enabled) {
+      throw new Error('Cannot snooze a disabled reminder');
+    }
+    const now = this.d.clock();
+    const snoozedUntil = now + minutes * 60_000;
+    const updated = this.d.repo.updateReminder(id, {
+      snoozedUntil,
+      conclusion: null,
+      concludedAt: null,
+      updatedAt: now,
+    });
+    if (!updated) {
+      throw new Error(`Failed to update reminder: ${id}`);
+    }
+    this.d.scheduler.reschedule();
+    return updated;
   }
 
   /** F1 — top-level reminders only (routine children are hidden). */

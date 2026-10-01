@@ -9,6 +9,15 @@ timestamp: 2026-10-01
 # ChronoChime Implementation Progress
 
 ## Work Done
+*   **Snooze: Defer Fired Reminders by Short Interval (Issue #58):**
+    *   Added `snoozedUntil` override occurrence field to `Reminder` schema without disturbing the base recurrence lattice (preserving F3/F4 anti-drift guarantees).
+    *   Implemented SQLite migration `ALTER TABLE reminders ADD COLUMN snoozed_until INTEGER DEFAULT NULL`, updated statements and fast-path schedulable indexes.
+    *   Updated `ReminderService.snooze(id, minutes = 5)` to support both concluded one-shots (clearing conclusion and re-arming) and recurring reminders, rejecting disabled reminders.
+    *   Updated `Scheduler` to arm for `snoozedUntil` over the base recurrence next fire, clear `snoozedUntil` on fire, and seamlessly resume normal recurrence.
+    *   Added notification click listener focusing the main window.
+    *   Added dynamic "Snooze last reminder (5 min)" with 5/10/15/30 min submenu to the system tray context menu.
+    *   Added "Snooze 5m" action button to the fired reminder `Snackbar` in `App.tsx` and snoozed indicator chip in `RemindersView.tsx`.
+    *   Created full unit test suite `tests/unit/snooze.test.ts` covering all 6 Issue #58 criteria; all 149 test cases passing.
 *   **v1.0.0-rc.2 Multi-Platform Release:**
     *   Bumped version to `1.0.0-rc.2` encompassing PR #60 through #64 (cold start acceleration, bundle reduction, SQLite hotpaths, conclusion tracking, and main audio playback).
     *   Fixed multi-platform GitHub Actions release workflow:
