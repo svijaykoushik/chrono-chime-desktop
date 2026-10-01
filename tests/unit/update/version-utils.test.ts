@@ -24,8 +24,11 @@ describe('isNewer', () => {
     expect(isNewer('v1.2.0', 'v1.3.0')).toBe(false);
   });
 
-  test('detects newer patch version', () => {
-    expect(isNewer('v1.2.5', 'v1.2.4')).toBe(true);
-    expect(isNewer('v1.2.3', 'v1.2.5')).toBe(false);
+  test('detects newer prerelease version', () => {
+    expect(isNewer('v1.0.0-rc.2', 'v1.0.0-rc.1')).toBe(true);
+    expect(isNewer('v1.0.0-rc.1', 'v1.0.0-rc.2')).toBe(false);
+    // stable release is newer than any prerelease of same version
+    expect(isNewer('v1.0.0', 'v1.0.0-rc.2')).toBe(true);
+    expect(isNewer('v1.0.0-rc.2', 'v1.0.0')).toBe(false);
   });
 });
