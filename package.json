@@ -32,7 +32,8 @@
     "luxon": "^3.5.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "semver": "^7.6.2"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.2",
@@ -48,7 +49,7 @@
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@types/semver": "^7.5.8",
     "electron": "^33.4.11",
     "typescript": "^5.7.2",
     "vite": "^5.4.21",

@@ -13,10 +13,15 @@ export function parseVersion(v: string): SemVer {
 }
 
 /** Return true if `a` is newer than `b`. */
+// @ts-ignore // semver has its own types, but we ignore missing typings for simplicity
+import * as semver from 'semver';
+
+
+/** Return true if `a` is newer than `b`. */
 export function isNewer(a: string, b: string): boolean {
-  const av = parseVersion(a);
-  const bv = parseVersion(b);
-  if (av.major !== bv.major) return av.major > bv.major;
-  if (av.minor !== bv.minor) return av.minor > bv.minor;
-  return av.patch > bv.patch;
+  const cleanA = a.replace(/^v/, '');
+  const cleanB = b.replace(/^v/, '');
+  // semver.gt correctly handles prerelease identifiers (e.g., rc.2 > rc.1)
+  // and treats a stable release as newer than any prerelease of the same version.
+  return semver.gt(cleanA, cleanB);
 }
