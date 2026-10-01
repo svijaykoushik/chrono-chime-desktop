@@ -16,6 +16,7 @@ describe('reminderStatus helper', () => {
     updatedAt: 500,
     conclusion: null,
     concludedAt: null,
+    snoozedUntil: null,
   });
 
   it('is scheduled when enabled and not concluded', () => {

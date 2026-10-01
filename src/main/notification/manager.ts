@@ -15,6 +15,7 @@ export interface NotificationManagerDeps {
   /** Pushes the fired event to the renderer (for UI alerts). */
   emit: (event: FiredEvent) => void;
   playAudio: (filePath: string) => void;
+  onClick?: (reminderId: string) => void;
 }
 
 function soundToId(sound: SoundChoice | null): string | null {
@@ -76,11 +77,15 @@ export class NotificationManager {
     const isSilent = decision.sound === null || decision.sound.kind !== 'default';
 
     if (Notification.isSupported()) {
-      new Notification({
+      const notif = new Notification({
         title: reminder.title,
         body,
         silent: isSilent, // OS sound suppressed; visual remains. Custom/builtin sound played below.
-      }).show();
+      });
+      if (this.d.onClick) {
+        notif.on('click', () => this.d.onClick!(reminder.id));
+      }
+      notif.show();
     } else {
       logger.warn('Notification', 'OS notifications are not supported on this environment');
     }

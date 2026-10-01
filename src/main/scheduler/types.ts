@@ -7,6 +7,7 @@ export interface ScheduledItem {
   enabled: boolean;
   nextFireAt: number | null;
   lastFireAt: number | null;
+  snoozedUntil?: number | null;
 }
 
 /** Persistence seam — the scheduler never talks to SQLite directly. */
@@ -19,7 +20,7 @@ export interface SchedulerStore {
   listDueSchedulable?(now: number): ScheduledItem[];
   update(
     id: string,
-    patch: Partial<Pick<ScheduledItem, 'nextFireAt' | 'lastFireAt' | 'enabled'>> & {
+    patch: Partial<Pick<ScheduledItem, 'nextFireAt' | 'lastFireAt' | 'enabled' | 'snoozedUntil'>> & {
       conclusion?: 'fired' | 'missed' | null;
       concludedAt?: number | null;
     },

@@ -10,6 +10,7 @@ const bridge: ChronoBridge = {
     update: (id, patch) => ipcRenderer.invoke(CH.reminderUpdate, { id, patch }),
     setEnabled: (ids, enabled) => ipcRenderer.invoke(CH.reminderSetEnabled, { ids, enabled }),
     delete: (ids) => ipcRenderer.invoke(CH.reminderDelete, { ids }),
+    snooze: (id, minutes = 5) => ipcRenderer.invoke(CH.reminderSnooze, { id, minutes }),
   },
   routines: {
     list: () => ipcRenderer.invoke(CH.routineList),

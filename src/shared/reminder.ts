@@ -31,6 +31,7 @@ export const reminderSchema = reminderInputSchema.extend({
   updatedAt: z.number().int(),
   conclusion: z.enum(['fired', 'missed']).nullable().default(null),
   concludedAt: z.number().int().nullable().default(null),
+  snoozedUntil: z.number().int().nullable().default(null),
 });
 
 export type SoundChoice = z.infer<typeof soundChoiceSchema>;

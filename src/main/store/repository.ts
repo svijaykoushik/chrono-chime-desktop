@@ -72,8 +72,9 @@ export class InMemoryRepository implements Repository {
   getSoonestSchedulableTime(): number | null {
     let soonest: number | null = null;
     for (const r of this.reminders.values()) {
-      if (r.enabled && r.conclusion === null && r.nextFireAt != null) {
-        if (soonest === null || r.nextFireAt < soonest) soonest = r.nextFireAt;
+      if (r.enabled && r.conclusion === null) {
+        const effective = r.snoozedUntil ?? r.nextFireAt;
+        if (effective != null && (soonest === null || effective < soonest)) soonest = effective;
       }
     }
     return soonest;
@@ -82,17 +83,23 @@ export class InMemoryRepository implements Repository {
   listDueSchedulable(now: number): ScheduledItem[] {
     const due: ScheduledItem[] = [];
     for (const r of this.reminders.values()) {
-      if (r.enabled && r.conclusion === null && r.nextFireAt != null && r.nextFireAt <= now) {
+      const effective = r.snoozedUntil ?? r.nextFireAt;
+      if (r.enabled && r.conclusion === null && effective != null && effective <= now) {
         due.push({
           id: r.id,
           rule: r.rule,
           enabled: r.enabled,
           nextFireAt: r.nextFireAt,
           lastFireAt: r.lastFireAt,
+          snoozedUntil: r.snoozedUntil,
         });
       }
     }
-    return due.sort((a, b) => (a.nextFireAt ?? 0) - (b.nextFireAt ?? 0));
+    return due.sort((a, b) => {
+      const atA = a.snoozedUntil ?? a.nextFireAt ?? 0;
+      const atB = b.snoozedUntil ?? b.nextFireAt ?? 0;
+      return atA - atB;
+    });
   }
 
   insertRoutine(r: PersistedRoutine) {
@@ -130,6 +137,7 @@ export function schedulerStoreFor(repo: Repository): SchedulerStore {
           enabled: r.enabled,
           nextFireAt: r.nextFireAt,
           lastFireAt: r.lastFireAt,
+          snoozedUntil: r.snoozedUntil,
         })),
     getSoonestSchedulableTime: repo.getSoonestSchedulableTime
       ? () => repo.getSoonestSchedulableTime!()

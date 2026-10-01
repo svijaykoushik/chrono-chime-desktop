@@ -14,6 +14,7 @@ vi.mock('electron', () => {
     }
     options: any;
     show = vi.fn();
+    on = vi.fn();
     constructor(options: any) {
       this.options = options;
       MockNotification.instances.push(this);
@@ -204,5 +205,40 @@ describe('NotificationManager — F7/F9/F10 delivery', () => {
     expect(instance.options.silent).toBe(true); // OS silent
 
     expect(playAudio).not.toHaveBeenCalled(); // Silent in quiet hours
+  });
+
+  it('registers click handler on native notification when onClick dependency is provided', () => {
+    (Notification as any).instances = [];
+    const onClick = vi.fn();
+    const repo = {
+      getReminder: () => ({
+        id: 'rem-click',
+        title: 'Click Me',
+        notification: { sound: { kind: 'default' }, vibrate: false },
+      }),
+    } as any;
+
+    const mgr = new NotificationManager({
+      repo,
+      getSettings: () => ({
+        quietHours: { enabled: false, start: '22:00', end: '06:00' },
+        timezone: TZ,
+      } as any),
+      emit: vi.fn(),
+      playAudio: vi.fn(),
+      onClick,
+    });
+
+    mgr.deliver({
+      item: { id: 'rem-click' } as any,
+      firedAt: ms('2026-06-16T12:00'),
+      missedCount: 1,
+    });
+
+    const instance = (Notification as any).instances[0]!;
+    expect(instance.on).toHaveBeenCalledWith('click', expect.any(Function));
+    const clickHandler = instance.on.mock.calls.find((c: any[]) => c[0] === 'click')[1];
+    clickHandler();
+    expect(onClick).toHaveBeenCalledWith('rem-click');
   });
 });

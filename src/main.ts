@@ -32,6 +32,7 @@ import {
   reminderUpdateReq,
   reminderSetEnabledReq,
   reminderDeleteReq,
+  reminderSnoozeReq,
   routineCreateReq,
   routineSetEnabledReq,
   routineDeleteReq,
@@ -64,11 +65,21 @@ mkdirSync(userData, { recursive: true });
 const repo = new SqliteRepository(join(userData, 'chronochime.db'));
 const settingsStore = new SettingsStore(join(userData, 'settings.json'));
 
+let lastFiredReminderId: string | null = null;
+
 const notifications = new NotificationManager({
   repo,
   getSettings: () => settingsStore.get(),
   emit: (event) => mainWindow?.webContents.send(CH.eventFired, event),
   playAudio,
+  onClick: () => {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
+      createWindow();
+    }
+  },
 });
 
 const scheduler = new Scheduler({
@@ -79,7 +90,11 @@ const scheduler = new Scheduler({
     clear: (h) => clearTimeout(h as unknown as NodeJS.Timeout),
   },
   tz: settingsStore.get().timezone,
-  notify: (event) => notifications.deliver(event),
+  notify: (event) => {
+    lastFiredReminderId = event.item.id;
+    updateTray();
+    notifications.deliver(event);
+  },
 });
 
 const serviceDeps = {
@@ -108,6 +123,10 @@ function registerIpc(): void {
     return reminderService.setEnabled(ids, enabled);
   });
   ipcMain.handle(CH.reminderDelete, (_e, raw) => reminderService.delete(reminderDeleteReq.parse(raw).ids));
+  ipcMain.handle(CH.reminderSnooze, (_e, raw) => {
+    const { id, minutes } = reminderSnoozeReq.parse(raw);
+    return reminderService.snooze(id, minutes);
+  });
 
   ipcMain.handle(CH.routineList, () => routineService.list().map(toRoutineView));
   ipcMain.handle(CH.routineCreate, (_e, raw) => toRoutineView(routineService.create(routineCreateReq.parse(raw))));
@@ -260,23 +279,61 @@ function createWindow(showOnReady = true): void {
   }
 }
 
+function updateTray(): void {
+  if (!tray) return;
+  const lastReminder = lastFiredReminderId ? repo.getReminder(lastFiredReminderId) : null;
+  const snoozeLabel = lastReminder ? `Snooze "${lastReminder.title}" (5 min)` : 'Snooze last reminder (5 min)';
+  const template: Electron.MenuItemConstructorOptions[] = [
+    { label: 'Open ChronoChime', click: () => (mainWindow ? (mainWindow.show(), mainWindow.focus()) : createWindow()) },
+  ];
+
+  if (lastFiredReminderId && lastReminder && lastReminder.enabled) {
+    template.push(
+      {
+        label: snoozeLabel,
+        click: () => {
+          try {
+            reminderService.snooze(lastFiredReminderId!, 5);
+          } catch (err) {
+            logger.error('main', 'Failed to snooze from tray', err instanceof Error ? err : new Error(String(err)));
+          }
+        },
+      },
+      {
+        label: 'Snooze for...',
+        submenu: [5, 10, 15, 30].map((mins) => ({
+          label: `${mins} minutes`,
+          click: () => {
+            try {
+              reminderService.snooze(lastFiredReminderId!, mins);
+            } catch (err) {
+              logger.error('main', 'Failed to snooze from tray', err instanceof Error ? err : new Error(String(err)));
+            }
+          },
+        })),
+      },
+    );
+  }
+
+  template.push(
+    { type: 'separator' },
+    {
+      label: 'Quit',
+      click: () => {
+        logger.info('main', 'Application quitting via tray menu');
+        app.exit(0);
+      },
+    },
+  );
+
+  tray.setContextMenu(Menu.buildFromTemplate(template));
+}
+
 function createTray(): void {
   const icon = nativeImage.createFromPath(join(app.getAppPath(), 'assets/icons/chrono-chime-icon-32.png'));
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
   tray.setToolTip('ChronoChime');
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: 'Open ChronoChime', click: () => (mainWindow ? mainWindow.show() : createWindow()) },
-      { type: 'separator' },
-      {
-        label: 'Quit',
-        click: () => {
-          logger.info('main', 'Application quitting via tray menu');
-          app.exit(0);
-        },
-      },
-    ]),
-  );
+  updateTray();
 }
 
 // Single instance — a second launch focuses the existing window.

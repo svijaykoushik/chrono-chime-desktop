@@ -46,6 +46,7 @@ export class RoutineService {
         updatedAt: now,
         conclusion: null,
         concludedAt: null,
+        snoozedUntil: null,
       };
       this.d.repo.insertReminder(reminder);
     }

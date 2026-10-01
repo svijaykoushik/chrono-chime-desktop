@@ -3,6 +3,15 @@
 All changes made to the codebase are tracked here in reverse chronological order.
 
 ### 2026-10-01
+- **Snooze: Defer Fired Reminders by Short Interval (Issue #58)**
+  - Added `snoozedUntil` override occurrence to `Reminder` schema without altering recurrence rules or introducing calendar drift.
+  - Added SQLite migration `ALTER TABLE reminders ADD COLUMN snoozed_until INTEGER DEFAULT NULL` and updated prepared statements & schedulable indexes.
+  - Implemented `ReminderService.snooze(id, minutes = 5)` supporting re-arming concluded one-shots and recurring reminders, rejecting disabled reminders.
+  - Updated `Scheduler` to arm for `snoozedUntil` over normal recurrence, clearing `snoozedUntil` upon firing and preserving recurring schedules.
+  - Implemented notification `click` listener focusing the application window.
+  - Added dynamic "Snooze last reminder (5 min)" with 5/10/15/30 min options in the tray context menu.
+  - Added "Snooze 5m" action button in `App.tsx` fired reminder `Snackbar` and indicator chip in `RemindersView.tsx`.
+  - Added comprehensive test suite `tests/unit/snooze.test.ts` covering all 6 Issue #58 criteria; all 149 test cases passing.
 - **v1.0.0-rc.2 Release & Cross-Platform CI Pipeline Fixes**
   - Released `v1.0.0-rc.2` featuring startup acceleration, bundle trimming, and conclusion tracking.
   - Resolved Linux and Windows release packaging failures in GitHub Actions:
@@ -68,3 +77,13 @@ All changes made to the codebase are tracked here in reverse chronological order
   - Injected current app version context dynamically in the Settings page updates card description.
 - **Repository Owner Correction**
   - Updated owner configuration paths to `svijaykoushik/chrono-chime-desktop` (corrected from `vijaykoushik`) inside update fetch requests and design documentation.
+
+### 2026-10-01
+- **Snooze Reminders Implementation (Issue #58)**
+  - Added `snoozedUntil` schema attribute to `Reminder` and migrated SQLite repository schema and indexes (`idx_reminders_schedulable`).
+  - Added `ReminderService.snooze` supporting both concluded one-shots and recurring schedules while rejecting disabled reminders.
+  - Prioritized `snoozedUntil` in `Scheduler` without mutating recurrence rules to preserve the zero-drift scheduling anchor.
+  - Implemented dynamic tray context menu snooze options (5m, 10m, 15m, 30m), OS notification click-to-focus window trigger, and in-app notification snackbar snooze action.
+  - Added unit test suite `tests/unit/snooze.test.ts` (6 tests).
+  - Merged latest changes from `release-v1.0`, synchronized `package-lock.json`, and restored `@vitejs/plugin-react` to `devDependencies` to resolve CI workflow build failure.
+
