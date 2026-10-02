@@ -3,7 +3,7 @@ type: Status
 title: Implementation Status
 description: Feature -> code -> test traceability matrix and the current verification gates.
 tags: [status, traceability]
-timestamp: 2026-07-05
+timestamp: 2026-10-02
 ---
 
 # ChronoChime — Implementation Status
@@ -11,14 +11,14 @@ timestamp: 2026-07-05
 Phase 2 (TDD implementation) traceability: every PRD feature → the module that
 implements it → the tests that prove it. All tests run with `npm test` (Vitest).
 
-## Verification gates (all green)
+## Verification gates (local Linux)
 
 | Gate | Command | Result |
 | --- | --- | --- |
-| Unit + integration tests | `npm test` | **116 passing** across 16 files |
+| Unit + integration tests | `npm test` | **145 passing** across 20 files |
 | Type safety (strict) | `npm run typecheck` | clean |
 | Renderer bundle | Vite production build | builds (931 modules) |
-| Full app package | `npm run package` | packages for linux-x64; native `better_sqlite3.node` unpacked, assets bundled |
+| Linux distributable | `npm run make` | `.deb` builds; `better_sqlite3.node` and Web Audio native binaries unpacked |
 
 ## Feature → code → tests
 
@@ -32,7 +32,7 @@ implements it → the tests that prove it. All tests run with `npm test` (Vitest
 | F6 Advanced recurrence | recurrence (`bySetPos`, `byWeekday`, `interval`) | `recurrence.test.ts` |
 | F7 Notification delivery | `main/notification/decide.ts` + `manager.ts` | `notification.test.ts` |
 | F8 Message templates | `shared/template.ts` | `presentation.test.ts` |
-| F9 Custom sounds | `shared/reminder.ts` (SoundChoice), `notification/manager.ts`, `renderer` sound select + `chrono-sound://` protocol | `notification.test.ts` |
+| F9 Custom sounds | `shared/reminder.ts` (SoundChoice), async main-process `notification/audio-player.ts` (`audio-decode` + `node-web-audio-api`), `notification/manager.ts`, renderer sound select + `chrono-sound://` protocol | `audio-player.test.ts`, `notification.test.ts` |
 | F10 Quiet hours (overnight) | `shared/quiet-hours.ts`, `renderer/SettingsView.tsx` | `presentation.test.ts`, `notification.test.ts` |
 | F11 Routines | `shared/routine.ts`, `main/routine/expand.ts`, `main/app/routine-service.ts`, `renderer/RoutinesView.tsx` | `routine.test.ts`, `services.test.ts` |
 | F12 Search | `reminder-service.search`, repository title filter | `services.test.ts`, `sqlite-repository.test.ts` |

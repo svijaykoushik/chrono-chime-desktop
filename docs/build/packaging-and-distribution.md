@@ -3,7 +3,7 @@ type: Runbook
 title: Packaging & Distribution
 description: How to build ChronoChime distributables (Squirrel/.deb), packaging config, and the release-failure runbook.
 tags: [build, release, packaging]
-timestamp: 2026-10-01
+timestamp: 2026-10-02
 ---
 
 # ChronoChime — Packaging & Distribution
@@ -60,6 +60,14 @@ packaging, and Forge's packaging step unpacks `better_sqlite3.node` from the
 asar (`@electron-forge/plugin-auto-unpack-natives`). See
 [`technical-design-document.md`](../design/technical-design-document.md) and the
 project memory on Forge+Vite native packaging.
+
+The main-process audio player also ships `node-web-audio-api` native binaries
+and the ESM decoder `audio-decode`. Electron is pinned to 38.8.6 (embedded Node
+22.22.0); `@electron/rebuild` 4.2.0 and the CI workflows require Node 22.12 or
+newer. Forge externalizes the audio packages and unpacks their `.node` files.
+The Linux `.deb` recommends PulseAudio or ALSA. A Linux default-sink playback
+smoke has been verified locally; Windows packaging and audible playback must be
+verified on their target platform before release.
 
 ## Versioning & releases
 

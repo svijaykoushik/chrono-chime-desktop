@@ -11,3 +11,8 @@ ChronoChime notifies users via visual alerts and audio chimes when scheduled con
 ### 2. Audio Context & Protocol Mapping
 - **Custom Protocol `chrono-sound://`:** Standard HTML Audio tags are isolated from the host file system. To play built-in sound assets securely in Chromium, the main process registers `chrono-sound://` scheme to serve asset buffers under strict Content Security Policies.
 - **Android-style Preview Recycling:** Previewing multiple sounds in the picker dialog creates audio instances. The component stops and cancels any active `new Audio()` instances on selection change to prevent memory leaks and audio context exhaustion in Chromium.
+
+### 3. Main-Process Audio Playback
+- **Native Web Audio:** `audio-decode` decodes sound files in the main process and `node-web-audio-api` plays the resulting samples. Built-in/custom notification playback does not invoke platform shell players.
+- **Non-blocking Delivery:** Notification display and fired-event delivery do not wait for audio startup; playback failures are logged. Sources and contexts are released on playback completion and app shutdown.
+- **Native Packaging:** Forge externalizes the audio modules and unpacks their platform binaries. Linux package requirements and cross-platform playback must be verified on target systems.

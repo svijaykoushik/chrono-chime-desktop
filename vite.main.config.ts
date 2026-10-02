@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ['better-sqlite3', 'electron'],
+      external: ['audio-decode', 'better-sqlite3', 'electron', 'node-web-audio-api'],
     },
   },
 });

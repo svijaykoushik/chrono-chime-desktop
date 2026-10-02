@@ -11,7 +11,7 @@ module.exports = {
     executableName: 'chronochime',
     icon: './assets/icons/chrono-chime-icon',
     // The Vite plugin bundles our code, but externalized native modules
-    // (better-sqlite3) and runtime assets (icons, sounds) must still ship.
+    // (better-sqlite3, node-web-audio-api) and runtime assets must still ship.
     // Keep only these roots; prune drops devDependencies from node_modules.
     prune: true,
     ignore: (filePath) => {

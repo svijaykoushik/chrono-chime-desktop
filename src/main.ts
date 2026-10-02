@@ -10,7 +10,7 @@ import { Scheduler } from './main/scheduler/scheduler';
 import { ReminderService } from './main/app/reminder-service';
 import { RoutineService } from './main/app/routine-service';
 import { NotificationManager } from './main/notification/manager';
-import { playAudio } from './main/notification/audio-player';
+import { disposeAudioPlayer, playAudio } from './main/notification/audio-player';
 import { SettingsStore } from './main/settings';
 import { getAutoStart, setAutoStart, START_MINIMIZED_ARG } from './main/autostart';
 import { initLogging, logger } from './main/diagnostics/logger';
@@ -146,7 +146,7 @@ function registerIpc(): void {
     }
     return { ...updated, launchAtLogin: getAutoStart() };
   });
-  ipcMain.handle(CH.soundPreview, (_e, raw) => {
+  ipcMain.handle(CH.soundPreview, async (_e, raw) => {
     const { soundId } = (raw as { soundId?: string }) ?? {};
     if (!soundId || soundId === 'silent') return;
 
@@ -160,7 +160,7 @@ function registerIpc(): void {
     }
 
     try {
-      playAudio(filePath);
+      await playAudio(filePath);
     } catch (err) {
       logger.error('main', 'Failed to play sound preview in main process', err instanceof Error ? err : new Error(String(err)));
     }
@@ -401,6 +401,7 @@ if (!app.requestSingleInstanceLock()) {
 
       app.on('before-quit', () => {
         logger.info('main', 'Application before-quit event triggered');
+        void disposeAudioPlayer();
         // Dispose periodic update timer
         if (typeof updateService !== 'undefined') {
           updateService.dispose();
