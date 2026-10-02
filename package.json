@@ -27,13 +27,15 @@
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^6.5.0",
     "adm-zip": "^0.5.18",
+    "audio-decode": "3.12.0",
     "better-sqlite3": "^11.10.0",
     "electron-log": "^5.4.4",
     "luxon": "^3.5.0",
+    "node-web-audio-api": "2.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "zod": "^3.24.1",
-    "semver": "^7.6.2"
+    "semver": "^7.6.2",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.2",
@@ -42,7 +44,7 @@
     "@electron-forge/maker-zip": "^7.11.2",
     "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
     "@electron-forge/plugin-vite": "^7.11.2",
-    "@electron/rebuild": "^3.7.2",
+    "@electron/rebuild": "4.2.0",
     "@types/adm-zip": "^0.5.8",
     "@types/better-sqlite3": "^7.6.13",
     "@types/luxon": "^3.4.2",
@@ -51,7 +53,7 @@
     "@types/react-dom": "^18.3.7",
     "@types/semver": "^7.5.8",
     "@vitejs/plugin-react": "^4.7.0",
-    "electron": "^33.4.11",
+    "electron": "38.8.6",
     "typescript": "^5.7.2",
     "vite": "^5.4.21",
     "vitest": "^2.1.8"
