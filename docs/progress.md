@@ -9,6 +9,10 @@ timestamp: 2026-10-02
 # ChronoChime Implementation Progress
 
 ## Work Done
+*   **Linux .deb Permissions & Packaging Hardening:**
+    *   Diagnosed root cause for `Failed to execute, permission denied` on newly installed Debian package: workspace checkouts on NTFS/FUSE mounts lack POSIX permission manipulation (`chmod` is no-op), causing Electron Forge and `dpkg-deb` to build `.deb` packages with `0770` (`-rwxrwx--- root:root`). Non-root user execution was therefore rejected by the kernel.
+    *   Subclassed `MakerDeb` as `SafeMakerDeb` in `forge.config.js` to stage Linux package contents in `os.tmpdir()` on native ext4/tmpfs filesystems, explicitly normalizing permissions (`0755` for directories, executable binaries, shared objects, and native addons; `0644` for data files; `4755` for `chrome-sandbox`).
+    *   Created `scripts/debian/postinst` Debian maintainer script to automatically set permissions (`chmod -R go+rX /usr/lib/chronochime` and `chmod 4755 /usr/lib/chronochime/chrome-sandbox`) upon installation.
 *   **Main-Process Web Audio Playback (Issue #67, implementation in progress):**
     *   Replaced platform shell playback with async `audio-decode` + `node-web-audio-api` playback, sample validation/channel transfer, WAV-to-MP3 alias fallback, and source/context cleanup on ended, startup failure, or app shutdown.
     *   Kept notification delivery non-blocking and added logging for async playback failures. The sound-preview IPC handler now awaits playback startup and reports errors.

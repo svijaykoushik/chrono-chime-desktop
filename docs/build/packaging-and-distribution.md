@@ -122,6 +122,10 @@ Check the failing step in the GitHub Actions runner console:
 - **Windows Squirrel Maker Failures (`Authors is required`):**
   - *Symptom:* `Authors is required` during NuGet packaging.
   - *Fix:* Ensure `author` is defined in `package.json` and `authors` is explicitly passed to the `MakerSquirrel` config in `forge.config.js`.
+- **Linux `.deb` Permission Denied on Execution (`Failed to execute, permission denied`):**
+  - *Symptom:* Executing `chronochime` after installing via `sudo dpkg -i` returns `bash: /usr/bin/chronochime: Permission denied`.
+  - *Root Cause:* Building the debian package from a checkout located on a non-POSIX filesystem (e.g. an NTFS/fuseblk partition where `chmod` is a no-op) or under restrictive umasks packs files into `data.tar.xz` with `0770` (`-rwxrwx--- root:root`). Regular users have no read/execute permissions.
+  - *Fix:* `forge.config.js` uses `SafeMakerDeb` to stage app files in `os.tmpdir()` and enforce standard POSIX permissions (`0755` for dirs/executables/libraries, `0644` for data files, `4755` for `chrome-sandbox`), accompanied by `scripts/debian/postinst` to verify target directory permissions upon install. For an already-installed broken package, run `sudo chmod -R go+rX /usr/lib/chronochime && sudo chmod 4755 /usr/lib/chronochime/chrome-sandbox`.
 - **Dependency/Build Issues:** Errors due to native module rebuilds, mismatching Node/Electron ABIs, or syntax compilation failures.
 
 ### 2. Clean Up and Reset the Release Tag
