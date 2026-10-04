@@ -5,6 +5,16 @@ import { join } from 'node:path';
 import { decideNotification } from '../../src/main/notification/decide';
 import { NotificationManager } from '../../src/main/notification/manager';
 import type { NotificationPrefs } from '../../src/shared/reminder';
+import { logger } from '../../src/main/diagnostics/logger';
+
+vi.mock('../../src/main/diagnostics/logger', () => ({
+  logger: {
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
 
 vi.mock('electron', () => {
   class MockNotification {
@@ -240,5 +250,51 @@ describe('NotificationManager — F7/F9/F10 delivery', () => {
     const clickHandler = instance.on.mock.calls.find((c: any[]) => c[0] === 'click')[1];
     clickHandler();
     expect(onClick).toHaveBeenCalledWith('rem-click');
+  });
+
+  it('logs async playback rejection without delaying notification or fired event', async () => {
+    (Notification as any).instances = [];
+    vi.clearAllMocks();
+
+    const playbackError = new Error('audio device unavailable');
+    const playback = Promise.reject(playbackError);
+    void playback.catch(() => {});
+    const playAudio = vi.fn(() => playback);
+    const emit = vi.fn();
+    const repo = {
+      getReminder: () => ({
+        id: 'rem-async-audio',
+        title: 'Async audio',
+        notification: {
+          sound: { kind: 'builtin', id: 'chime.mp3' },
+          vibrate: false,
+        },
+      }),
+    } as any;
+
+    const mgr = new NotificationManager({
+      repo,
+      getSettings: () => ({
+        quietHours: { enabled: false, start: '22:00', end: '06:00' },
+        timezone: TZ,
+      } as any),
+      emit,
+      playAudio,
+    });
+
+    mgr.deliver({
+      item: { id: 'rem-async-audio' } as any,
+      firedAt: ms('2026-06-16T12:00'),
+      missedCount: 1,
+    });
+
+    expect((Notification as any).instances[0].show).toHaveBeenCalledOnce();
+    expect(emit).toHaveBeenCalledOnce();
+    await Promise.resolve();
+    expect(logger.error).toHaveBeenCalledWith(
+      'Notification',
+      'Failed to play audio in main process',
+      playbackError,
+    );
   });
 });

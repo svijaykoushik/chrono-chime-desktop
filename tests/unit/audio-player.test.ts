@@ -1,187 +1,124 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as childProcess from 'node:child_process';
-import * as fs from 'node:fs';
-import { playAudio } from '../../src/main/notification/audio-player';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFile } from 'node:fs/promises';
+import { AudioContext } from 'node-web-audio-api';
+import { disposeAudioPlayer, playAudio } from '../../src/main/notification/audio-player';
 
-vi.mock('node:child_process', () => ({
-  exec: vi.fn(),
+const audioMocks = vi.hoisted(() => ({
+  readFile: vi.fn(),
+  decode: vi.fn(),
+  AudioContext: vi.fn(),
 }));
 
-vi.mock('node:fs', () => ({
-  existsSync: vi.fn(),
-}));
-
+vi.mock('node:fs/promises', () => ({ readFile: audioMocks.readFile }));
+vi.mock('audio-decode', () => ({ default: audioMocks.decode }));
+vi.mock('node-web-audio-api', () => ({ AudioContext: audioMocks.AudioContext }));
 vi.mock('../../src/main/diagnostics/logger', () => ({
-  logger: {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  },
+  logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-describe('audio-player — characterization tests', () => {
-  const originalPlatform = process.platform;
+describe('audio-player', () => {
+  let context: {
+    destination: object;
+    createBuffer: ReturnType<typeof vi.fn>;
+    createBufferSource: ReturnType<typeof vi.fn>;
+    close: ReturnType<typeof vi.fn>;
+  };
+  let audioBuffer: { copyToChannel: ReturnType<typeof vi.fn> };
+  let source: {
+    connect: ReturnType<typeof vi.fn>;
+    start: ReturnType<typeof vi.fn>;
+    stop: ReturnType<typeof vi.fn>;
+    disconnect: ReturnType<typeof vi.fn>;
+    addEventListener: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    audioBuffer = { copyToChannel: vi.fn() };
+    source = {
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      disconnect: vi.fn(),
+      addEventListener: vi.fn(),
+    };
+    context = {
+      destination: {},
+      createBuffer: vi.fn(() => audioBuffer),
+      createBufferSource: vi.fn(() => source),
+      close: vi.fn().mockResolvedValue(undefined),
+    };
+    vi.mocked(AudioContext).mockImplementation(() => context as unknown as AudioContext);
+    vi.mocked(readFile).mockResolvedValue(Buffer.from('encoded audio'));
+    audioMocks.decode.mockResolvedValue({
+      channelData: [Float32Array.of(0.25, -0.25), Float32Array.of(0.5, -0.5)],
+      sampleRate: 44100,
+    });
   });
 
-  afterEach(() => {
-    Object.defineProperty(process, 'platform', { value: originalPlatform });
+  afterEach(async () => {
+    await disposeAudioPlayer();
   });
 
-  it('characterizes Linux behavior for .wav files (includes aplay fallback)', () => {
-    Object.defineProperty(process, 'platform', { value: 'linux' });
-    vi.mocked(fs.existsSync).mockReturnValue(true);
+  it('decodes channels, starts playback, then releases the context when playback ends', async () => {
+    await expect(playAudio('/sounds/chime.mp3')).resolves.toBeUndefined();
 
-    const testPath = '/path/to/sound.wav';
-    playAudio(testPath);
+    expect(readFile).toHaveBeenCalledWith('/sounds/chime.mp3');
+    expect(audioMocks.decode).toHaveBeenCalledWith(Buffer.from('encoded audio'));
+    expect(context.createBuffer).toHaveBeenCalledWith(2, 2, 44100);
+    expect(audioBuffer.copyToChannel).toHaveBeenNthCalledWith(1, Float32Array.of(0.25, -0.25), 0);
+    expect(audioBuffer.copyToChannel).toHaveBeenNthCalledWith(2, Float32Array.of(0.5, -0.5), 1);
+    expect(source.connect).toHaveBeenCalledWith(context.destination);
+    expect(source.start).toHaveBeenCalledOnce();
+    expect(context.close).not.toHaveBeenCalled();
 
-    expect(fs.existsSync).toHaveBeenCalledWith(testPath);
-    expect(childProcess.exec).toHaveBeenCalledTimes(1);
-
-    const [command] = vi.mocked(childProcess.exec).mock.calls[0]!;
-    expect(command).toContain('paplay "/path/to/sound.wav"');
-    expect(command).toContain('pw-play "/path/to/sound.wav"');
-    expect(command).toContain('aplay "/path/to/sound.wav"');
-    expect(command).toContain('ffplay -nodisp -autoexit "/path/to/sound.wav"');
+    const ended = source.addEventListener.mock.calls[0]?.[1] as EventListener;
+    ended(new Event('ended'));
+    await vi.waitFor(() => expect(context.close).toHaveBeenCalledOnce());
+    expect(source.disconnect).toHaveBeenCalledOnce();
   });
 
-  it('characterizes Linux behavior for non-.wav files (excludes aplay fallback)', () => {
-    Object.defineProperty(process, 'platform', { value: 'linux' });
-    vi.mocked(fs.existsSync).mockReturnValue(true);
+  it('falls back from a missing legacy WAV path to its MP3 alias', async () => {
+    const missing = Object.assign(new Error('missing WAV'), { code: 'ENOENT' });
+    vi.mocked(readFile).mockRejectedValueOnce(missing).mockResolvedValueOnce(Buffer.from('mp3 audio'));
 
-    const testPath = '/path/to/chime.mp3';
-    playAudio(testPath);
+    await playAudio('/sounds/notification2.wav');
 
-    expect(childProcess.exec).toHaveBeenCalledTimes(1);
-
-    const [command] = vi.mocked(childProcess.exec).mock.calls[0]!;
-    expect(command).toContain('paplay "/path/to/chime.mp3"');
-    expect(command).toContain('pw-play "/path/to/chime.mp3"');
-    expect(command).not.toContain(' aplay ');
-    expect(command).toContain('ffplay -nodisp -autoexit "/path/to/chime.mp3"');
+    expect(readFile).toHaveBeenNthCalledWith(1, '/sounds/notification2.wav');
+    expect(readFile).toHaveBeenNthCalledWith(2, '/sounds/notification2.mp3');
+    expect(audioMocks.decode).toHaveBeenCalledWith(Buffer.from('mp3 audio'));
   });
 
-  it('characterizes Windows behavior using PowerShell and WMPlayer.OCX', () => {
-    Object.defineProperty(process, 'platform', { value: 'win32' });
-    vi.mocked(fs.existsSync).mockReturnValue(true);
+  it('does not try the WAV alias for permission or other read errors', async () => {
+    const denied = Object.assign(new Error('permission denied'), { code: 'EACCES' });
+    vi.mocked(readFile).mockRejectedValue(denied);
 
-    const testPath = 'C:\\Sounds\\alert.mp3';
-    playAudio(testPath);
-
-    expect(childProcess.exec).toHaveBeenCalledTimes(1);
-
-    const [command] = vi.mocked(childProcess.exec).mock.calls[0]!;
-    expect(command).toContain('powershell -Command');
-    expect(command).toContain('WMPlayer.OCX');
-    expect(command).toContain("C:\\Sounds\\alert.mp3");
+    await expect(playAudio('/sounds/custom.wav')).rejects.toBe(denied);
+    expect(readFile).toHaveBeenCalledOnce();
+    expect(AudioContext).not.toHaveBeenCalled();
   });
 
-  it('handles successful exec callback execution', () => {
-    Object.defineProperty(process, 'platform', { value: 'linux' });
-    vi.mocked(fs.existsSync).mockReturnValue(true);
+  it('rejects malformed decoded audio before opening an audio device', async () => {
+    audioMocks.decode.mockResolvedValue({ channelData: [], sampleRate: 44100 });
 
-    vi.mocked(childProcess.exec).mockImplementation((_cmd: any, callback: any) => {
-      if (typeof callback === 'function') {
-        callback(null, 'stdout', 'stderr');
-      }
-      return {} as any;
+    await expect(playAudio('/sounds/bad.mp3')).rejects.toThrow();
+    expect(AudioContext).not.toHaveBeenCalled();
+  });
+
+  it('closes and disconnects resources if starting playback throws', async () => {
+    const startError = new Error('device unavailable');
+    source.start.mockImplementation(() => {
+      throw startError;
     });
 
-    expect(() => playAudio('/path/to/chime.mp3')).not.toThrow();
-    expect(childProcess.exec).toHaveBeenCalledTimes(1);
+    await expect(playAudio('/sounds/chime.mp3')).rejects.toBe(startError);
+    expect(source.disconnect).toHaveBeenCalledOnce();
+    expect(context.close).toHaveBeenCalledOnce();
   });
 
-  it('handles exec error callback execution without crashing', () => {
-    Object.defineProperty(process, 'platform', { value: 'linux' });
-    vi.mocked(fs.existsSync).mockReturnValue(true);
+  it('does not create a child process for paths containing shell syntax', async () => {
+    await playAudio('/sounds/$(touch unexpected).mp3');
 
-    vi.mocked(childProcess.exec).mockImplementation((_cmd: any, callback: any) => {
-      if (typeof callback === 'function') {
-        callback(new Error('Command failed'), '', 'error output');
-      }
-      return {} as any;
-    });
-
-    expect(() => playAudio('/path/to/chime.mp3')).not.toThrow();
-    expect(childProcess.exec).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('audio-player — adversarial tests', () => {
-  const originalPlatform = process.platform;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    Object.defineProperty(process, 'platform', { value: originalPlatform });
-  });
-
-  it('does not invoke exec if the audio file does not exist', () => {
-    vi.mocked(fs.existsSync).mockReturnValue(false);
-
-    playAudio('/non/existent/file.wav');
-
-    expect(fs.existsSync).toHaveBeenCalledWith('/non/existent/file.wav');
-    expect(childProcess.exec).not.toHaveBeenCalled();
-  });
-
-  it('handles empty string path gracefully', () => {
-    vi.mocked(fs.existsSync).mockReturnValue(false);
-
-    playAudio('');
-
-    expect(fs.existsSync).toHaveBeenCalledWith('');
-    expect(childProcess.exec).not.toHaveBeenCalled();
-  });
-
-  it('escapes paths with spaces, single quotes, and double quotes on Linux', () => {
-    Object.defineProperty(process, 'platform', { value: 'linux' });
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-
-    const complexPath = '/home/user/My "Custom" Sounds/alarm\'s.wav';
-    playAudio(complexPath);
-
-    expect(childProcess.exec).toHaveBeenCalledTimes(1);
-    const [command] = vi.mocked(childProcess.exec).mock.calls[0]!;
-    expect(command).toContain('/home/user/My \\"Custom\\" Sounds/alarm\'s.wav');
-  });
-
-  it('escapes single quotes in PowerShell command on Windows', () => {
-    Object.defineProperty(process, 'platform', { value: 'win32' });
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-
-    const complexPath = "C:\\User's Folder\\sound's.mp3";
-    playAudio(complexPath);
-
-    expect(childProcess.exec).toHaveBeenCalledTimes(1);
-    const [command] = vi.mocked(childProcess.exec).mock.calls[0]!;
-    expect(command).toContain("C:\\User''s Folder\\sound''s.mp3");
-  });
-
-  it('does not execute on unsupported platforms (e.g., darwin / macOS)', () => {
-    Object.defineProperty(process, 'platform', { value: 'darwin' });
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-
-    playAudio('/path/to/sound.wav');
-
-    expect(fs.existsSync).toHaveBeenCalledWith('/path/to/sound.wav');
-    expect(childProcess.exec).not.toHaveBeenCalled();
-  });
-
-  it('handles command injection attempts in file paths safely', () => {
-    Object.defineProperty(process, 'platform', { value: 'linux' });
-    vi.mocked(fs.existsSync).mockReturnValue(true);
-
-    const maliciousPath = '/path/to/sound.wav; rm -rf /; $(whoami)';
-    playAudio(maliciousPath);
-
-    expect(childProcess.exec).toHaveBeenCalledTimes(1);
-    const [command] = vi.mocked(childProcess.exec).mock.calls[0]!;
-    expect(command).toContain(`"${maliciousPath}"`);
+    expect(source.start).toHaveBeenCalledOnce();
   });
 });

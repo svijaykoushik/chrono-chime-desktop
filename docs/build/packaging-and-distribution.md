@@ -3,7 +3,7 @@ type: Runbook
 title: Packaging & Distribution
 description: How to build ChronoChime distributables (Squirrel/.deb), packaging config, and the release-failure runbook.
 tags: [build, release, packaging]
-timestamp: 2026-10-01
+timestamp: 2026-10-02
 ---
 
 # ChronoChime — Packaging & Distribution
@@ -61,6 +61,14 @@ asar (`@electron-forge/plugin-auto-unpack-natives`). See
 [`technical-design-document.md`](../design/technical-design-document.md) and the
 project memory on Forge+Vite native packaging.
 
+The main-process audio player also ships `node-web-audio-api` native binaries
+and the ESM decoder `audio-decode`. Electron is pinned to 38.8.6 (embedded Node
+22.22.0); `@electron/rebuild` 4.2.0 and the CI workflows require Node 22.12 or
+newer. Forge externalizes the audio packages and unpacks their `.node` files.
+The Linux `.deb` recommends PulseAudio or ALSA. A Linux default-sink playback
+smoke has been verified locally; Windows packaging and audible playback must be
+verified on their target platform before release.
+
 ## Versioning & releases
 
 ChronoChime follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
@@ -114,6 +122,10 @@ Check the failing step in the GitHub Actions runner console:
 - **Windows Squirrel Maker Failures (`Authors is required`):**
   - *Symptom:* `Authors is required` during NuGet packaging.
   - *Fix:* Ensure `author` is defined in `package.json` and `authors` is explicitly passed to the `MakerSquirrel` config in `forge.config.js`.
+- **Linux `.deb` Permission Denied on Execution (`Failed to execute, permission denied`):**
+  - *Symptom:* Executing `chronochime` after installing via `sudo dpkg -i` returns `bash: /usr/bin/chronochime: Permission denied`.
+  - *Root Cause:* Building the debian package from a checkout located on a non-POSIX filesystem (e.g. an NTFS/fuseblk partition where `chmod` is a no-op) or under restrictive umasks packs files into `data.tar.xz` with `0770` (`-rwxrwx--- root:root`). Regular users have no read/execute permissions.
+  - *Fix:* `forge.config.js` uses `SafeMakerDeb` to stage app files in `os.tmpdir()` and enforce standard POSIX permissions (`0755` for dirs/executables/libraries, `0644` for data files, `4755` for `chrome-sandbox`), accompanied by `scripts/debian/postinst` to verify target directory permissions upon install. For an already-installed broken package, run `sudo chmod -R go+rX /usr/lib/chronochime && sudo chmod 4755 /usr/lib/chronochime/chrome-sandbox`.
 - **Dependency/Build Issues:** Errors due to native module rebuilds, mismatching Node/Electron ABIs, or syntax compilation failures.
 
 ### 2. Clean Up and Reset the Release Tag

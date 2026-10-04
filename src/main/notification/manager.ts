@@ -14,7 +14,7 @@ export interface NotificationManagerDeps {
   getSettings: () => Settings;
   /** Pushes the fired event to the renderer (for UI alerts). */
   emit: (event: FiredEvent) => void;
-  playAudio: (filePath: string) => void;
+  playAudio: (filePath: string) => void | Promise<void>;
   onClick?: (reminderId: string) => void;
 }
 
@@ -101,7 +101,9 @@ export class NotificationManager {
 
       if (filePath) {
         try {
-          this.d.playAudio(filePath);
+          void Promise.resolve(this.d.playAudio(filePath)).catch((err: unknown) => {
+            logger.error('Notification', 'Failed to play audio in main process', err instanceof Error ? err : new Error(String(err)));
+          });
         } catch (err) {
           logger.error('Notification', 'Failed to play audio in main process', err instanceof Error ? err : new Error(String(err)));
         }

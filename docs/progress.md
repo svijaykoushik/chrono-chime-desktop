@@ -3,12 +3,22 @@ type: Status
 title: Implementation Progress
 description: Running log of work done, milestone status, and next steps.
 tags: [status]
-timestamp: 2026-10-01
+timestamp: 2026-10-02
 ---
 
 # ChronoChime Implementation Progress
 
 ## Work Done
+*   **Linux .deb Permissions & Packaging Hardening:**
+    *   Diagnosed root cause for `Failed to execute, permission denied` on newly installed Debian package: workspace checkouts on NTFS/FUSE mounts lack POSIX permission manipulation (`chmod` is no-op), causing Electron Forge and `dpkg-deb` to build `.deb` packages with `0770` (`-rwxrwx--- root:root`). Non-root user execution was therefore rejected by the kernel.
+    *   Subclassed `MakerDeb` as `SafeMakerDeb` in `forge.config.js` to stage Linux package contents in `os.tmpdir()` on native ext4/tmpfs filesystems, explicitly normalizing permissions (`0755` for directories, executable binaries, shared objects, and native addons; `0644` for data files; `4755` for `chrome-sandbox`).
+    *   Created `scripts/debian/postinst` Debian maintainer script to automatically set permissions (`chmod -R go+rX /usr/lib/chronochime` and `chmod 4755 /usr/lib/chronochime/chrome-sandbox`) upon installation.
+*   **Main-Process Web Audio Playback (Issue #67, implementation in progress):**
+    *   Replaced platform shell playback with async `audio-decode` + `node-web-audio-api` playback, sample validation/channel transfer, WAV-to-MP3 alias fallback, and source/context cleanup on ended, startup failure, or app shutdown.
+    *   Kept notification delivery non-blocking and added logging for async playback failures. The sound-preview IPC handler now awaits playback startup and reports errors.
+    *   Upgraded Electron to 38.8.6 (embedded Node 22.22.0) and `@electron/rebuild` to 4.2.0; CI/release workflows now use Node 22. Electron 44 was rejected because the current `better-sqlite3` version fails against its Node 24 V8 API.
+    *   Externalized audio dependencies from the main bundle; Linux package and `.deb` builds pass, and a smoke test imports both modules from the packaged ASAR. A bundled chime completed playback through the Linux host's default audio sink.
+    *   `npm run typecheck` passes and all 145 tests across 20 files pass. Windows packaging and audible playback on Windows remain unverified.
 *   **Snooze: Defer Fired Reminders by Short Interval (Issue #58):**
     *   Added `snoozedUntil` override occurrence field to `Reminder` schema without disturbing the base recurrence lattice (preserving F3/F4 anti-drift guarantees).
     *   Implemented SQLite migration `ALTER TABLE reminders ADD COLUMN snoozed_until INTEGER DEFAULT NULL`, updated statements and fast-path schedulable indexes.
@@ -69,11 +79,13 @@ timestamp: 2026-10-01
 *   M4 Update checker + update UI — Done
 
 ## Features in Progress
-*   None.
+*   **Issue #67 — Main-process Web Audio playback:** implementation, Linux packaging, and Linux default-sink playback are verified; Windows package validation and audible playback remain.
 
 ## What to Do Next
-1.  Add integration coverage for crash export and restart flow when the crash window is triggered.
-2.  Prepare M3/M4 validation notes for the next PR review.
+1.  Verify `npm ci`, `npm run typecheck`, tests, and `npm run make` on the Windows 2022 / Node 22 CI runner.
+2.  Test audible notification and preview playback on real Windows and Linux audio setups, including quiet-hours and app-shutdown behavior.
+3.  Add integration coverage for crash export and restart flow when the crash window is triggered.
+4.  Prepare M3/M4 validation notes for the next PR review.
 
 <details>
 <summary>Roadmap for Update Checker (M4)</summary>

@@ -2,6 +2,17 @@
 
 All changes made to the codebase are tracked here in reverse chronological order.
 
+### 2026-10-02
+- **Linux .deb Packaging Permission Normalization & Postinst Fix**
+  - Resolved `Failed to execute, permission denied` on installed Linux `.deb` binaries. When builds occur on non-POSIX/FUSE filesystems (such as NTFS mounts where chmod is a no-op), packaged binaries inherited `0770` (`-rwxrwx--- root:root`), blocking execution for non-root users.
+  - Implemented `SafeMakerDeb` in `forge.config.js` to stage builds in `os.tmpdir()` and enforce standard POSIX modes (`0755` for directories, executables, `.so`, and `.node` modules; `0644` for data files; `4755` for `chrome-sandbox`).
+  - Added Debian maintainer script `scripts/debian/postinst` ensuring target directory `/usr/lib/chronochime` permissions and `chrome-sandbox` SUID bit are verified and enforced upon installation.
+- **Issue #67 — Main-Process Web Audio Playback**
+  - Replaced shell audio commands with async decoding and Web Audio playback; added malformed-sample validation, WAV alias fallback, playback cleanup, and shutdown disposal.
+  - Preserved non-blocking notification/event delivery and made sound-preview IPC await playback startup with error logging.
+  - Upgraded Electron to 38.8.6 and `@electron/rebuild` to 4.2.0; CI/release workflows now use Node 22. Electron 44 was not selected because `better-sqlite3` 11.10.0 does not compile against its Node 24 V8 API.
+  - Linux `npm run make`, packaged ASAR audio-module import/decode smoke, and real default-sink playback pass; strict typecheck and all 145 tests pass. Windows packaging and audible playback remain to be verified.
+
 ### 2026-10-01
 - **Snooze: Defer Fired Reminders by Short Interval (Issue #58)**
   - Added `snoozedUntil` override occurrence to `Reminder` schema without altering recurrence rules or introducing calendar drift.

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+# Ensure application files and directories are accessible to non-root users
+if [ -d /usr/lib/chronochime ]; then
+  chmod -R go+rX /usr/lib/chronochime
+  if [ -f /usr/lib/chronochime/chrome-sandbox ]; then
+    chmod 4755 /usr/lib/chronochime/chrome-sandbox
+  fi
+fi
